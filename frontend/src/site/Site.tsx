@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api, ErroApi } from '../api';
 import { Logo, Monograma } from '../componentes/Logo';
 import { Visualizador } from '../componentes/Visualizador';
+import { Imagem, useRevelar } from '../componentes/Movimento';
 import type { Estudio, Pacote, PortfolioFoto } from '../tipos';
 import { linkWhatsapp, moeda, telefone } from '../util';
 import './site.css';
@@ -22,6 +23,7 @@ export function Site() {
     api<PortfolioFoto[]>('/publico/portfolio', { token: null }).then(setFotos).catch(() => {});
   }, []);
 
+  useRevelar([fotos.length, pacotes.length, estudio]);
   const destaque = useMemo(() => fotos.find((f) => f.destaque) ?? fotos[0], [fotos]);
   const copias = fotos.filter((f) => f !== destaque).slice(0, 3);
 
@@ -58,7 +60,7 @@ export function Site() {
           </div>
           <div className="foto">
             {destaque
-              ? <img src={img(destaque)} alt="Ensaio feminino da JR Fotografia" />
+              ? <Imagem src={img(destaque)} alt="Ensaio feminino da JR Fotografia" className="capa" />
               : <div className="fantasma"><Monograma tamanho={520} titulo="" /></div>}
           </div>
         </section>
@@ -68,8 +70,8 @@ export function Site() {
             <div className="faixa" aria-hidden="true">Portfólio</div>
             <div className="mosaico">
               {fotos.map((f, i) => (
-                <button key={f.id} onClick={() => setAberta(i)} aria-label={`Ampliar foto ${i + 1}`}>
-                  <img src={img(f, true)} alt={f.titulo ?? `Ensaio ${f.categoria}`} loading="lazy"
+                <button key={f.id} onClick={() => setAberta(i)} aria-label={`Ampliar foto ${i + 1}`} data-revelar style={{ '--i': i % 3 } as React.CSSProperties}>
+                  <Imagem src={img(f, true)} alt={f.titulo ?? `Ensaio ${f.categoria}`} loading="lazy"
                     width={f.largura} height={f.altura} />
                 </button>
               ))}
@@ -78,26 +80,26 @@ export function Site() {
         )}
 
         <section id="sobre" className="dentro sobre">
-          <div style={{ display: 'grid', gap: 'var(--espaco-4)' }}>
+          <div style={{ display: 'grid', gap: 'var(--espaco-4)' }} data-revelar>
             <span className="rotulo">Sobre</span>
             <h2 className="titulo">Joel Júnior, fotógrafo</h2>
             <p>{estudio?.apresentacao}</p>
           </div>
           {copias.length > 0 && (
-            <div className="copias" aria-hidden="true">
+            <div className="copias" aria-hidden="true" data-revelar style={{ '--i': 2 } as React.CSSProperties}>
               {copias.map((f) => <figure key={f.id}><img src={img(f, true)} alt="" loading="lazy" /></figure>)}
             </div>
           )}
         </section>
 
         <section id="pacotes" className="dentro pacotes">
-          <div className="cabeca-secao">
+          <div className="cabeca-secao" data-revelar>
             <span className="rotulo">Pacotes</span>
             <h2 className="titulo">Escolha o seu ensaio</h2>
           </div>
           <div className="lista-pacotes">
             {pacotes.map((p, i) => (
-              <article key={p.id} className="pacote">
+              <article key={p.id} className="pacote" data-revelar style={{ '--i': i % 2 } as React.CSSProperties}>
                 <div className="texto">
                   <h3 className="titulo">Fotografia / {p.nome}</h3>
                   <ul>{p.itens.map((it) => <li key={it}>{it}</li>)}</ul>
@@ -122,7 +124,7 @@ export function Site() {
         </section>
 
         <section id="orcamento" className="dentro orcamento">
-          <div style={{ display: 'grid', gap: 'var(--espaco-4)', alignContent: 'start' }}>
+          <div style={{ display: 'grid', gap: 'var(--espaco-4)', alignContent: 'start' }} data-revelar>
             <span className="rotulo">Contato</span>
             <h2 className="titulo">Vamos marcar o seu ensaio?</h2>
             <p className="suave" style={{ margin: 0 }}>Conte o que você imagina. Eu respondo pelo WhatsApp com datas e condições.</p>

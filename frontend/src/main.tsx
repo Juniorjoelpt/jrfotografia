@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './estilos.css';
+import './animacoes.css';
 import { Site } from './site/Site';
 import { GaleriaCliente } from './galeria/GaleriaCliente';
 import { Entrar } from './painel/Entrar';

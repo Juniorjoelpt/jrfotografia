@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Navigate, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { api, salvarSessao, sessaoAtual } from '../api';
 import { Monograma } from '../componentes/Logo';
+import { Ambiente, Numero } from '../componentes/Movimento';
 import type { Painel, PortfolioFoto } from '../tipos';
 import { primeiroNome } from '../util';
 import './painel.css';
@@ -34,6 +35,7 @@ export function LayoutPainel() {
   const sessao = sessaoAtual();
   const navegar = useNavigate();
   const fundo = useFundo();
+  const local = useLocation();
   const [resumo, setResumo] = useState<Painel | null>(null);
   useEffect(() => { if (sessao) api<Painel>('/painel').then(setResumo).catch(() => {}); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (!sessao) return <Navigate to="/painel/entrar" replace />;
@@ -43,8 +45,7 @@ export function LayoutPainel() {
 
   return (
     <>
-      <div className="ambiente" style={fundo ? { backgroundImage: `url(${fundo})` } : undefined} />
-      <div className="ambiente-veu" />
+      <Ambiente src={fundo} />
       <div className="painel">
         <header className="painel-topo vidro">
           <span style={{ color: 'var(--tinta)' }}><Monograma tamanho={32} /></span>
@@ -62,9 +63,9 @@ export function LayoutPainel() {
           </div>
           {resumo && (
             <dl>
-              <div><dt>Pedidos novos</dt><dd style={resumo.pedidosNovos ? { color: 'var(--acento)' } : undefined}>{resumo.pedidosNovos}</dd></div>
-              <div><dt>Em seleção</dt><dd>{resumo.aguardandoSelecao}</dd></div>
-              <div><dt>Em edição</dt><dd>{resumo.emEdicao}</dd></div>
+              <div><dt>Pedidos novos</dt><dd style={resumo.pedidosNovos ? { color: 'var(--acento)' } : undefined}><Numero valor={resumo.pedidosNovos} /></dd></div>
+              <div><dt>Em seleção</dt><dd><Numero valor={resumo.aguardandoSelecao} /></dd></div>
+              <div><dt>Em edição</dt><dd><Numero valor={resumo.emEdicao} /></dd></div>
               {resumo.atrasados.length > 0 && <div><dt>Atrasados</dt><dd style={{ color: 'var(--erro)' }}>{resumo.atrasados.length}</dd></div>}
             </dl>
           )}
@@ -84,7 +85,7 @@ export function LayoutPainel() {
             <NavLink key={i.para} to={i.para} end={i.fim}>{icone(i.d)}<span>{i.nome}</span></NavLink>
           ))}
         </nav>
-        <main className="painel-corpo"><Outlet /></main>
+        <main className="painel-corpo" key={local.pathname}><div className="anima-pagina" style={{ display: 'grid', gap: 'var(--espaco-6)', minWidth: 0 }}><Outlet /></div></main>
       </div>
     </>
   );

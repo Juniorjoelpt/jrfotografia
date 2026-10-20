@@ -3,6 +3,7 @@ import { sessaoAtual } from '../api';
 import type { Painel } from '../tipos';
 import { MESES, moeda, primeiroNome } from '../util';
 import { Erro, LinhaTrabalho, Linhas, useDados } from './comum';
+import { Numero } from '../componentes/Movimento';
 
 export function Inicio() {
   const { dados: p, erro } = useDados<Painel>('/painel');
@@ -27,25 +28,25 @@ export function Inicio() {
       <Erro msg={erro} />
       {p && (
         <>
-          <div className="numeros">
+          <div className="numeros escalonado">
             <Link to="/painel/pedidos" className={`numero${p.pedidosNovos ? ' atencao' : ''}`}>
-              <span className="legenda">PEDIDOS NOVOS</span><strong>{p.pedidosNovos}</strong>
+              <span className="legenda">PEDIDOS NOVOS</span><strong><Numero valor={p.pedidosNovos} /></strong>
             </Link>
             <Link to="/painel/trabalhos?status=SELECAO" className="numero">
-              <span className="legenda">AGUARDANDO SELEÇÃO</span><strong>{p.aguardandoSelecao}</strong>
+              <span className="legenda">AGUARDANDO SELEÇÃO</span><strong><Numero valor={p.aguardandoSelecao} /></strong>
             </Link>
             <Link to="/painel/trabalhos?status=EDICAO" className="numero">
-              <span className="legenda">EM EDIÇÃO</span><strong>{p.emEdicao}</strong>
+              <span className="legenda">EM EDIÇÃO</span><strong><Numero valor={p.emEdicao} /></strong>
             </Link>
             {admin && (
               <Link to="/painel/recebimentos" className={`numero${p.vencido ? ' critico' : ''}`}>
-                <span className="legenda">A RECEBER</span><strong>{moeda(p.aReceber)}</strong>
+                <span className="legenda">A RECEBER</span><strong><Numero valor={p.aReceber ?? 0} formatar={moeda} /></strong>
                 {!!p.vencido && <span className="legenda" style={{ color: 'var(--erro)' }}>{moeda(p.vencido)} VENCIDO</span>}
               </Link>
             )}
             {admin && (
               <div className="numero">
-                <span className="legenda">RECEBIDO NO MÊS</span><strong>{moeda(p.recebidoNoMes)}</strong>
+                <span className="legenda">RECEBIDO NO MÊS</span><strong><Numero valor={p.recebidoNoMes ?? 0} formatar={moeda} /></strong>
               </div>
             )}
           </div>

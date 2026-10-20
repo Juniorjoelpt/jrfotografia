@@ -118,12 +118,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 
 /* ================= Visual "galeria 3D": fundo desfocado, vidro, molduras ================= */
-.ambiente { position: fixed; inset: -60px; z-index: -2; background-color: var(--carvao); background-position: center; background-size: cover; background-repeat: no-repeat;
-  /* Fundo padrão enquanto não há fotos: luzes suaves nos tons da marca (magenta da luz, âmbar, ardósia). */
+.ambiente { position: fixed; inset: -60px; background-position: center; background-size: cover; background-repeat: no-repeat; transform: scale(1.08); pointer-events: none; }
+/* Camada de base: luzes suaves nos tons da marca (magenta da luz, âmbar, ardósia), sempre presente. */
+.ambiente-base { z-index: -3; background-color: var(--carvao);
   background-image: radial-gradient(38% 46% at 22% 30%, #b04a86 0%, transparent 70%), radial-gradient(34% 40% at 78% 24%, #8a6a3e 0%, transparent 72%),
-    radial-gradient(46% 50% at 62% 82%, #3e4a66 0%, transparent 70%), radial-gradient(30% 36% at 12% 86%, #5a3550 0%, transparent 70%); filter: blur(36px) saturate(1.15) brightness(.55); transform: scale(1.08); transition: background-image .6s; }
-/* Sem foto: as luzes da marca aparecem mais (não há imagem para escurecer). */
-.ambiente:not([style]) { filter: blur(40px) saturate(1.3) brightness(.85); }
+    radial-gradient(46% 50% at 62% 82%, #3e4a66 0%, transparent 70%), radial-gradient(30% 36% at 12% 86%, #5a3550 0%, transparent 70%);
+  filter: blur(40px) saturate(1.3) brightness(.85); animation: deriva 38s ease-in-out infinite alternate; }
+/* Camada da foto: entra com fade por cima das luzes e respira devagar, como um Ken Burns discreto. */
+.ambiente-foto { z-index: -2; opacity: 0; filter: blur(36px) saturate(1.15) brightness(.55); transition: opacity 900ms var(--curva-suave, ease); }
+.ambiente-foto.pronta { opacity: 1; animation: respirar 30s ease-in-out infinite alternate; }
+@keyframes deriva { from { transform: scale(1.08) translate(0, 0); } to { transform: scale(1.16) translate(-2%, 1.5%); } }
+@keyframes respirar { from { transform: scale(1.08); } to { transform: scale(1.15) translate(1%, -1%); } }
 .ambiente-veu { position: fixed; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(23,23,22,.35) 0%, rgba(23,23,22,.15) 40%, rgba(23,23,22,.7) 100%); }
 .vidro { background: rgba(23, 23, 22, .62); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); border-color: rgba(255,255,255,.08); }
 

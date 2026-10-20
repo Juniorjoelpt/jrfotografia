@@ -1,0 +1,61 @@
+/*
+ * Movimento da JR Fotografia.
+ * Regras: animar só transform e opacity (lisos até em celular simples); três curvas e três durações;
+ * nada pisca nem demora mais que 700 ms. Com "reduzir movimento" no aparelho, tudo aparece parado.
+ */
+:root {
+  --curva-suave: cubic-bezier(.22, .72, .2, 1);      /* entradas e mudanças de página */
+  --curva-mola: cubic-bezier(.34, 1.56, .64, 1);     /* toques: coração, marcador do trilho */
+  --curva-saida: cubic-bezier(.4, 0, 1, 1);
+  --rapido: 160ms;
+  --medio: 320ms;
+  --lento: 620ms;
+}
+
+@keyframes entrar-cima { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes entrar-escala { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes surgir { from { opacity: 0; } to { opacity: 1; } }
+/* Fotos chegando como cópias jogadas sobre a mesa */
+@keyframes distribuir {
+  from { opacity: 0; transform: translateY(46px) rotate(calc(var(--r, 0deg) * 2 + 6deg)) scale(.9); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.32); } 100% { transform: scale(1); } }
+@keyframes marcar { 0% { transform: scale(1); } 35% { transform: scale(.965); } 100% { transform: scale(1); } }
+@keyframes brilho { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+@keyframes encher { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes zoom-entrar { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+
+/* Página nova do painel */
+.anima-pagina { animation: entrar-cima var(--medio) var(--curva-suave) both; }
+
+/* Filhos entram um depois do outro; o índice vem de --i (limitado a 12 para não demorar) */
+.escalonado > * { animation: entrar-cima var(--medio) var(--curva-suave) both; animation-delay: calc(min(var(--i, 0), 12) * 45ms); }
+.escalonado > *:nth-child(1) { --i: 0; } .escalonado > *:nth-child(2) { --i: 1; } .escalonado > *:nth-child(3) { --i: 2; }
+.escalonado > *:nth-child(4) { --i: 3; } .escalonado > *:nth-child(5) { --i: 4; } .escalonado > *:nth-child(6) { --i: 5; }
+.escalonado > *:nth-child(7) { --i: 6; } .escalonado > *:nth-child(8) { --i: 7; } .escalonado > *:nth-child(9) { --i: 8; }
+.escalonado > *:nth-child(10) { --i: 9; } .escalonado > *:nth-child(11) { --i: 10; } .escalonado > *:nth-child(n+12) { --i: 11; }
+
+/* Imagem aparece suave quando termina de carregar */
+.img-suave { opacity: 0; transition: opacity var(--lento) var(--curva-suave), transform var(--lento) var(--curva-suave); }
+.img-suave.carregada { opacity: 1; }
+
+/* Revelar ao rolar: só esconde quando o JavaScript marcou a página como pronta para isso */
+.js-revelar [data-revelar] { opacity: 0; transform: translateY(24px); transition: opacity var(--lento) var(--curva-suave), transform var(--lento) var(--curva-suave); transition-delay: calc(var(--i, 0) * 60ms); }
+.js-revelar [data-revelar].visivel { opacity: 1; transform: none; }
+
+/* Esqueleto de carregamento */
+.esqueleto { background: linear-gradient(90deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.04) 100%) 0 0 / 200% 100%; animation: brilho 1.4s linear infinite; }
+
+/* Botões: resposta ao toque */
+.botao { transition: transform var(--rapido) var(--curva-suave), background-color var(--rapido), border-color var(--rapido), filter var(--rapido), box-shadow var(--rapido); }
+.botao:active:not(:disabled) { transform: scale(.97); }
+.botao.principal:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(226, 106, 174, .28); }
+
+/* Mensagens */
+.aviso { animation: entrar-cima var(--medio) var(--curva-suave) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js-revelar [data-revelar] { opacity: 1; transform: none; }
+  .img-suave { opacity: 1; }
+}

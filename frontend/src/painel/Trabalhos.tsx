@@ -5,6 +5,7 @@ import { Monograma } from '../componentes/Logo';
 import type { StatusTrabalho, TrabalhoResumo } from '../tipos';
 import { CLASSE_STATUS, MESES, NOMES_STATUS, diaSemana } from '../util';
 import { Erro, useDados } from './comum';
+import { Imagem } from '../componentes/Movimento';
 
 const FILTROS: (StatusTrabalho | '')[] = ['', 'AGENDADO', 'FOTOGRAFADO', 'SELECAO', 'EDICAO', 'ENTREGUE', 'CANCELADO'];
 const mesDe = (t: TrabalhoResumo) => (t.dataTrabalho ? t.dataTrabalho.slice(0, 7) : 'sem-data');
@@ -50,9 +51,12 @@ export function Trabalhos() {
       )}
 
       <Erro msg={erro} />
-      {!carregando && dados && (lista.length === 0
+      {carregando && !dados && (
+        <div className="albuns" aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <div key={i} className="album album-esqueleto"><div className="esqueleto" style={{ height: 14, width: '70%' }} /><div className="esqueleto" style={{ aspectRatio: '1' }} /><div className="esqueleto" style={{ height: 12, width: '50%' }} /></div>)}</div>
+      )}
+      {dados && (lista.length === 0
         ? <p className="vazio" style={{ margin: 0 }}>{status ? `Nenhum trabalho ${NOMES_STATUS[status].toLowerCase()}.` : 'Nenhum trabalho ainda. Crie o primeiro.'}</p>
-        : <div className="albuns">{lista.map((t) => <Album key={t.id} t={t} />)}</div>)}
+        : <div className="albuns escalonado" key={`${status}-${mes}`}>{lista.map((t) => <Album key={t.id} t={t} />)}</div>)}
     </>
   );
 }
@@ -67,7 +71,7 @@ function Album({ t }: { t: TrabalhoResumo }) {
         {capas.length === 0
           ? <div className="vazia" style={{ gridColumn: '1 / -1', gridRow: '1 / -1' }}><Monograma tamanho={56} titulo="" /></div>
           : (capas.length === 1 ? capas : [...capas, ...Array(Math.max(0, 4 - capas.length)).fill(null)].slice(0, 4)).map((id, i) =>
-            id ? <img key={id} src={imagemPainel(t.id, id, 'miniatura')} alt="" loading="lazy" /> : <div key={`v${i}`} className="vazia" />)}
+            id ? <Imagem key={id} src={imagemPainel(t.id, id, 'miniatura')} alt="" loading="lazy" /> : <div key={`v${i}`} className="vazia" />)}
       </div>
       <div className="rodape-album">
         <span className="legenda">{(t.pacoteNome ?? t.tipo ?? '').toUpperCase()} · {dia.toUpperCase()}</span>

@@ -4,6 +4,7 @@ import { api, ErroApi, imagemPainel, sessaoAtual } from '../api';
 import type { Estudio, Foto, MeioPagamento, Parcela, StatusTrabalho, TrabalhoDetalhe } from '../tipos';
 import { data, dataHora, ETAPAS, linkWhatsapp, moeda, NOMES_MEIO, NOMES_PARCELA, primeiroNome, telefone, urlGaleria } from '../util';
 import { Erro, Status, useDados } from './comum';
+import { Imagem } from '../componentes/Movimento';
 
 export function DetalheTrabalho() {
   const { id } = useParams();
@@ -176,10 +177,10 @@ export function DetalheTrabalho() {
       {fotos && fotos.length > 0 && (
         <section className="secao">
           <h2 className="chamada">Fotos ({fotos.length}{exigeSelecao ? ` · ${t.selecionadas} escolhidas` : ''})</h2>
-          <div className="miniaturas">
+          <div className="miniaturas escalonado">
             {fotos.map((f) => (
               <figure key={f.id} className={f.selecionada ? 'escolhida' : ''} title={f.nomeOriginal}>
-                <img src={imagemPainel(t.resumo.id, f.id, 'miniatura')} alt={f.nomeOriginal} loading="lazy" />
+                <Imagem src={imagemPainel(t.resumo.id, f.id, 'miniatura')} alt={f.nomeOriginal} loading="lazy" />
                 {(f.editada || f.comentario) && <span className="marca">{f.editada ? 'editada' : ''}{f.comentario ? ' 💬' : ''}</span>}
                 {(r.status === 'AGENDADO' || r.status === 'FOTOGRAFADO') && (
                   <button className="apagar" aria-label={`Apagar ${f.nomeOriginal}`} disabled={!!ocupado} onClick={() => apagarFoto(f)}>×</button>

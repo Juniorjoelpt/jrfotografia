@@ -40,7 +40,7 @@
 .grade-molduras .moldura { aspect-ratio: 1; }
 @media (min-width: 900px) { .grade-molduras { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
 
-.moldura > button.abrir { all: unset; cursor: zoom-in; display: block; width: 100%; height: 100%; }
+.moldura > button.abrir { all: unset; cursor: zoom-in; display: block; width: 100%; height: 100%; background: #2a2a28; }
 .moldura > button.abrir:focus-visible { box-shadow: var(--foco); }
 .coracao {
   position: absolute; right: 10px; bottom: 10px; width: 38px; height: 38px; border-radius: 9999px; border: 0;
@@ -52,3 +52,34 @@
 .entrada-galeria { min-height: 100dvh; display: grid; place-items: center; padding: var(--espaco-6); }
 .entrada-galeria form { width: min(380px, 100%); display: grid; gap: var(--espaco-6); justify-items: center; text-align: center; padding: var(--espaco-8) var(--espaco-6); border: 1px solid rgba(255,255,255,.08); }
 .entrada-galeria input { text-align: center; font-size: 22px; letter-spacing: .3em; }
+
+/* ---------- movimento ---------- */
+/* Fotos chegam como cópias jogadas sobre a mesa, uma depois da outra */
+.soltas .copia { transition: transform var(--medio) var(--curva-suave); }
+.soltas .copia > .moldura, .grade-molduras > div > .moldura { animation: distribuir var(--lento) var(--curva-suave) both; animation-delay: calc(min(var(--i, 0), 14) * 55ms); }
+.grade-molduras > div > .moldura { animation-name: entrar-escala; animation-duration: var(--medio); animation-delay: calc(min(var(--i, 0), 18) * 30ms); }
+.grade-molduras .moldura { transition: transform var(--medio) var(--curva-suave), box-shadow var(--medio); }
+.grade-molduras .moldura:hover { transform: translateY(-4px) rotate(-.8deg); }
+.moldura img { transition: transform var(--lento) var(--curva-suave), opacity var(--lento) var(--curva-suave); }
+.moldura:hover img { transform: scale(1.03); }
+.moldura.escolhida > .abrir { animation: marcar var(--medio) var(--curva-suave); }
+.coracao { transition: background-color var(--rapido), color var(--rapido), transform var(--rapido) var(--curva-suave); }
+.coracao:hover { transform: scale(1.08); }
+.coracao:active { transform: scale(.92); }
+.coracao[aria-pressed="true"] svg { animation: pop 420ms var(--curva-mola); }
+
+/* Trilho da seleção: o marcador anda com mola */
+.trilho .botao-trilho { transition: left 520ms var(--curva-mola); }
+.trilho .feito, .trilho .excesso { transition: width 520ms var(--curva-suave), left 520ms var(--curva-suave); }
+.barra-tempo { animation: entrar-cima var(--lento) var(--curva-suave) both; animation-delay: 200ms; }
+.rotulo-barra b { display: inline-block; }
+
+/* Entrada da galeria */
+.g-lateral > * { animation: entrar-cima var(--medio) var(--curva-suave) both; }
+.g-lateral > :nth-child(2) { animation-delay: 60ms; } .g-lateral > :nth-child(3) { animation-delay: 120ms; } .g-lateral > :nth-child(4) { animation-delay: 180ms; }
+.g-situacao > * { animation: entrar-cima var(--lento) var(--curva-suave) both; }
+.g-situacao > :nth-child(2) { animation-delay: 90ms; } .g-situacao > :nth-child(3) { animation-delay: 180ms; }
+.numeral strong { display: inline-block; animation: entrar-escala var(--lento) var(--curva-suave) both; }
+.entrada-galeria form { animation: zoom-entrar var(--lento) var(--curva-suave) both; }
+.entrada-galeria form.erro-senha { animation: tremer 360ms var(--curva-suave); }
+@keyframes tremer { 0%, 100% { transform: none; } 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }

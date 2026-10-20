@@ -45,5 +45,5 @@ export function LinhaTrabalho({ t, mostrar = 'data' }: { t: TrabalhoResumo; most
 }
 
 export function Linhas({ itens, vazio }: { itens: React.ReactNode[]; vazio: string }) {
-  return itens.length ? <div className="linhas">{itens}</div> : <p className="vazio" style={{ margin: 0 }}>{vazio}</p>;
+  return itens.length ? <div className="linhas escalonado">{itens}</div> : <p className="vazio" style={{ margin: 0 }}>{vazio}</p>;
 }

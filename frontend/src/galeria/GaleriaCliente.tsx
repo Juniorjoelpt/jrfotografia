@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { api, ErroApi } from '../api';
 import { Monograma } from '../componentes/Logo';
 import { Visualizador } from '../componentes/Visualizador';
+import { Ambiente, Imagem, Numero } from '../componentes/Movimento';
 import type { FotoGaleria, Galeria } from '../tipos';
 import { data, diaMes, inclinacao, linkWhatsapp, moeda, primeiroNome } from '../util';
 import './galeria.css';
@@ -83,7 +84,7 @@ export function GaleriaCliente() {
   const cartao = (f: FotoGaleria, i: number) => (
     <div className={`moldura${f.selecionada && g.exigeSelecao ? ' escolhida' : ''}`}>
       <button className="abrir" onClick={() => setAberta(i)} aria-label={`Ampliar foto ${i + 1}`}>
-        <img src={url(f.id, 'miniatura')} alt={`Foto ${i + 1}`} loading="lazy" />
+        <Imagem src={url(f.id, 'miniatura')} alt={`Foto ${i + 1}`} loading="lazy" />
       </button>
       {g.selecaoAberta && (
         <button className="coracao" aria-pressed={f.selecionada} aria-label={f.selecionada ? 'Tirar da seleção' : 'Escolher esta foto'}
@@ -94,8 +95,7 @@ export function GaleriaCliente() {
 
   return (
     <>
-      <div className="ambiente" style={fundo ? { backgroundImage: `url(${fundo})` } : undefined} />
-      <div className="ambiente-veu" />
+      <Ambiente src={fundo} />
       <div className="g-layout">
         <aside className="g-lateral lateral">
           <div className="marca">
@@ -103,9 +103,9 @@ export function GaleriaCliente() {
             <div><small>{g.estudioNome}</small><b>{primeiroNome(g.clienteNome)}</b></div>
           </div>
           <dl>
-            <div><dt>Total de fotos</dt><dd>{g.fotos.length}</dd></div>
-            {g.exigeSelecao && <div><dt>Escolhidas</dt><dd>{g.selecionadas}{limite ? ` / ${limite}` : ''}</dd></div>}
-            {g.exigeSelecao && extras > 0 && <div><dt>Extras</dt><dd style={{ color: 'var(--acento)' }}>{moeda(valorExtras)}</dd></div>}
+            <div><dt>Total de fotos</dt><dd><Numero valor={g.fotos.length} /></dd></div>
+            {g.exigeSelecao && <div><dt>Escolhidas</dt><dd><Numero valor={g.selecionadas} />{limite ? ` / ${limite}` : ''}</dd></div>}
+            {g.exigeSelecao && extras > 0 && <div><dt>Extras</dt><dd style={{ color: 'var(--acento)' }}><Numero valor={valorExtras} formatar={moeda} /></dd></div>}
             {g.expiraEm && <div><dt>Disponível até</dt><dd>{data(g.expiraEm).slice(0, 5)}</dd></div>}
           </dl>
           <div>
@@ -142,16 +142,16 @@ export function GaleriaCliente() {
             ? <p className="vazio vidro">{soEscolhidas ? 'Nenhuma foto escolhida ainda.' : 'As fotos ainda não foram enviadas.'}</p>
             : visao === 'soltas'
               ? (
-                <div className="soltas">
+                <div className="soltas" key={`soltas-${soEscolhidas}`}>
                   {fotos.map((f, i) => (
                     <div key={f.id} className={`copia t${(i % 4) + 1}`}
-                      style={{ '--r': `${inclinacao(f.id)}deg`, '--ar': f.largura && f.altura ? `${f.largura} / ${f.altura}` : '4 / 3' } as React.CSSProperties}>
+                      style={{ '--i': i, '--r': `${inclinacao(f.id)}deg`, '--ar': f.largura && f.altura ? `${f.largura} / ${f.altura}` : '4 / 3' } as React.CSSProperties}>
                       {cartao(f, i)}
                     </div>
                   ))}
                 </div>
               )
-              : <div className="grade-molduras">{fotos.map((f, i) => <div key={f.id}>{cartao(f, i)}</div>)}</div>}
+              : <div className="grade-molduras" key={`grade-${soEscolhidas}`}>{fotos.map((f, i) => <div key={f.id} style={{ '--i': i } as React.CSSProperties}>{cartao(f, i)}</div>)}</div>}
         </main>
       </div>
 
@@ -190,7 +190,7 @@ function BarraSelecao({ g, limite, extras, valorExtras, confirmando, ocupado, ao
     const pos = (n: number) => `${Math.min(100, (n / fim) * 100)}%`;
     return (
       <div className="barra-tempo vidro">
-        <div className="rotulo-barra"><small>SELEÇÃO</small><b className="num">{g.selecionadas} de {limite}</b></div>
+        <div className="rotulo-barra"><small>SELEÇÃO</small><b className="num" key={g.selecionadas} style={{ animation: 'pop 360ms var(--curva-mola)' }}>{g.selecionadas} de {limite}</b></div>
         <div className="trilho" aria-hidden="true">
           <div className="linha" />
           <div className="feito" style={{ width: pos(Math.min(g.selecionadas, limite)) }} />
@@ -253,6 +253,7 @@ function Situacao({ g, extras, valorExtras }: { g: Galeria; extras: number; valo
 function Entrada({ token, erroExterno, aoEntrar }: { token: string; erroExterno: string; aoEntrar: (acesso: string) => void }) {
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [tentativas, setTentativas] = useState(0);
 
   async function entrar(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -264,6 +265,7 @@ function Entrada({ token, erroExterno, aoEntrar }: { token: string; erroExterno:
       aoEntrar(r.acesso);
     } catch (er) {
       setErro(er instanceof ErroApi ? er.message : 'Não foi possível entrar.');
+      setTentativas((n) => n + 1);
     } finally {
       setEnviando(false);
     }
@@ -271,7 +273,7 @@ function Entrada({ token, erroExterno, aoEntrar }: { token: string; erroExterno:
 
   return (
     <main className="entrada-galeria textura">
-      <form onSubmit={entrar} className="vidro">
+      <form onSubmit={entrar} className={`vidro${erro ? ' erro-senha' : ''}`} key={erro ? `e${tentativas}` : 'f'}>
         <Monograma tamanho={72} />
         <div style={{ display: 'grid', gap: 8 }}>
           <span className="rotulo">Sua galeria</span>

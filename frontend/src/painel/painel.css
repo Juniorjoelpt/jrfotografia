@@ -89,3 +89,30 @@ a.linha-item:hover { background: rgba(40, 40, 37, .75); }
 .acoes-linha { display: flex; flex-wrap: wrap; gap: var(--espaco-2); }
 .envio { border: 1px dashed rgba(255,255,255,.2); padding: var(--espaco-6); display: grid; gap: var(--espaco-3); justify-items: start; }
 .tabela-rolagem { overflow-x: auto; }
+
+/* ---------- movimento ---------- */
+.album { transition: transform var(--medio) var(--curva-suave), background-color var(--medio), box-shadow var(--medio); }
+.album:hover { box-shadow: 0 16px 36px rgba(0,0,0,.42); }
+.album .mosaico { overflow: hidden; }
+.album .mosaico img { transition: transform var(--lento) var(--curva-suave), opacity var(--lento) var(--curva-suave); }
+.album:hover .mosaico img { transform: scale(1.06); }
+.album-esqueleto { pointer-events: none; }
+.album-esqueleto .esqueleto { border-radius: 2px; }
+.etapas span.feita { transform-origin: left; animation: encher var(--lento) var(--curva-suave) both; }
+.etapas span:nth-child(2).feita { animation-delay: 80ms; } .etapas span:nth-child(3).feita { animation-delay: 160ms; }
+.etapas span:nth-child(4).feita { animation-delay: 240ms; } .etapas span:nth-child(5).feita { animation-delay: 320ms; }
+.miniaturas figure { transition: transform var(--medio) var(--curva-suave), box-shadow var(--medio); }
+.miniaturas figure:hover { transform: translateY(-3px) rotate(-.6deg); }
+.numero, a.linha-item { transition: background-color var(--rapido), transform var(--medio) var(--curva-suave); }
+a.numero:hover { transform: translateY(-2px); }
+.lateral .opcoes a, .lateral .opcoes button { transition: color var(--rapido), padding-left var(--medio) var(--curva-suave); }
+.lateral .opcoes a:hover, .lateral .opcoes button:hover { padding-left: 4px; }
+.lateral .opcoes .ok { transition: transform var(--medio) var(--curva-mola), opacity var(--rapido); transform: scale(.4); opacity: 0; visibility: visible !important; }
+.lateral .opcoes [aria-pressed="true"] .ok, .lateral .opcoes a.active .ok { transform: none; opacity: 1; }
+.painel-nav a { transition: color var(--rapido); }
+.painel-nav a svg { transition: transform var(--medio) var(--curva-mola); }
+.painel-nav a.active svg { transform: translateY(-2px) scale(1.08); }
+.linha-meses button[aria-pressed="true"]::before { animation: pop var(--medio) var(--curva-mola); }
+.abas button { transition: border-color var(--rapido), color var(--rapido), transform var(--rapido) var(--curva-suave); }
+
+.miniaturas figure img { background: #2a2a28; }

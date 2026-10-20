@@ -73,3 +73,21 @@
 .rodape a { color: var(--tinta-suave); }
 @media (min-width: 760px) { .rodape .dentro { grid-template-columns: auto 1fr auto; align-items: end; } }
 
+
+/* ---------- movimento ---------- */
+.abertura .painel-texto > * { animation: entrar-cima var(--lento) var(--curva-suave) both; }
+.abertura .painel-texto > :nth-child(2) { animation-delay: 90ms; } .abertura .painel-texto > :nth-child(3) { animation-delay: 180ms; }
+.abertura .painel-texto > :nth-child(4) { animation-delay: 270ms; }
+.abertura .foto img.capa { transform: scale(1.08); transition: opacity 1s var(--curva-suave), transform 2.4s var(--curva-suave); }
+.abertura .foto img.capa.carregada { transform: scale(1); }
+.abertura .fantasma { animation: surgir 1.2s var(--curva-suave) both; }
+.portfolio .mosaico img { transition: transform var(--lento) var(--curva-suave), opacity var(--lento) var(--curva-suave); }
+.portfolio .mosaico button { overflow: hidden; }
+.portfolio .mosaico button:hover img { opacity: 1; transform: scale(1.04); }
+.copias figure { transition: transform var(--lento) var(--curva-mola); }
+.copias:hover figure:nth-child(1) { transform: rotate(-8deg) translateX(-12px); }
+.copias:hover figure:nth-child(3) { transform: rotate(9deg) translateX(12px); }
+.pacote .foto { transition: transform 1.2s var(--curva-suave); }
+.pacote { overflow: hidden; }
+.pacote:hover .foto { transform: scale(1.04); }
+.site-topo { transition: background-color var(--medio); }
