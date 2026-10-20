@@ -8,10 +8,11 @@ server:
 spring:
   application:
     name: jrfotografia-api
-  # Sem perfil informado (rodando pelo NetBeans ou pelo terminal), usa o modo dev com banco H2 local.
-  # Em produção, o docker-compose define SPRING_PROFILES_ACTIVE=prod e o MySQL abaixo passa a valer.
+  # Sem perfil informado (Run no NetBeans ou terminal), usa o modo "local": MySQL do seu computador,
+  # usuário root sem senha, como no MySQL Workbench. Para não usar MySQL, rode com o perfil "dev" (banco H2).
+  # Em produção, o docker-compose define SPRING_PROFILES_ACTIVE=prod e valem as variáveis DB_*.
   profiles:
-    default: dev
+    default: local
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/jrfotografia?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=America/Fortaleza}
     username: ${DB_USUARIO:jrfotografia}
@@ -48,6 +49,21 @@ app:
     validade-dias: 90
   cors:
     origens: ${CORS_ORIGENS:http://localhost:5173}
+
+---
+# MySQL do computador de desenvolvimento (root sem senha). O banco jrfotografia é criado sozinho.
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/jrfotografia?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=America/Fortaleza&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${DB_USUARIO:root}
+    password: ${DB_SENHA:}
+app:
+  admin:
+    email: ${ADMIN_EMAIL:admin@jrfotografia.local}
+    senha: ${ADMIN_SENHA:trocar123}
 
 ---
 spring:

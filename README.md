@@ -32,10 +32,12 @@ Já nasce preparado para atender outros estúdios no futuro: toda tabela de neg�
 Precisa de Java 21, Maven e Node 20.
 
 ```bash
-# Terminal 1 — API com banco H2 local (não precisa de MySQL)
+# Terminal 1 — API (ou Run no NetBeans)
 cd backend
-mvn spring-boot:run          # ou Run no NetBeans: o modo dev é o padrão
-# Login do painel no modo dev: admin@jrfotografia.local / trocar123
+mvn spring-boot:run
+# Usa o MySQL do computador: usuário root, senha vazia. O banco "jrfotografia" é criado sozinho.
+# Outro usuário/senha: defina DB_USUARIO e DB_SENHA. Sem MySQL: rode com o perfil "dev" (banco H2).
+# Login do painel: admin@jrfotografia.local / trocar123
 
 # Terminal 2 — site e painel em http://localhost:5173
 cd frontend
