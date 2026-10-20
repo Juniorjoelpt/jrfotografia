@@ -145,6 +145,7 @@ public class GaleriaControle {
         return new GaleriaDto(
                 t.getTitulo(),
                 t.getCliente().getNome(),
+                t.getDataTrabalho(),
                 estudio.getNome(),
                 estudio.getWhatsapp(),
                 t.getStatus(),

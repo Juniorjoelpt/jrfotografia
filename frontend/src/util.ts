@@ -36,7 +36,19 @@ export function linkWhatsapp(numero: string | null | undefined, mensagem: string
   return `https://wa.me/${completo}?text=${encodeURIComponent(mensagem)}`;
 }
 
-export const primeiroNome = (nome: string) => nome.trim().split(/\s+/)[0];
+export const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+/** Dia e mês por extenso a partir de uma data ISO: { dia: '24', mes: 'Outubro' }. */
+export function diaMes(iso?: string | null) {
+  if (!iso) return null;
+  const [a, m, d] = iso.slice(0, 10).split('-').map(Number);
+  return { dia: String(d), mes: MESES[m - 1], ano: a };
+}
+
+/** Inclinação estável de -3° a 3° por foto, para o efeito de cópias soltas. */
+export const inclinacao = (id: number) => (((id * 7919) % 13) - 6) / 2;
+
+export const primeiroNome =(nome: string) => nome.trim().split(/\s+/)[0];
 
 export const NOMES_STATUS: Record<StatusTrabalho, string> = {
   AGENDADO: 'Agendado', FOTOGRAFADO: 'Fotografado', SELECAO: 'Em seleção', EDICAO: 'Em edição',

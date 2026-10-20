@@ -32,7 +32,7 @@ export interface Pedido {
 export interface TrabalhoResumo {
   id: number; titulo: string; clienteNome: string; clienteTelefone?: string; pacoteNome?: string; tipo?: string;
   dataTrabalho?: string; localTrabalho?: string; status: StatusTrabalho; prazoEntrega?: string; valorTotal: number;
-  atrasado: boolean;
+  atrasado: boolean; capas?: number[] | null; totalFotos?: number | null;
 }
 
 export interface Parcela {
@@ -65,7 +65,7 @@ export interface ContaReceber { parcela: Parcela; trabalhoTitulo: string; client
 export interface FotoGaleria { id: number; largura?: number; altura?: number; selecionada: boolean; comentario?: string }
 
 export interface Galeria {
-  titulo: string; clienteNome: string; estudioNome: string; estudioWhatsapp?: string; status: StatusTrabalho;
+  titulo: string; clienteNome: string; dataTrabalho?: string; estudioNome: string; estudioWhatsapp?: string; status: StatusTrabalho;
   exigeSelecao: boolean; fotosNoPacote: number | null; precoFotoExtra: number | null; selecaoAberta: boolean;
   selecionadas: number; downloadLiberado: boolean; motivoDownload?: string; expiraEm?: string; fotos: FotoGaleria[];
 }

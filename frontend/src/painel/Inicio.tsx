@@ -1,19 +1,26 @@
 import { Link } from 'react-router-dom';
 import { sessaoAtual } from '../api';
 import type { Painel } from '../tipos';
-import { moeda, primeiroNome } from '../util';
+import { MESES, moeda, primeiroNome } from '../util';
 import { Erro, LinhaTrabalho, Linhas, useDados } from './comum';
 
 export function Inicio() {
   const { dados: p, erro } = useDados<Painel>('/painel');
   const admin = sessaoAtual()?.perfil === 'ADMIN';
+  const hoje = new Date();
 
   return (
     <>
       <div className="cabeca-pagina">
-        <div>
-          <span className="rotulo">Início</span>
-          <h1 className="titulo">Olá, {primeiroNome(sessaoAtual()?.nome ?? '')}</h1>
+        <div style={{ gap: 'var(--espaco-3)' }}>
+          <span className="rotulo">Olá, {primeiroNome(sessaoAtual()?.nome ?? '')}</span>
+          <div className="numeral">
+            <strong>{hoje.getDate()}</strong>
+            <div className="mes">
+              <b>{MESES[hoje.getMonth()]}</b>
+              <span>{p ? `${p.proximos.length} ${p.proximos.length === 1 ? 'ensaio' : 'ensaios'} nos próximos 7 dias` : ' '}</span>
+            </div>
+          </div>
         </div>
         {admin && <Link to="/painel/trabalhos/novo" className="botao principal">Novo trabalho</Link>}
       </div>

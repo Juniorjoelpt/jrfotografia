@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import './visualizador.css';
 
 /** Foto em tela cheia, com setas e teclado. O conteúdo extra (ex.: botão de favorita) vem em "rodape". */
 export function Visualizador({ src, alt, aoFechar, aoAnterior, aoProxima, rodape }: {

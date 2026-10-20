@@ -28,7 +28,7 @@ export function Entrar() {
 
   return (
     <main className="entrada-galeria textura">
-      <form onSubmit={entrar} style={{ textAlign: 'left', justifyItems: 'stretch' }}>
+      <form onSubmit={entrar} className="vidro" style={{ textAlign: 'left', justifyItems: 'stretch' }}>
         <div style={{ justifySelf: 'center' }}><Logo largura={140} /></div>
         <label className="campo"><span>E-mail</span><input id="login-email" name="email" type="email" required autoComplete="username" /></label>
         <label className="campo"><span>Senha</span><input id="login-senha" name="senha" type="password" required autoComplete="current-password" /></label>

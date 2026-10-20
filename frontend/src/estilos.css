@@ -116,3 +116,66 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+
+/* ================= Visual "galeria 3D": fundo desfocado, vidro, molduras ================= */
+.ambiente { position: fixed; inset: -60px; z-index: -2; background: var(--carvao) center / cover no-repeat; filter: blur(36px) saturate(1.15) brightness(.55); transform: scale(1.08); transition: background-image .6s; }
+.ambiente-veu { position: fixed; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(23,23,22,.35) 0%, rgba(23,23,22,.15) 40%, rgba(23,23,22,.7) 100%); }
+.vidro { background: rgba(23, 23, 22, .62); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); border-color: rgba(255,255,255,.08); }
+
+/* Número grande, como o "24 October" da referência */
+.numeral { display: flex; align-items: flex-end; gap: var(--espaco-3); flex-wrap: wrap; text-shadow: 0 2px 18px rgba(0,0,0,.45); }
+.numeral strong { font-family: var(--font-titulo); font-weight: 700; font-size: clamp(56px, 11vw, 96px); line-height: .82; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.numeral .mes { display: grid; gap: 2px; padding-bottom: 4px; }
+.numeral .mes b { font-family: var(--font-titulo); font-size: clamp(22px, 3.4vw, 30px); line-height: 1; font-weight: 600; }
+.numeral .mes span { font-size: 13px; color: rgba(244,243,239,.55); }
+
+/* Barra lateral: rótulos e números separados por fios */
+.lateral { display: grid; gap: var(--espaco-4); align-content: start; }
+.lateral .marca { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; }
+.lateral .marca small { display: block; font-size: 10px; letter-spacing: .08em; color: var(--tinta-suave); }
+.lateral .marca b { font-family: var(--font-titulo); font-size: 22px; line-height: 1.05; font-weight: 700; text-transform: uppercase; letter-spacing: .01em; overflow-wrap: anywhere; }
+.lateral dl { margin: 0; display: grid; }
+.lateral dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.12); font-size: 12px; font-weight: 600; }
+.lateral dl dt { color: rgba(244,243,239,.85); }
+.lateral dl dd { margin: 0; font-variant-numeric: tabular-nums; font-size: 14px; }
+.lateral h3 { margin: var(--espaco-2) 0 0; font-size: 10px; letter-spacing: .1em; font-weight: 700; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.lateral .opcoes { display: grid; }
+.lateral .opcoes button, .lateral .opcoes a {
+  display: grid; grid-template-columns: 18px 1fr 16px; gap: 8px; align-items: center; padding: 9px 0; border: 0; border-bottom: 1px solid rgba(255,255,255,.08);
+  background: none; color: rgba(244,243,239,.8); font-size: 12px; font-weight: 600; text-align: left; cursor: pointer; text-decoration: none;
+}
+.lateral .opcoes button:hover, .lateral .opcoes a:hover { color: var(--tinta); }
+.lateral .opcoes [aria-pressed="true"], .lateral .opcoes a.active { color: var(--tinta); }
+.lateral .opcoes .ok { color: var(--acento); visibility: hidden; font-size: 14px; }
+.lateral .opcoes [aria-pressed="true"] .ok, .lateral .opcoes a.active .ok { visibility: visible; }
+.lateral .opcoes svg { width: 15px; height: 15px; }
+
+/* Foto com moldura branca, como cópia impressa */
+.moldura { position: relative; background: #fff; padding: 5px; box-shadow: 0 10px 30px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.3); transition: transform .25s ease, box-shadow .25s ease; }
+.moldura img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.moldura.escolhida { box-shadow: 0 0 0 3px var(--acento), 0 10px 30px rgba(0,0,0,.45); }
+
+/* Barra inferior com linha do tempo */
+.barra-tempo {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--espaco-4);
+  padding: 10px max(16px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+.barra-tempo .rotulo-barra { display: grid; line-height: 1; padding-right: var(--espaco-4); border-right: 1px solid rgba(255,255,255,.12); }
+.barra-tempo .rotulo-barra small { font-size: 9px; letter-spacing: .1em; color: var(--tinta-suave); font-weight: 700; }
+.barra-tempo .rotulo-barra b { font-family: var(--font-titulo); font-size: 18px; font-weight: 700; text-transform: uppercase; margin-top: 4px; }
+.trilho { position: relative; height: 34px; min-width: 0; }
+.trilho .linha { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(255,255,255,.22); }
+.trilho .feito { position: absolute; left: 0; top: 50%; height: 2px; margin-top: -.5px; background: var(--acento); transition: width .3s; }
+.trilho .excesso { position: absolute; top: 50%; height: 2px; margin-top: -.5px; background: var(--alerta); }
+.trilho .marco { position: absolute; top: 50%; transform: translate(-50%, -50%); font-size: 12px; font-weight: 600; color: rgba(244,243,239,.55); background: transparent; padding: 0 6px; white-space: nowrap; }
+.trilho .marco.atual { color: var(--tinta); }
+.trilho .marco.marco-baixo { transform: translate(-50%, 6px); font-size: 10px; }
+.trilho .botao-trilho { position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 9999px; background: #fff; box-shadow: 0 0 0 4px rgba(226,106,174,.35); transition: left .3s; }
+.trilho .botao-trilho::after { content: ""; position: absolute; inset: 5px; border-radius: 9999px; background: var(--acento); }
+@media (max-width: 640px) {
+  .barra-tempo { grid-template-columns: 1fr auto; row-gap: 6px; }
+  .barra-tempo .trilho { grid-column: 1 / -1; grid-row: 1; }
+  .barra-tempo .rotulo-barra { border-right: 0; padding-right: 0; }
+}

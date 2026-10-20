@@ -48,7 +48,9 @@ public class TrabalhoControle {
         Long e = UsuarioLogado.estudio();
         var lista = status == null ? trabalhos.findByEstudioIdOrderByDataTrabalhoDesc(e)
                 : trabalhos.findByEstudioIdAndStatusOrderByDataTrabalhoDesc(e, status);
-        return lista.stream().map(TrabalhoResumo::de).toList();
+        return lista.stream().map(t -> TrabalhoResumo.de(t,
+                fotos.findTop4ByTrabalhoIdOrderByOrdemAscIdAsc(t.getId()).stream().map(Foto::getId).toList(),
+                fotos.countByTrabalhoId(t.getId()))).toList();
     }
 
     @GetMapping("/{id}")

@@ -89,13 +89,22 @@ public final class Dtos {
 
     public record TrabalhoResumo(Long id, String titulo, String clienteNome, String clienteTelefone, String pacoteNome,
                                  String tipo, LocalDateTime dataTrabalho, String localTrabalho, StatusTrabalho status,
-                                 LocalDate prazoEntrega, BigDecimal valorTotal, boolean atrasado) {
+                                 LocalDate prazoEntrega, BigDecimal valorTotal, boolean atrasado,
+                                 List<Long> capas, Long totalFotos) {
+        /** Com capas: as 4 primeiras fotos, para o cartão em mosaico. */
+        static TrabalhoResumo de(Trabalho t, List<Long> capas, long totalFotos) {
+            TrabalhoResumo r = de(t);
+            return new TrabalhoResumo(r.id(), r.titulo(), r.clienteNome(), r.clienteTelefone(), r.pacoteNome(), r.tipo(),
+                    r.dataTrabalho(), r.localTrabalho(), r.status(), r.prazoEntrega(), r.valorTotal(), r.atrasado(),
+                    capas, totalFotos);
+        }
+
         static TrabalhoResumo de(Trabalho t) {
             boolean atrasado = t.getPrazoEntrega() != null && t.getPrazoEntrega().isBefore(LocalDate.now())
                     && t.getStatus() != StatusTrabalho.ENTREGUE && t.getStatus() != StatusTrabalho.CANCELADO;
             return new TrabalhoResumo(t.getId(), t.getTitulo(), t.getCliente().getNome(), t.getCliente().getTelefone(),
                     t.getPacote() != null ? t.getPacote().getNome() : null, t.getTipo(), t.getDataTrabalho(),
-                    t.getLocalTrabalho(), t.getStatus(), t.getPrazoEntrega(), t.getValorTotal(), atrasado);
+                    t.getLocalTrabalho(), t.getStatus(), t.getPrazoEntrega(), t.getValorTotal(), atrasado, null, null);
         }
     }
 
@@ -150,7 +159,7 @@ public final class Dtos {
     // ---------- galeria do cliente ----------
     public record AcessoGaleria(@NotBlank String senha) {}
 
-    public record GaleriaDto(String titulo, String clienteNome, String estudioNome, String estudioWhatsapp,
+    public record GaleriaDto(String titulo, String clienteNome, LocalDateTime dataTrabalho, String estudioNome, String estudioWhatsapp,
                              StatusTrabalho status, boolean exigeSelecao, Integer fotosNoPacote,
                              BigDecimal precoFotoExtra, boolean selecaoAberta, long selecionadas,
                              boolean downloadLiberado, String motivoDownload, LocalDateTime expiraEm,

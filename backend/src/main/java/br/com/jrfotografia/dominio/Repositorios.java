@@ -59,6 +59,7 @@ public final class Repositorios {
 
     public interface FotoRepo extends JpaRepository<Foto, Long> {
         List<Foto> findByTrabalhoIdOrderByOrdemAscIdAsc(Long trabalhoId);
+        List<Foto> findTop4ByTrabalhoIdOrderByOrdemAscIdAsc(Long trabalhoId);
         Optional<Foto> findByIdAndTrabalhoId(Long id, Long trabalhoId);
         long countByTrabalhoId(Long trabalhoId);
         long countByTrabalhoIdAndSelecionadaTrue(Long trabalhoId);

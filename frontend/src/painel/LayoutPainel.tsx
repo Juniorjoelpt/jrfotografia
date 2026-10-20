@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react';
 import { Navigate, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { salvarSessao, sessaoAtual } from '../api';
+import { api, salvarSessao, sessaoAtual } from '../api';
 import { Monograma } from '../componentes/Logo';
+import type { Painel, PortfolioFoto } from '../tipos';
+import { primeiroNome } from '../util';
 import './painel.css';
 
 const icone = (d: string) => (
@@ -16,29 +19,73 @@ const ITENS = [
   { para: '/painel/ajustes', nome: 'Ajustes', d: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19 12l2-1-1-3-2 .3-1.4-1.4.3-2-3-1-1 2h-2l-1-2-3 1 .3 2L6 7.3 4 7 3 10l2 1v2l-2 1 1 3 2-.3 1.4 1.4-.3 2 3 1 1-2h2l1 2 3-1-.3-2 1.4-1.4 2 .3 1-3-2-1z', admin: true },
 ];
 
+/** Foto em destaque do portfólio, usada como fundo desfocado do painel. */
+function useFundo() {
+  const [fundo, setFundo] = useState<string | null>(null);
+  useEffect(() => {
+    api<PortfolioFoto[]>('/publico/portfolio', { token: null })
+      .then((l) => { const f = l.find((x) => x.destaque) ?? l[0]; if (f) setFundo(`/api/publico/portfolio/${f.id}/imagem`); })
+      .catch(() => {});
+  }, []);
+  return fundo;
+}
+
 export function LayoutPainel() {
   const sessao = sessaoAtual();
   const navegar = useNavigate();
+  const fundo = useFundo();
+  const [resumo, setResumo] = useState<Painel | null>(null);
+  useEffect(() => { if (sessao) api<Painel>('/painel').then(setResumo).catch(() => {}); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (!sessao) return <Navigate to="/painel/entrar" replace />;
   const admin = sessao.perfil === 'ADMIN';
+  const sair = () => { salvarSessao(null); navegar('/painel/entrar'); };
+  const itens = ITENS.filter((i) => admin || !i.admin);
 
   return (
-    <div className="painel">
-      <header className="painel-topo">
-        <span style={{ color: 'var(--tinta)' }}><Monograma tamanho={34} /></span>
-        <span className="rotulo">Estúdio</span>
-        <div className="quem">
-          <span style={{ fontSize: 14 }}>{sessao.nome}</span>
-          <button className="botao-link" style={{ fontSize: 12, justifySelf: 'end' }}
-            onClick={() => { salvarSessao(null); navegar('/painel/entrar'); }}>Sair</button>
-        </div>
-      </header>
-      <nav className="painel-nav" aria-label="Painel">
-        {ITENS.filter((i) => admin || !i.admin).map((i) => (
-          <NavLink key={i.para} to={i.para} end={i.fim}>{icone(i.d)}<span>{i.nome}</span></NavLink>
-        ))}
-      </nav>
-      <main className="painel-corpo"><Outlet /></main>
-    </div>
+    <>
+      <div className="ambiente" style={fundo ? { backgroundImage: `url(${fundo})` } : undefined} />
+      <div className="ambiente-veu" />
+      <div className="painel">
+        <header className="painel-topo vidro">
+          <span style={{ color: 'var(--tinta)' }}><Monograma tamanho={32} /></span>
+          <span className="rotulo">Estúdio</span>
+          <div className="quem">
+            <span style={{ fontSize: 14 }}>{sessao.nome}</span>
+            <button className="botao-link" style={{ fontSize: 12, justifySelf: 'end' }} onClick={sair}>Sair</button>
+          </div>
+        </header>
+
+        <aside className="painel-lateral lateral">
+          <div className="marca">
+            <span style={{ color: 'var(--tinta)' }}><Monograma tamanho={38} /></span>
+            <div><small>{sessao.estudio}</small><b>{primeiroNome(sessao.nome)}</b></div>
+          </div>
+          {resumo && (
+            <dl>
+              <div><dt>Pedidos novos</dt><dd style={resumo.pedidosNovos ? { color: 'var(--acento)' } : undefined}>{resumo.pedidosNovos}</dd></div>
+              <div><dt>Em seleção</dt><dd>{resumo.aguardandoSelecao}</dd></div>
+              <div><dt>Em edição</dt><dd>{resumo.emEdicao}</dd></div>
+              {resumo.atrasados.length > 0 && <div><dt>Atrasados</dt><dd style={{ color: 'var(--erro)' }}>{resumo.atrasados.length}</dd></div>}
+            </dl>
+          )}
+          <div>
+            <h3>Menu</h3>
+            <nav className="opcoes" aria-label="Painel">
+              {itens.map((i) => (
+                <NavLink key={i.para} to={i.para} end={i.fim}>{icone(i.d)}<span>{i.nome}</span><span className="ok">✓</span></NavLink>
+              ))}
+            </nav>
+          </div>
+          <button className="botao-link legenda" style={{ justifySelf: 'start' }} onClick={sair}>Sair</button>
+        </aside>
+
+        <nav className="painel-nav vidro" aria-label="Painel">
+          {itens.map((i) => (
+            <NavLink key={i.para} to={i.para} end={i.fim}>{icone(i.d)}<span>{i.nome}</span></NavLink>
+          ))}
+        </nav>
+        <main className="painel-corpo"><Outlet /></main>
+      </div>
+    </>
   );
 }
