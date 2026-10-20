@@ -25,6 +25,7 @@ services:
       banco:
         condition: service_healthy
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       DB_URL: jdbc:mysql://banco:3306/jrfotografia?useUnicode=true&characterEncoding=utf8&serverTimezone=America/Fortaleza
       DB_USUARIO: jrfotografia
       DB_SENHA: ${DB_SENHA}

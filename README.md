@@ -34,7 +34,7 @@ Precisa de Java 21, Maven e Node 20.
 ```bash
 # Terminal 1 — API com banco H2 local (não precisa de MySQL)
 cd backend
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+mvn spring-boot:run          # ou Run no NetBeans: o modo dev é o padrão
 # Login do painel no modo dev: admin@jrfotografia.local / trocar123
 
 # Terminal 2 — site e painel em http://localhost:5173

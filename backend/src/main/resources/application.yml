@@ -8,6 +8,10 @@ server:
 spring:
   application:
     name: jrfotografia-api
+  # Sem perfil informado (rodando pelo NetBeans ou pelo terminal), usa o modo dev com banco H2 local.
+  # Em produção, o docker-compose define SPRING_PROFILES_ACTIVE=prod e o MySQL abaixo passa a valer.
+  profiles:
+    default: dev
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/jrfotografia?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=America/Fortaleza}
     username: ${DB_USUARIO:jrfotografia}
