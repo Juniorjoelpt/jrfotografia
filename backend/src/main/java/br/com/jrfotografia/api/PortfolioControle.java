@@ -80,7 +80,7 @@ public class PortfolioControle {
     public PortfolioDto editar(@PathVariable Long id, @RequestBody PortfolioEdicao f) {
         PortfolioFoto p = buscar(id);
         if (f.categoria() != null && !f.categoria().isBlank()) p.setCategoria(f.categoria().trim().toLowerCase());
-        p.setTitulo(f.titulo());
+        if (f.titulo() != null) p.setTitulo(f.titulo().isBlank() ? null : f.titulo().trim());
         if (f.ordem() != null) p.setOrdem(f.ordem());
         if (f.destaque() != null) p.setDestaque(f.destaque());
         return PortfolioDto.de(p);

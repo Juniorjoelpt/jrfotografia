@@ -1,0 +1,24 @@
+.galeria-topo { display: flex; align-items: center; justify-content: space-between; gap: var(--espaco-4); padding-block: var(--espaco-4); border-bottom: 1px solid var(--linha); }
+.galeria-cabeca { display: grid; gap: var(--espaco-3); padding-block: var(--espaco-8) var(--espaco-6); max-width: 70ch; }
+.galeria-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px; padding-bottom: 120px; }
+@media (min-width: 760px) { .galeria-grade { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
+.galeria-foto { position: relative; aspect-ratio: 1; background: var(--carvao-elevado); overflow: hidden; }
+.galeria-foto > button.abrir { all: unset; cursor: zoom-in; display: block; width: 100%; height: 100%; }
+.galeria-foto img { width: 100%; height: 100%; object-fit: cover; }
+.galeria-foto.escolhida::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 3px var(--acento); pointer-events: none; }
+.galeria-foto.escolhida img { opacity: .92; }
+.coracao {
+  position: absolute; right: 8px; bottom: 8px; width: 40px; height: 40px; border-radius: 9999px; border: 0;
+  display: grid; place-items: center; cursor: pointer; background: rgba(23, 23, 22, .72); color: var(--tinta);
+}
+.coracao[aria-pressed="true"] { background: var(--acento); color: var(--sobre-acento); }
+.coracao svg { width: 20px; height: 20px; }
+
+.barra-selecao {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--carvao-elevado); border-top: 1px solid var(--linha);
+  padding: var(--espaco-3) max(16px, env(safe-area-inset-right)) calc(var(--espaco-3) + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.barra-selecao .dentro { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espaco-3); justify-content: space-between; padding: 0; }
+.entrada-galeria { min-height: 100dvh; display: grid; place-items: center; padding: var(--espaco-6); }
+.entrada-galeria form { width: min(380px, 100%); display: grid; gap: var(--espaco-6); justify-items: center; text-align: center; }
+.entrada-galeria input { text-align: center; font-size: 22px; letter-spacing: .3em; }

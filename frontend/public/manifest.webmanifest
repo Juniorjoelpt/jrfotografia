@@ -1,0 +1,9 @@
+{
+  "name": "JR Fotografia",
+  "short_name": "JR Foto",
+  "start_url": "/painel",
+  "display": "standalone",
+  "background_color": "#171716",
+  "theme_color": "#171716",
+  "icons": [{ "src": "/monograma.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

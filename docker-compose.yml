@@ -1,0 +1,48 @@
+# Sobe banco, API e site com:  docker compose up -d --build
+# Antes, copie .env.exemplo para .env e preencha as senhas.
+services:
+  banco:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: jrfotografia
+      MYSQL_USER: jrfotografia
+      MYSQL_PASSWORD: ${DB_SENHA}
+      MYSQL_ROOT_PASSWORD: ${DB_SENHA_ROOT}
+      TZ: America/Fortaleza
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - banco:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 10
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      banco:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://banco:3306/jrfotografia?useUnicode=true&characterEncoding=utf8&serverTimezone=America/Fortaleza
+      DB_USUARIO: jrfotografia
+      DB_SENHA: ${DB_SENHA}
+      JWT_SEGREDO: ${JWT_SEGREDO}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_SENHA: ${ADMIN_SENHA}
+      CORS_ORIGENS: https://jrfotografiagnf.com,https://www.jrfotografiagnf.com
+      TZ: America/Fortaleza
+    volumes:
+      - arquivos:/dados/arquivos
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "80:80"
+
+volumes:
+  banco:
+  arquivos:
