@@ -9,7 +9,7 @@ spring:
   application:
     name: jrfotografia-api
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/jrfotografia?useUnicode=true&characterEncoding=utf8&serverTimezone=America/Fortaleza}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/jrfotografia?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=America/Fortaleza}
     username: ${DB_USUARIO:jrfotografia}
     password: ${DB_SENHA:jrfotografia}
   jpa:
