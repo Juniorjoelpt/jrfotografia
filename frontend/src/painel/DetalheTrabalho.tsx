@@ -90,7 +90,7 @@ export function DetalheTrabalho() {
           <h1 className="titulo">{t.cliente.nome}</h1>
           <span className="suave">{dataHora(r.dataTrabalho)}{r.localTrabalho ? ` · ${r.localTrabalho}` : ''}</span>
         </div>
-        <div style={{ display: 'grid', gap: 6, justifyItems: 'end' }}>
+        <div className="cabeca-lado">
           {r.atrasado ? <span className="etiqueta erro">Atrasado</span> : <Status s={r.status} />}
           {r.prazoEntrega && r.status !== 'ENTREGUE' && <span className="legenda">ENTREGA ATÉ {data(r.prazoEntrega)}</span>}
         </div>

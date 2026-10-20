@@ -32,7 +32,7 @@ export function Imagem({ className = '', onLoad, ...props }: ImgHTMLAttributes<H
   const ref = useRef<HTMLImageElement>(null);
   useEffect(() => { if (ref.current?.complete && ref.current.naturalWidth) setCarregada(true); }, [props.src]);
   return (
-    <img ref={ref} {...props} className={`img-suave${carregada ? ' carregada' : ''} ${className}`}
+    <img ref={ref} decoding="async" {...props} className={`img-suave${carregada ? ' carregada' : ''} ${className}`}
       onLoad={(e) => { setCarregada(true); onLoad?.(e); }} />
   );
 }

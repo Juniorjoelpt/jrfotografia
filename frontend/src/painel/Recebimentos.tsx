@@ -30,8 +30,8 @@ export function Recebimentos() {
             <div key={c.parcela.id} className="linha-item">
               <Link className="principal" style={{ color: 'var(--tinta)' }} to={`/painel/trabalhos/${c.parcela.trabalhoId}`}>{c.clienteNome}</Link>
               <span className="lado num">{moeda(c.parcela.valor)}</span>
-              <span className="legenda">{c.parcela.descricao.toUpperCase()} · {c.vencida ? <span style={{ color: 'var(--erro)' }}>VENCEU {data(c.parcela.vencimento)}</span> : `VENCE ${data(c.parcela.vencimento)}`}</span>
-              <span className="lado acoes-linha" style={{ justifyContent: 'flex-end' }}>
+              <span className="legenda" style={{ gridColumn: '1 / -1' }}>{c.parcela.descricao.toUpperCase()} · {c.vencida ? <span style={{ color: 'var(--erro)' }}>VENCEU {data(c.parcela.vencimento)}</span> : `VENCE ${data(c.parcela.vencimento)}`}</span>
+              <span className="acoes-linha" style={{ gridColumn: '1 / -1' }}>
                 {c.clienteTelefone && (
                   <a className="botao pequeno" target="_blank" rel="noreferrer" href={linkWhatsapp(c.clienteTelefone,
                     `Olá, ${primeiroNome(c.clienteNome)}! ${c.parcela.descricao} de ${moeda(c.parcela.valor)}${c.parcela.vencimento ? `, com vencimento em ${data(c.parcela.vencimento)}` : ''}.${estudio?.chavePix ? `\n\nChave Pix: ${estudio.chavePix}` : ''}\n\nAssim que pagar, me mande o comprovante por aqui.`)}>Cobrar</a>

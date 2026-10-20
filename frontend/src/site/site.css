@@ -42,7 +42,7 @@
 }
 
 /* ---------- sobre ---------- */
-.sobre { display: grid; gap: var(--espaco-12); padding-block: 72px; align-items: center; }
+.sobre { display: grid; gap: var(--espaco-12); padding-block: 72px; align-items: center; overflow-x: clip; }
 .sobre p { max-width: 60ch; color: var(--tinta-suave); }
 .copias { position: relative; height: 340px; }
 .copias figure { position: absolute; margin: 0; background: #fff; padding: 6px; box-shadow: var(--sombra-foto); width: 52%; }
@@ -91,3 +91,11 @@
 .pacote { overflow: hidden; }
 .pacote:hover .foto { transform: scale(1.04); }
 .site-topo { transition: background-color var(--medio); }
+
+@media (pointer: coarse) {
+  .site-topo nav a { padding: 12px 2px; }
+  .rodape a { display: inline-flex; align-items: center; min-height: 44px; }
+}
+
+/* As cópias inclinadas não encostam na borda da tela */
+.copias { margin-inline: 14px; }

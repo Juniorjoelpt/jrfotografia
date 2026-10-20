@@ -143,13 +143,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Barra lateral: rótulos e números separados por fios */
 .lateral { display: grid; gap: var(--espaco-4); align-content: start; }
 .lateral .marca { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; }
-.lateral .marca small { display: block; font-size: 10px; letter-spacing: .08em; color: var(--tinta-suave); }
+.lateral .marca small { display: block; font-size: 11px; letter-spacing: .08em; color: var(--tinta-suave); }
 .lateral .marca b { font-family: var(--font-titulo); font-size: 22px; line-height: 1.05; font-weight: 700; text-transform: uppercase; letter-spacing: .01em; overflow-wrap: anywhere; }
 .lateral dl { margin: 0; display: grid; }
 .lateral dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.12); font-size: 12px; font-weight: 600; }
 .lateral dl dt { color: rgba(244,243,239,.85); }
 .lateral dl dd { margin: 0; font-variant-numeric: tabular-nums; font-size: 14px; }
-.lateral h3 { margin: var(--espaco-2) 0 0; font-size: 10px; letter-spacing: .1em; font-weight: 700; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.lateral h3 { margin: var(--espaco-2) 0 0; font-size: 11px; letter-spacing: .1em; font-weight: 700; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.12); }
 .lateral .opcoes { display: grid; }
 .lateral .opcoes button, .lateral .opcoes a {
   display: grid; grid-template-columns: 18px 1fr 16px; gap: 8px; align-items: center; padding: 9px 0; border: 0; border-bottom: 1px solid rgba(255,255,255,.08);
@@ -174,7 +174,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   border-top: 1px solid rgba(255,255,255,.1);
 }
 .barra-tempo .rotulo-barra { display: grid; line-height: 1; padding-right: var(--espaco-4); border-right: 1px solid rgba(255,255,255,.12); }
-.barra-tempo .rotulo-barra small { font-size: 9px; letter-spacing: .1em; color: var(--tinta-suave); font-weight: 700; }
+.barra-tempo .rotulo-barra small { font-size: 11px; letter-spacing: .1em; color: var(--tinta-suave); font-weight: 700; }
 .barra-tempo .rotulo-barra b { font-family: var(--font-titulo); font-size: 18px; font-weight: 700; text-transform: uppercase; margin-top: 4px; }
 .trilho { position: relative; height: 34px; min-width: 0; }
 .trilho .linha { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(255,255,255,.22); }
@@ -182,11 +182,26 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .trilho .excesso { position: absolute; top: 50%; height: 2px; margin-top: -.5px; background: var(--alerta); }
 .trilho .marco { position: absolute; top: 50%; transform: translate(-50%, -50%); font-size: 12px; font-weight: 600; color: rgba(244,243,239,.55); background: transparent; padding: 0 6px; white-space: nowrap; }
 .trilho .marco.atual { color: var(--tinta); }
-.trilho .marco.marco-baixo { transform: translate(-50%, 6px); font-size: 10px; }
+.trilho .marco.marco-baixo { transform: translate(-50%, 6px); font-size: 11px; }
 .trilho .botao-trilho { position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 9999px; background: #fff; box-shadow: 0 0 0 4px rgba(211,47,47,.4); transition: left .3s; }
 .trilho .botao-trilho::after { content: ""; position: absolute; inset: 5px; border-radius: 9999px; background: var(--acento); }
 @media (max-width: 640px) {
   .barra-tempo { grid-template-columns: 1fr auto; row-gap: 6px; }
   .barra-tempo .trilho { grid-column: 1 / -1; grid-row: 1; }
   .barra-tempo .rotulo-barra { border-right: 0; padding-right: 0; }
+}
+
+/* ================= Toque e celular ================= */
+/* Em telas de toque, todo alvo tem pelo menos 44 px (recomendação da Apple e do Google). */
+@media (pointer: coarse) {
+  .botao.pequeno { min-height: 44px; }
+  .botao-link { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .lateral .opcoes button, .lateral .opcoes a { min-height: 44px; }
+  .coracao { width: 44px; height: 44px; }
+  .linha-item a.principal { display: inline-flex; align-items: center; min-height: 44px; }
+}
+/* Fundo desfocado: textura pronta na GPU; no celular, sem movimento contínuo para poupar bateria. */
+.ambiente { will-change: transform; }
+@media (max-width: 899px), (pointer: coarse) {
+  .ambiente-base, .ambiente-foto.pronta { animation: none; }
 }

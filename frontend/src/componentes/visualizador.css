@@ -11,7 +11,7 @@
 .visualizador img.vindo-prox { animation: vindo-direita 360ms var(--curva-suave) both; }
 .visualizador img.vindo-ant { animation: vindo-esquerda 360ms var(--curva-suave) both; }
 .visualizador .fechar { position: absolute; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); }
-.visualizador .navegar { position: absolute; top: 50%; transform: translateY(-50%); font-size: 20px; }
+.visualizador .navegar { position: absolute; top: 50%; transform: translateY(-50%); font-size: 20px; min-width: 44px; min-height: 44px; }
 .visualizador .navegar:active { transform: translateY(-50%) scale(.94); }
 .visualizador .navegar.ant { left: max(8px, env(safe-area-inset-left)); }
 .visualizador .navegar.prox { right: max(8px, env(safe-area-inset-right)); }

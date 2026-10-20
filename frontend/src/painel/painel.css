@@ -8,7 +8,7 @@
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
   border-top: 1px solid rgba(255,255,255,.08); padding-bottom: env(safe-area-inset-bottom);
 }
-.painel-nav a { display: grid; justify-items: center; gap: 2px; padding: 10px 2px; font-size: 10.5px; color: var(--tinta-suave); text-decoration: none; }
+.painel-nav a { display: grid; justify-items: center; gap: 2px; padding: 8px 2px; min-height: 56px; align-content: center; font-size: 11px; color: var(--tinta-suave); text-decoration: none; }
 .painel-nav a.active { color: var(--acento-texto); }
 .painel-nav svg { width: 22px; height: 22px; }
 @media (min-width: 900px) {
@@ -57,7 +57,7 @@ a.linha-item:hover { background: rgba(40, 40, 37, .75); }
 .miniaturas figure { margin: 0; position: relative; aspect-ratio: 1; background: #fff; padding: 4px; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
 .miniaturas img { width: 100%; height: 100%; object-fit: cover; }
 .miniaturas figure.escolhida { box-shadow: 0 0 0 3px var(--acento), 0 6px 18px rgba(0,0,0,.4); }
-.miniaturas .marca { position: absolute; left: 8px; bottom: 8px; font-size: 10px; padding: 0 6px; height: 18px; border-radius: 9999px; display: inline-flex; align-items: center; background: rgba(23,23,22,.8); color: var(--tinta); }
+.miniaturas .marca { position: absolute; left: 8px; bottom: 8px; font-size: 11px; padding: 0 6px; height: 18px; border-radius: 9999px; display: inline-flex; align-items: center; background: rgba(23,23,22,.8); color: var(--tinta); }
 .miniaturas .apagar { position: absolute; right: 8px; top: 8px; width: 26px; height: 26px; border-radius: 9999px; border: 0; background: rgba(23,23,22,.8); color: var(--tinta); cursor: pointer; }
 
 /* Trabalhos como álbuns: título, contagem e mosaico 2×2, como "My album" */
@@ -82,7 +82,7 @@ a.linha-item:hover { background: rgba(40, 40, 37, .75); }
 /* Linha do tempo de meses, como a barra de dias da referência */
 .linha-meses { position: relative; display: flex; gap: 0; overflow-x: auto; padding: 18px 4px 8px; background: linear-gradient(rgba(255,255,255,.2), rgba(255,255,255,.2)) 0 10px / 100% 1px no-repeat; scrollbar-width: none; }
 .linha-meses button { position: relative; flex: none; background: none; border: 0; color: rgba(244,243,239,.55); padding: 6px 14px; font-weight: 600; cursor: pointer; display: grid; justify-items: center; gap: 2px; }
-.linha-meses button small { font-size: 10px; font-weight: 500; color: rgba(244,243,239,.4); }
+.linha-meses button small { font-size: 11px; font-weight: 500; color: rgba(244,243,239,.4); }
 .linha-meses button[aria-pressed="true"] { color: var(--tinta); }
 .linha-meses button[aria-pressed="true"]::before { content: ""; position: absolute; top: -15px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 9999px; background: #fff; box-shadow: 0 0 0 4px rgba(211,47,47,.4), inset 0 0 0 4px var(--acento); }
 
@@ -116,3 +116,17 @@ a.numero:hover { transform: translateY(-2px); }
 .abas button { transition: border-color var(--rapido), color var(--rapido), transform var(--rapido) var(--curva-suave); }
 
 .miniaturas figure img { background: #2a2a28; }
+
+/* Cabeçalho do trabalho: status à direita no computador, abaixo do título no celular */
+.cabeca-lado { display: grid; gap: 6px; justify-items: end; }
+@media (max-width: 640px) { .cabeca-lado { justify-items: start; grid-auto-flow: column; align-items: center; gap: 12px; } }
+
+/* Celular: o vidro desfocado em cada cartão pesa na rolagem; usa fundo sólido equivalente */
+@media (max-width: 899px), (pointer: coarse) {
+  .painel .painel-caixa, .painel .linha-item, .painel .numero, .painel .envio, .painel .vazio, .album {
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  .painel .painel-caixa, .painel .linha-item, .painel .numero, .painel .envio, .painel .vazio { background: rgba(23, 23, 22, .84); }
+  .album { background: rgba(44, 44, 41, .88); }
+  .painel-topo { position: sticky; top: 0; z-index: 20; }
+}

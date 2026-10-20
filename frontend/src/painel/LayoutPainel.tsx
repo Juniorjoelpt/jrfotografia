@@ -16,7 +16,7 @@ const ITENS = [
   { para: '/painel/trabalhos', nome: 'Trabalhos', d: 'M4 7h16v12H4zM9 7V5h6v2M12 11a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5', admin: false },
   { para: '/painel/clientes', nome: 'Clientes', d: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4.5-6 8-6s7 2 8 6', admin: false },
   { para: '/painel/pedidos', nome: 'Pedidos', d: 'M4 5h16v11H8l-4 4zM8 9h8M8 12h5', admin: false },
-  { para: '/painel/recebimentos', nome: 'Recebimentos', d: 'M3 7h18v10H3zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M6 7v10M18 7v10', admin: true },
+  { para: '/painel/recebimentos', nome: 'Recebimentos', curto: 'Receber', d: 'M3 7h18v10H3zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M6 7v10M18 7v10', admin: true },
   { para: '/painel/ajustes', nome: 'Ajustes', d: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19 12l2-1-1-3-2 .3-1.4-1.4.3-2-3-1-1 2h-2l-1-2-3 1 .3 2L6 7.3 4 7 3 10l2 1v2l-2 1 1 3 2-.3 1.4 1.4-.3 2 3 1 1-2h2l1 2 3-1-.3-2 1.4-1.4 2 .3 1-3-2-1z', admin: true },
 ];
 
@@ -82,7 +82,7 @@ export function LayoutPainel() {
 
         <nav className="painel-nav vidro" aria-label="Painel">
           {itens.map((i) => (
-            <NavLink key={i.para} to={i.para} end={i.fim}>{icone(i.d)}<span>{i.nome}</span></NavLink>
+            <NavLink key={i.para} to={i.para} end={i.fim} aria-label={i.nome}>{icone(i.d)}<span>{'curto' in i ? i.curto : i.nome}</span></NavLink>
           ))}
         </nav>
         <main className="painel-corpo" key={local.pathname}><div className="anima-pagina" style={{ display: 'grid', gap: 'var(--espaco-6)', minWidth: 0 }}><Outlet /></div></main>
