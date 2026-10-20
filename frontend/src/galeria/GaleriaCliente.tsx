@@ -105,7 +105,7 @@ export function GaleriaCliente() {
           <dl>
             <div><dt>Total de fotos</dt><dd><Numero valor={g.fotos.length} /></dd></div>
             {g.exigeSelecao && <div><dt>Escolhidas</dt><dd><Numero valor={g.selecionadas} />{limite ? ` / ${limite}` : ''}</dd></div>}
-            {g.exigeSelecao && extras > 0 && <div><dt>Extras</dt><dd style={{ color: 'var(--acento)' }}><Numero valor={valorExtras} formatar={moeda} /></dd></div>}
+            {g.exigeSelecao && extras > 0 && <div><dt>Extras</dt><dd style={{ color: 'var(--acento-texto)' }}><Numero valor={valorExtras} formatar={moeda} /></dd></div>}
             {g.expiraEm && <div><dt>Disponível até</dt><dd>{data(g.expiraEm).slice(0, 5)}</dd></div>}
           </dl>
           <div>
@@ -237,7 +237,7 @@ function Situacao({ g, extras, valorExtras }: { g: Galeria; extras: number; valo
       <p>
         Olá, {primeiroNome(g.clienteNome)}! Toque no coração das fotos que você quer receber editadas.
         Seu pacote inclui {g.fotosNoPacote} fotos{g.precoFotoExtra ? `; cada foto a mais custa ${moeda(g.precoFotoExtra)}` : ''}.
-        {extras > 0 ? ` Até agora: ${extras} extras, ${moeda(valorExtras)}.` : ''}
+        {extras > 0 ? ` Até agora: ${extras} ${extras === 1 ? 'foto extra' : 'fotos extras'}, ${moeda(valorExtras)}.` : ''}
       </p>
     );
   }

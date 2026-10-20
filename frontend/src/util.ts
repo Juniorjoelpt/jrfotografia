@@ -56,7 +56,7 @@ export const NOMES_STATUS: Record<StatusTrabalho, string> = {
 };
 
 export const CLASSE_STATUS: Record<StatusTrabalho, string> = {
-  AGENDADO: '', FOTOGRAFADO: '', SELECAO: 'acento', EDICAO: 'alerta', ENTREGUE: 'sucesso', CANCELADO: 'erro',
+  AGENDADO: '', FOTOGRAFADO: '', SELECAO: 'cheia', EDICAO: 'alerta', ENTREGUE: 'sucesso', CANCELADO: 'erro',
 };
 
 export const ETAPAS: StatusTrabalho[] = ['AGENDADO', 'FOTOGRAFADO', 'SELECAO', 'EDICAO', 'ENTREGUE'];

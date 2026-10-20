@@ -50,7 +50,7 @@
 /* Botões: resposta ao toque */
 .botao { transition: transform var(--rapido) var(--curva-suave), background-color var(--rapido), border-color var(--rapido), filter var(--rapido), box-shadow var(--rapido); }
 .botao:active:not(:disabled) { transform: scale(.97); }
-.botao.principal:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(226, 106, 174, .28); }
+.botao.principal:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(211, 47, 47, .34); }
 
 /* Mensagens */
 .aviso { animation: entrar-cima var(--medio) var(--curva-suave) both; }

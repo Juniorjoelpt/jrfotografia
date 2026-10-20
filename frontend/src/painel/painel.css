@@ -9,7 +9,7 @@
   border-top: 1px solid rgba(255,255,255,.08); padding-bottom: env(safe-area-inset-bottom);
 }
 .painel-nav a { display: grid; justify-items: center; gap: 2px; padding: 10px 2px; font-size: 10.5px; color: var(--tinta-suave); text-decoration: none; }
-.painel-nav a.active { color: var(--acento); }
+.painel-nav a.active { color: var(--acento-texto); }
 .painel-nav svg { width: 22px; height: 22px; }
 @media (min-width: 900px) {
   .painel { grid-template-columns: 220px 1fr; grid-template-rows: 1fr; }
@@ -46,7 +46,7 @@ a.linha-item:hover { background: rgba(40, 40, 37, .75); }
 .secao > h2 { margin: 0; text-shadow: 0 1px 10px rgba(0,0,0,.5); }
 .abas { display: flex; gap: var(--espaco-2); overflow-x: auto; padding-bottom: 2px; }
 .abas button { flex: none; background: rgba(23,23,22,.5); }
-.abas button[aria-pressed="true"] { border-color: var(--acento); color: var(--acento); }
+.abas button[aria-pressed="true"] { border-color: var(--acento-texto); color: var(--acento-texto); }
 
 .etapas { display: flex; gap: 4px; }
 .etapas span { flex: 1; height: 4px; background: rgba(255,255,255,.18); }
@@ -84,7 +84,7 @@ a.linha-item:hover { background: rgba(40, 40, 37, .75); }
 .linha-meses button { position: relative; flex: none; background: none; border: 0; color: rgba(244,243,239,.55); padding: 6px 14px; font-weight: 600; cursor: pointer; display: grid; justify-items: center; gap: 2px; }
 .linha-meses button small { font-size: 10px; font-weight: 500; color: rgba(244,243,239,.4); }
 .linha-meses button[aria-pressed="true"] { color: var(--tinta); }
-.linha-meses button[aria-pressed="true"]::before { content: ""; position: absolute; top: -15px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 9999px; background: #fff; box-shadow: 0 0 0 4px rgba(226,106,174,.35), inset 0 0 0 4px var(--acento); }
+.linha-meses button[aria-pressed="true"]::before { content: ""; position: absolute; top: -15px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 9999px; background: #fff; box-shadow: 0 0 0 4px rgba(211,47,47,.4), inset 0 0 0 4px var(--acento); }
 
 .acoes-linha { display: flex; flex-wrap: wrap; gap: var(--espaco-2); }
 .envio { border: 1px dashed rgba(255,255,255,.2); padding: var(--espaco-6); display: grid; gap: var(--espaco-3); justify-items: start; }

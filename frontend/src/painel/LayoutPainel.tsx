@@ -63,7 +63,7 @@ export function LayoutPainel() {
           </div>
           {resumo && (
             <dl>
-              <div><dt>Pedidos novos</dt><dd style={resumo.pedidosNovos ? { color: 'var(--acento)' } : undefined}><Numero valor={resumo.pedidosNovos} /></dd></div>
+              <div><dt>Pedidos novos</dt><dd style={resumo.pedidosNovos ? { color: 'var(--acento-texto)' } : undefined}><Numero valor={resumo.pedidosNovos} /></dd></div>
               <div><dt>Em seleção</dt><dd><Numero valor={resumo.aguardandoSelecao} /></dd></div>
               <div><dt>Em edição</dt><dd><Numero valor={resumo.emEdicao} /></dd></div>
               {resumo.atrasados.length > 0 && <div><dt>Atrasados</dt><dd style={{ color: 'var(--erro)' }}>{resumo.atrasados.length}</dd></div>}

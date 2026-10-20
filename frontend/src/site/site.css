@@ -16,7 +16,7 @@
 .abertura { display: grid; min-height: 560px; }
 .abertura .painel-texto { padding: var(--espaco-12) var(--espaco-6); display: grid; align-content: center; gap: var(--espaco-6); background: var(--carvao-elevado); }
 .abertura .painel-texto p { max-width: 42ch; margin: 0; color: var(--tinta-suave); }
-.abertura .foto { position: relative; min-height: 420px; overflow: hidden; background: radial-gradient(55% 65% at 30% 35%, rgba(196,84,150,.75), transparent 70%), radial-gradient(45% 55% at 82% 72%, rgba(70,86,120,.8), transparent 70%), radial-gradient(35% 40% at 75% 18%, rgba(150,112,62,.6), transparent 70%), var(--carvao); }
+.abertura .foto { position: relative; min-height: 420px; overflow: hidden; background: radial-gradient(55% 65% at 30% 35%, rgba(170,36,36,.75), transparent 70%), radial-gradient(45% 55% at 82% 72%, rgba(70,86,120,.8), transparent 70%), radial-gradient(35% 40% at 75% 18%, rgba(150,112,62,.6), transparent 70%), var(--carvao); }
 .abertura .foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .abertura .fantasma { position: absolute; right: -6%; bottom: -10%; color: var(--marca-dagua); }
 .abertura .acoes { display: flex; flex-wrap: wrap; gap: var(--espaco-3); }
