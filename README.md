@@ -45,6 +45,8 @@ npm install
 npm run dev
 ```
 
+Para abrir no celular, com o celular e o computador no mesmo Wi-Fi: rode `npm run celular` em vez de `npm run dev` e acesse no celular o endereço **Network** que aparece no terminal (ex.: `http://192.168.0.15:5173`). Na primeira vez, permita o Node.js no aviso do Firewall do Windows (redes privadas).
+
 Testes da API: `cd backend && mvn test` (inclui o fluxo completo, da criação do trabalho ao download).
 
 ## Colocar no ar
