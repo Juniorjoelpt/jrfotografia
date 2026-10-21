@@ -24,7 +24,8 @@ Já nasce preparado para atender outros estúdios no futuro: toda tabela de neg�
 - **Download:** à vista, só depois de quitar tudo (inclusive extras); parcelado, depois do sinal e da 1ª parcela.
 - **Prazo de entrega:** calculado em dias úteis a partir da data do ensaio (5, 10 ou 15, conforme o pacote).
 - **Arquivos:** guarda só os JPEGs exportados e as versões editadas, nunca os brutos.
-- **Perfis:** administrador vê tudo; colaborador não vê valores (financeiro, orçamentos, relatórios) nem cria trabalhos.
+- **Acesso:** depois de 5 senhas erradas seguidas (no login ou na galeria), aquele aparelho espera 15 minutos; a galeria também trava depois de 30 erros em 1 hora, somando todos os aparelhos. Enquanto a senha for a de fábrica, o painel pede para trocar (Minha conta).
+- **Perfis:** administrador vê tudo e cadastra colaboradores em Minha conta; colaborador não vê valores (financeiro, orçamentos, relatórios) nem cria trabalhos.
 - **Orçamentos:** valem 7 dias por padrão; vencidos aparecem como "Vencido" e não podem mais ser aceitos. Aceito, não pode ser editado nem apagado.
 - **Contrato:** sai do modelo em Ajustes › Contrato, com campos como `{CONTRATANTE}` e `{VALOR_TOTAL}` preenchidos pelo trabalho. O modelo padrão é um ponto de partida; revise com um advogado.
 
@@ -42,9 +43,9 @@ Precisa de Java 21, Maven e Node 20.
 # Terminal 1 — API (ou Run no NetBeans)
 cd backend
 mvn spring-boot:run
-# Usa o MySQL do computador: usuário root, senha vazia. O banco "jrfotografia" é criado sozinho.
+# Usa o MySQL do computador: usuário root, senha araca123 (troque em application.yml, perfil local, ou defina DB_SENHA). O banco "jrfotografia" é criado sozinho.
 # Outro usuário/senha: defina DB_USUARIO e DB_SENHA. Sem MySQL: rode com o perfil "dev" (banco H2).
-# Login do painel: admin@jrfotografia.local / trocar123
+# Login do painel: admin@jrfotografia.local / trocar123 (troque no primeiro acesso, em Minha conta)
 
 # Terminal 2 — site e painel em http://localhost:5173
 cd frontend

@@ -1,13 +1,16 @@
 package br.com.jrfotografia.api;
 
 import br.com.jrfotografia.api.Dtos.*;
+import br.com.jrfotografia.config.Erros.NaoAutorizado;
 import br.com.jrfotografia.config.Erros.Proibido;
+import br.com.jrfotografia.config.Tentativas;
 import br.com.jrfotografia.dominio.Enums.StatusTrabalho;
 import br.com.jrfotografia.dominio.Foto;
 import br.com.jrfotografia.dominio.Repositorios.EstudioRepo;
 import br.com.jrfotografia.dominio.Trabalho;
 import br.com.jrfotografia.servico.Armazenamento;
 import br.com.jrfotografia.servico.GaleriaServico;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -38,16 +41,30 @@ public class GaleriaControle {
     private final GaleriaServico galeria;
     private final Armazenamento armazenamento;
     private final EstudioRepo estudios;
+    private final Tentativas tentativas;
 
-    public GaleriaControle(GaleriaServico galeria, Armazenamento armazenamento, EstudioRepo estudios) {
+    public GaleriaControle(GaleriaServico galeria, Armazenamento armazenamento, EstudioRepo estudios, Tentativas tentativas) {
+        this.tentativas = tentativas;
         this.galeria = galeria;
         this.armazenamento = armazenamento;
         this.estudios = estudios;
     }
 
     @PostMapping("/acesso")
-    public Map<String, String> entrar(@PathVariable String token, @Valid @RequestBody AcessoGaleria f) {
-        return Map.of("acesso", galeria.entrar(token, f.senha()));
+    public Map<String, String> entrar(@PathVariable String token, @Valid @RequestBody AcessoGaleria f, HttpServletRequest req) {
+        // Senha de 6 dígitos: sem freio, daria para adivinhar tentando. Limita por aparelho e no total da galeria.
+        String aparelho = token + '|' + Tentativas.aparelho(req);
+        tentativas.verificar(Tentativas.GALERIA_APARELHO, aparelho);
+        tentativas.verificar(Tentativas.GALERIA_TOTAL, token);
+        try {
+            String acesso = galeria.entrar(token, f.senha());
+            tentativas.acerto(Tentativas.GALERIA_APARELHO, aparelho);
+            return Map.of("acesso", acesso);
+        } catch (NaoAutorizado e) {
+            tentativas.erro(Tentativas.GALERIA_APARELHO, aparelho);
+            tentativas.erro(Tentativas.GALERIA_TOTAL, token);
+            throw e;
+        }
     }
 
     @GetMapping

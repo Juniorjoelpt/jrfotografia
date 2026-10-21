@@ -31,6 +31,15 @@ public class Erros {
         public Proibido(String msg) { super(msg); }
     }
 
+    public static class MuitasTentativas extends RuntimeException {
+        public MuitasTentativas(String msg) { super(msg); }
+    }
+
+    @ExceptionHandler(MuitasTentativas.class)
+    ResponseEntity<Map<String, Object>> muitas(MuitasTentativas e) {
+        return resposta(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
+    }
+
     @ExceptionHandler(NaoEncontrado.class)
     ResponseEntity<Map<String, Object>> naoEncontrado(NaoEncontrado e) {
         return resposta(HttpStatus.NOT_FOUND, e.getMessage());

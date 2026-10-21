@@ -55,7 +55,7 @@ export function LayoutPainel() {
   const itens = ITENS.filter((i) => admin || !i.admin);
   const base = itens.filter((i) => i.base);
   const extras = itens.filter((i) => !i.base);
-  const extraAtivo = extras.some((i) => local.pathname.startsWith(i.para));
+  const extraAtivo = extras.some((i) => local.pathname.startsWith(i.para)) || local.pathname.startsWith('/painel/conta');
 
   return (
     <>
@@ -91,7 +91,10 @@ export function LayoutPainel() {
               ))}
             </nav>
           </div>
-          <button className="botao-link legenda" style={{ justifySelf: 'start' }} onClick={sair}>Sair</button>
+          <div className="acoes-conta">
+            <NavLink className="botao-link legenda" to="/painel/conta">Minha conta</NavLink>
+            <button className="botao-link legenda" onClick={sair}>Sair</button>
+          </div>
         </aside>
 
         <nav className="painel-nav vidro" aria-label="Painel">
@@ -109,6 +112,7 @@ export function LayoutPainel() {
               {extras.map((i) => (
                 <NavLink key={i.para} to={i.para} role="menuitem">{icone(i.d)}<span>{i.nome}</span></NavLink>
               ))}
+              <NavLink to="/painel/conta" role="menuitem">{icone('M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4.5-6 8-6s7 2 8 6M17 4l3 3')}<span>Minha conta</span></NavLink>
               <button role="menuitem" onClick={sair}>{icone('M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10')}<span>Sair</span></button>
             </div>
           </>

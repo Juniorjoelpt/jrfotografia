@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, ErroApi } from '../api';
+import { api, ErroApi, sessaoAtual } from '../api';
 import type { TrabalhoResumo } from '../tipos';
 import { CLASSE_STATUS, dataHora, NOMES_STATUS, data } from '../util';
 
@@ -46,4 +46,16 @@ export function LinhaTrabalho({ t, mostrar = 'data' }: { t: TrabalhoResumo; most
 
 export function Linhas({ itens, vazio }: { itens: React.ReactNode[]; vazio: string }) {
   return itens.length ? <div className="linhas escalonado">{itens}</div> : <p className="vazio" style={{ margin: 0 }}>{vazio}</p>;
+}
+
+/** Áreas só do administrador: o colaborador que abrir pelo endereço vê um aviso em vez de uma tela pela metade. */
+export function SoAdmin({ children }: { children: React.ReactNode }) {
+  if (sessaoAtual()?.perfil === 'ADMIN') return <>{children}</>;
+  return (
+    <>
+      <div className="cabeca-pagina"><div><span className="rotulo">Acesso</span><h1 className="titulo">Área do administrador</h1></div></div>
+      <p className="vazio" style={{ margin: 0 }}>Seu perfil não tem acesso a esta área. Fale com o administrador do estúdio se precisar.</p>
+      <div><Link className="botao" to="/painel">Voltar ao início</Link></div>
+    </>
+  );
 }

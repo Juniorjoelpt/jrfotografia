@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { api, ErroApi } from '../api';
+import { api, ErroApi, publico } from '../api';
 import { Logo } from '../componentes/Logo';
 import { Ambiente } from '../componentes/Movimento';
 import type { OrcamentoPublico, PortfolioFoto } from '../tipos';
@@ -18,7 +18,7 @@ export function OrcamentoCliente() {
   const [recemAceito, setRecemAceito] = useState(false);
 
   useEffect(() => {
-    api<OrcamentoPublico>(`/publico/orcamentos/${token}`, { token: null })
+    publico<OrcamentoPublico>(`/publico/orcamentos/${token}`)
       .then((r) => { setO(r); document.title = `Orçamento nº ${r.numero} · ${r.estudioNome}`; })
       .catch((e) => setErro(e instanceof ErroApi && e.status === 404 ? 'Orçamento não encontrado. Confira o link que você recebeu.' : 'Não foi possível abrir o orçamento agora.'));
     api<PortfolioFoto[]>('/publico/portfolio', { token: null })

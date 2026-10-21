@@ -26,6 +26,8 @@ export function Visualizador({ src, alt, aoFechar, aoAnterior, aoProxima, rodape
 
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
+      // Digitando um comentário: as setas movem o cursor, não trocam a foto.
+      if (e.target instanceof HTMLElement && e.target.closest('textarea, input')) return;
       if (e.key === 'Escape') fechar();
       if (e.key === 'ArrowLeft') ir('ant');
       if (e.key === 'ArrowRight') ir('prox');

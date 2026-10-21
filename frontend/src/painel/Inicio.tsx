@@ -25,6 +25,11 @@ export function Inicio() {
         </div>
         {admin && <Link to="/painel/trabalhos/novo" className="botao principal">Novo trabalho</Link>}
       </div>
+      {sessaoAtual()?.senhaPadrao && (
+        <p className="aviso" role="status" style={{ margin: 0, borderColor: 'var(--alerta)' }}>
+          <span style={{ color: 'var(--alerta)' }}>Você ainda usa a senha de fábrica.</span> Quem souber dela entra no painel. <Link to="/painel/conta">Trocar agora</Link>
+        </p>
+      )}
       <Erro msg={erro} />
       {p && (
         <>

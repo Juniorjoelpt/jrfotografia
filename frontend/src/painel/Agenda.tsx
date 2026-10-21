@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { api, ErroApi } from '../api';
+import { api, ErroApi, sessaoAtual } from '../api';
 import type { EventoAgenda } from '../tipos';
 import { hora, isoDia, MESES, NOMES_STATUS } from '../util';
 import { Erro, useDados } from './comum';
@@ -131,7 +131,7 @@ export function Agenda() {
         <div className="cabeca-pagina">
           <h2 className="subtitulo">{(() => { const [a, m, d] = dia.split('-').map(Number); return `${d} de ${MESES[m - 1].toLowerCase()}${a !== new Date().getFullYear() ? ` de ${a}` : ''}`; })()}</h2>
           <div className="acoes-linha">
-            <Link className="botao pequeno" to={`/painel/trabalhos/novo?data=${dia}`}>Agendar ensaio</Link>
+            {sessaoAtual()?.perfil === 'ADMIN' && <Link className="botao pequeno" to={`/painel/trabalhos/novo?data=${dia}`}>Agendar ensaio</Link>}
             <button className="botao pequeno" onClick={() => setBloqueando((b) => !b)} aria-expanded={bloqueando}>Bloquear data</button>
           </div>
         </div>

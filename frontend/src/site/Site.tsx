@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { api, ErroApi } from '../api';
+import { api, ErroApi, publico } from '../api';
 import { Logo, Monograma } from '../componentes/Logo';
 import { Visualizador } from '../componentes/Visualizador';
 import { Imagem, movimentoReduzido, useRevelar } from '../componentes/Movimento';
@@ -31,9 +31,10 @@ export function Site() {
   const [pacoteEscolhido, setPacoteEscolhido] = useState<number | ''>('');
 
   useEffect(() => {
-    api<Estudio>('/publico/estudio', { token: null }).then(setEstudio).catch(() => {});
-    api<Pacote[]>('/publico/pacotes', { token: null }).then(setPacotes).catch(() => {});
-    api<PortfolioFoto[]>('/publico/portfolio', { token: null }).then(setFotos).catch(() => {});
+    // Se o servidor acabou de reiniciar, a primeira chamada pode falhar: tenta de novo antes de desistir.
+    publico<Estudio>('/publico/estudio').then(setEstudio).catch(() => {});
+    publico<Pacote[]>('/publico/pacotes').then(setPacotes).catch(() => {});
+    publico<PortfolioFoto[]>('/publico/portfolio').then(setFotos).catch(() => {});
   }, []);
 
   useRevelar([fotos.length, pacotes.length, estudio]);

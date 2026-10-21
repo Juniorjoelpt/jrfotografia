@@ -60,3 +60,16 @@ export function urlPainel(caminho: string) {
   const sep = caminho.includes('?') ? '&' : '?';
   return `/api${caminho}${sep}t=${encodeURIComponent(sessaoAtual()?.token ?? '')}`;
 }
+
+/** Leitura pública com até 3 tentativas (falha de rede ou erro 5xx), para o site não abrir vazio. */
+export async function publico<T>(caminho: string, tentativas = 3): Promise<T> {
+  for (let i = 1; ; i++) {
+    try {
+      return await api<T>(caminho, { token: null });
+    } catch (e) {
+      const temporario = !(e instanceof ErroApi) || e.status >= 500;
+      if (!temporario || i >= tentativas) throw e;
+      await new Promise((r) => setTimeout(r, 800 * i));
+    }
+  }
+}

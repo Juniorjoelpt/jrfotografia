@@ -85,3 +85,10 @@
 @keyframes tremer { 0%, 100% { transform: none; } 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
 
 @media (pointer: coarse) { .coracao { width: 44px; height: 44px; right: 8px; bottom: 8px; } }
+
+/* Comentário do cliente na foto */
+.moldura { position: relative; }
+.tem-comentario { position: absolute; left: 8px; top: 8px; z-index: 2; font-size: 14px; line-height: 1; padding: 4px 6px; border-radius: 9999px; background: rgba(23,23,22,.8); }
+.comentario-foto { display: grid; gap: 8px; width: min(520px, calc(100vw - 32px)); }
+.comentario-foto textarea { width: 100%; padding: 10px 12px; border-radius: var(--raio-sm); border: 1px solid rgba(255,255,255,.2); background: rgba(10,10,10,.75); color: var(--tinta); font: inherit; resize: vertical; }
+.comentario-foto textarea:focus { outline: none; border-color: var(--acento-texto); }

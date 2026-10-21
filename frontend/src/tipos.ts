@@ -7,7 +7,9 @@ export type FormaPagamento = 'AVISTA' | 'PARCELADO';
 export type TipoParcela = 'AVISTA' | 'SINAL' | 'PARCELA' | 'EXTRA';
 export type MeioPagamento = 'PIX' | 'DINHEIRO' | 'TRANSFERENCIA' | 'BOLETO';
 
-export interface Sessao { token: string; nome: string; perfil: 'ADMIN' | 'COLABORADOR'; estudio: string }
+export type Perfil = 'ADMIN' | 'COLABORADOR';
+export interface Sessao { token: string; nome: string; perfil: Perfil; estudio: string; senhaPadrao?: boolean }
+export interface UsuarioConta { id: number; nome: string; email: string; perfil: Perfil; ativo: boolean; voce: boolean }
 
 export interface Estudio {
   nome: string; slug: string; cidade?: string; whatsapp?: string; instagram?: string; email?: string;

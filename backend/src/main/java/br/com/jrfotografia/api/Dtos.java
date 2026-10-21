@@ -17,7 +17,7 @@ public final class Dtos {
     // ---------- autenticação ----------
     public record Login(@NotBlank @Email String email, @NotBlank String senha) {}
 
-    public record Sessao(String token, String nome, String perfil, String estudio) {}
+    public record Sessao(String token, String nome, String perfil, String estudio, boolean senhaPadrao) {}
 
     // ---------- estúdio ----------
     public record EstudioDto(String nome, String slug, String cidade, String whatsapp, String instagram,
@@ -172,4 +172,13 @@ public final class Dtos {
     public record MarcarForm(boolean selecionada) {}
 
     public record ComentarioForm(@Size(max = 500) String comentario) {}
+
+    // ---------- conta e usuários ----------
+    public record TrocaSenha(@NotBlank String senhaAtual, @NotBlank @Size(min = 8, max = 72, message = "use de 8 a 72 caracteres") String novaSenha) {}
+
+    public record UsuarioForm(@NotBlank @Size(max = 120) String nome, @NotBlank @Email String email,
+                              @Size(min = 8, max = 72, message = "use de 8 a 72 caracteres") String senha,
+                              Enums.Perfil perfil, Boolean ativo) {}
+
+    public record UsuarioDto(Long id, String nome, String email, Enums.Perfil perfil, boolean ativo, boolean voce) {}
 }

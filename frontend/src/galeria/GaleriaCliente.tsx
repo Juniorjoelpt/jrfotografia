@@ -64,10 +64,15 @@ export function GaleriaCliente() {
     }
   }
 
+  async function comentar(id: number, comentario: string) {
+    const r = await api<FotoGaleria>(`/galeria/${token}/fotos/${id}/comentario`, { metodo: 'PUT', token: acesso, corpo: { comentario } });
+    setGaleria((atual) => atual && { ...atual, fotos: atual.fotos.map((f) => (f.id === id ? { ...f, comentario: r.comentario } : f)) });
+  }
+
   async function concluir() {
     setOcupado(true);
     try {
-      await api(`/galeria/${token}/fechar-selecao`, { token: acesso });
+      await api(`/galeria/${token}/fechar-selecao`, { metodo: 'POST', token: acesso });
       setConfirmando(false);
       await carregar(acesso!);
     } catch (e) {
@@ -86,6 +91,7 @@ export function GaleriaCliente() {
       <button className="abrir" onClick={() => setAberta(i)} aria-label={`Ampliar foto ${i + 1}`}>
         <Imagem src={url(f.id, 'miniatura')} alt={`Foto ${i + 1}`} loading="lazy" />
       </button>
+      {f.comentario && <span className="tem-comentario" title={f.comentario} aria-label="Foto com comentário">💬</span>}
       {g.selecaoAberta && (
         <button className="coracao" aria-pressed={f.selecionada} aria-label={f.selecionada ? 'Tirar da seleção' : 'Escolher esta foto'}
           onClick={() => marcar(f.id, !f.selecionada)}><Coracao cheio={f.selecionada} /></button>
@@ -165,7 +171,8 @@ export function GaleriaCliente() {
           aoAnterior={aberta > 0 ? () => setAberta(aberta - 1) : undefined}
           aoProxima={aberta < fotos.length - 1 ? () => setAberta(aberta + 1) : undefined}
           rodape={
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {g.selecaoAberta && <Comentario key={foto.id} texto={foto.comentario ?? ''} aoSalvar={(t) => comentar(foto.id, t)} />}
               {g.selecaoAberta && (
                 <button className={`botao pequeno${foto.selecionada ? ' principal' : ''}`} onClick={() => marcar(foto.id, !foto.selecionada)}>
                   {foto.selecionada ? 'Escolhida' : 'Escolher esta foto'}
@@ -299,3 +306,33 @@ function Coracao({ cheio }: { cheio: boolean }) {
 }
 const IconeSoltas = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true"><path d="M4 7l9-2 2 9-9 2zM11 10l9 1-1 9-9-1" /></svg>;
 const IconeGrade = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" /></svg>;
+
+/** Pedido do cliente para a edição daquela foto ("tirar a marquinha do braço"). O fotógrafo vê no painel. */
+function Comentario({ texto, aoSalvar }: { texto: string; aoSalvar: (t: string) => Promise<void> }) {
+  const [aberto, setAberto] = useState(false);
+  const [valor, setValor] = useState(texto);
+  const [estado, setEstado] = useState<'' | 'salvando' | 'salvo' | 'erro'>('');
+  if (!aberto) {
+    return (
+      <button className="botao pequeno" onClick={() => setAberto(true)}>
+        {texto ? '💬 Ver comentário' : 'Comentar'}
+      </button>
+    );
+  }
+  const salvar = async () => {
+    setEstado('salvando');
+    try { await aoSalvar(valor.trim()); setEstado('salvo'); setAberto(false); } catch { setEstado('erro'); }
+  };
+  return (
+    <div className="comentario-foto">
+      <label className="sr" htmlFor="comentario-foto">Comentário para o fotógrafo</label>
+      <textarea id="comentario-foto" value={valor} maxLength={500} rows={2} autoFocus
+        placeholder="Ex.: tirar a marquinha do braço, deixar mais clara…" onChange={(e) => setValor(e.target.value)} />
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
+        {estado === 'erro' && <span className="legenda" style={{ color: 'var(--erro)' }}>Não salvou. Tente de novo.</span>}
+        <button className="botao pequeno" onClick={() => { setValor(texto); setAberto(false); }}>Cancelar</button>
+        <button className="botao principal pequeno" disabled={estado === 'salvando'} onClick={salvar}>{estado === 'salvando' ? 'Salvando…' : 'Salvar'}</button>
+      </div>
+    </div>
+  );
+}
