@@ -245,6 +245,7 @@ export function DetalheOrcamento() {
   const navegar = useNavigate();
   const { dados: o, setDados, erro } = useDados<Orcamento>(`/orcamentos/${id}`);
   const [copiado, setCopiado] = useState(false);
+  const [manual, setManual] = useState(false);
   const [apagando, setApagando] = useState(false);
   if (!o) return <>{erro ? <Erro msg={erro} /> : <div className="esqueleto" style={{ height: 320 }} />}</>;
 
@@ -252,7 +253,11 @@ export function DetalheOrcamento() {
   const mensagem = `Olá, ${primeiroNome(o.nomeCliente)}! Aqui é o Joel, da JR Fotografia. Segue o seu orçamento${o.tipo ? ` de ${o.tipo.toLowerCase()}` : ''}: ${moeda(o.valorTotal)}.\n\nVeja os detalhes e confirme por aqui:\n${link}\n\nO orçamento vale até ${data(o.validade)}. Qualquer dúvida, é só me chamar.`;
   const marcarEnviado = () => { api<Orcamento>(`/orcamentos/${o.id}/enviado`, { corpo: {} }).then(setDados).catch(() => {}); };
   const copiar = async () => {
-    try { await navigator.clipboard.writeText(link); setCopiado(true); setTimeout(() => setCopiado(false), 2000); marcarEnviado(); } catch { /* sem permissão */ }
+    if (await copiarTexto(link)) {
+      setCopiado(true); setManual(false); setTimeout(() => setCopiado(false), 2000); marcarEnviado();
+    } else {
+      setManual(true); // sem HTTPS o navegador bloqueia a cópia: mostra o link para copiar à mão
+    }
   };
   const apagar = async () => { await api(`/orcamentos/${o.id}`, { metodo: 'DELETE' }); navegar('/painel/vendas?aba=orcamentos', { replace: true }); };
   const fechado = o.status === 'ACEITO';
@@ -280,6 +285,14 @@ export function DetalheOrcamento() {
         {!fechado && <Link className="botao" to={`/painel/orcamentos/${o.id}/editar`}>Editar</Link>}
       </div>
       {!fechado && !o.telefone && <p className="aviso" style={{ margin: 0 }}>Sem WhatsApp cadastrado: copie o link e envie por onde preferir.</p>}
+      {manual && (
+        <div className="aviso" role="status" style={{ margin: 0, display: 'grid', gap: 8 }}>
+          <span>O navegador não deixou copiar sozinho. Selecione o link abaixo e copie:</span>
+          <input readOnly value={link} onFocus={(e) => e.currentTarget.select()} aria-label="Link do orçamento"
+            style={{ width: '100%', minHeight: 40, padding: '8px 10px', background: 'rgba(10,10,10,.6)', color: 'var(--tinta)', border: '1px solid var(--linha)', font: 'inherit' }} />
+          <div><button className="botao pequeno" onClick={() => { marcarEnviado(); setManual(false); }}>Já enviei</button></div>
+        </div>
+      )}
       {o.status === 'ACEITO' && <p className="aviso sucesso" style={{ margin: 0 }}>Aceito em {dataHora(o.respondidoEm)}. O trabalho e as parcelas já foram criados.</p>}
       {o.status === 'RECUSADO' && <p className="aviso erro" style={{ margin: 0 }}>O cliente recusou em {dataHora(o.respondidoEm)}. Você pode editar e reenviar.</p>}
 
@@ -307,4 +320,21 @@ export function DetalheOrcamento() {
       )}
     </>
   );
+}
+
+/** Copia texto. Usa a área de transferência quando o navegador deixa (HTTPS) e um campo escondido quando não. */
+async function copiarTexto(texto: string) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(texto); return true; }
+  } catch { /* tenta o plano B */ }
+  try {
+    const t = document.createElement('textarea');
+    t.value = texto; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.appendChild(t); t.select(); t.setSelectionRange(0, texto.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(t);
+    return ok;
+  } catch {
+    return false;
+  }
 }

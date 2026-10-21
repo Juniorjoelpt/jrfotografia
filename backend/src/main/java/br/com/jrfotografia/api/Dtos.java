@@ -167,7 +167,7 @@ public final class Dtos {
                              boolean downloadLiberado, String motivoDownload, LocalDateTime expiraEm,
                              List<FotoGaleria> fotos) {}
 
-    public record FotoGaleria(Long id, Integer largura, Integer altura, boolean selecionada, String comentario) {}
+    public record FotoGaleria(Long id, Integer largura, Integer altura, boolean selecionada, String comentario, boolean editada) {}
 
     public record MarcarForm(boolean selecionada) {}
 

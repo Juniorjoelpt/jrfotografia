@@ -192,7 +192,7 @@ export function DetalheTrabalho() {
           <div className="miniaturas escalonado">
             {fotos.map((f) => (
               <figure key={f.id} className={f.selecionada ? 'escolhida' : ''} title={f.nomeOriginal}>
-                <Imagem src={imagemPainel(t.resumo.id, f.id, 'miniatura')} alt={f.nomeOriginal} loading="lazy" />
+                <Imagem src={imagemPainel(t.resumo.id, f.id, 'miniatura', f.editada)} alt={f.nomeOriginal} loading="lazy" />
                 {(f.editada || f.comentario) && <span className="marca">{f.editada ? 'editada' : ''}{f.comentario ? ' 💬' : ''}</span>}
                 {(r.status === 'AGENDADO' || r.status === 'FOTOGRAFADO') && (
                   <button className="apagar" aria-label={`Apagar ${f.nomeOriginal}`} disabled={!!ocupado} onClick={() => apagarFoto(f)}>×</button>

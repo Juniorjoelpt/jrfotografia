@@ -158,9 +158,15 @@ function ItemEvento({ e, dia }: { e: EventoAgenda; dia: string }) {
 }
 
 function LinhaEvento({ e, aoMudar }: { e: EventoAgenda; aoMudar: () => void }) {
-  const periodo = e.inicio.slice(0, 10) === e.fim.slice(0, 10)
-    ? `${hora(e.inicio)} às ${hora(e.fim)}`
-    : `${e.inicio.slice(8, 10)}/${e.inicio.slice(5, 7)} ${hora(e.inicio)} até ${e.fim.slice(8, 10)}/${e.fim.slice(5, 7)} ${hora(e.fim)}`;
+  const dm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+  // Bloqueio de dia inteiro vai de 00:00 a 00:00 do dia seguinte ao último dia.
+  const diasInteiros = hora(e.inicio) === '00:00' && hora(e.fim) === '00:00';
+  const ultimoDia = diasInteiros ? (() => { const d = new Date(`${e.fim.slice(0, 10)}T12:00:00`); d.setDate(d.getDate() - 1); return isoDia(d); })() : '';
+  const periodo = diasInteiros
+    ? (ultimoDia === e.inicio.slice(0, 10) ? 'Dia inteiro' : `Dias inteiros, de ${dm(e.inicio)} a ${dm(ultimoDia)}`)
+    : e.inicio.slice(0, 10) === e.fim.slice(0, 10)
+      ? `${hora(e.inicio)} às ${hora(e.fim)}`
+      : `${dm(e.inicio)} ${hora(e.inicio)} até ${dm(e.fim)} ${hora(e.fim)}`;
   if (e.tipo === 'BLOQUEIO') {
     const liberar = async () => { await api(`/agenda/bloqueios/${e.id}`, { metodo: 'DELETE' }); aoMudar(); };
     return (

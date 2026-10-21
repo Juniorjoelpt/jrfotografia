@@ -62,6 +62,10 @@
 .pacote ul { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--espaco-1); color: var(--tinta-suave); }
 .pacote ul li::before { content: "· "; color: var(--prata); }
 .pacote .foto { min-height: 200px; background: #000 center / cover no-repeat; }
+/* Sem portfólio ainda: fundo com as cores da marca e o monograma, em vez de um bloco preto. */
+.pacote .foto.vazia { display: grid; place-items: center; color: rgba(244,243,239,.55);
+  background: radial-gradient(circle at 30% 35%, rgba(211,47,47,.45), transparent 55%),
+              radial-gradient(circle at 75% 70%, rgba(79,143,214,.28), transparent 50%), #1d1d1b; }
 @media (min-width: 560px) { .pacote { grid-template-columns: 3fr 2fr; } }
 
 /* ---------- orçamento ---------- */

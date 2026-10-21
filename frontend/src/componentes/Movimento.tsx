@@ -10,7 +10,8 @@ export function Numero({ valor, formatar = (n) => String(Math.round(n)) }: { val
   useEffect(() => {
     const de = anterior.current;
     anterior.current = valor;
-    if (movimentoReduzido() || de === valor) { setMostrado(valor); return; }
+    // Aba escondida não roda animação (o navegador pausa): mostra o número final direto.
+    if (movimentoReduzido() || de === valor || document.visibilityState === 'hidden') { setMostrado(valor); return; }
     const inicio = performance.now();
     const duracao = 700;
     let quadro = 0;
@@ -21,7 +22,8 @@ export function Numero({ valor, formatar = (n) => String(Math.round(n)) }: { val
       if (t < 1) quadro = requestAnimationFrame(passo);
     };
     quadro = requestAnimationFrame(passo);
-    return () => cancelAnimationFrame(quadro);
+    const garantia = setTimeout(() => setMostrado(valor), duracao + 200);
+    return () => { cancelAnimationFrame(quadro); clearTimeout(garantia); };
   }, [valor]);
   return <>{formatar(mostrado)}</>;
 }

@@ -90,6 +90,9 @@ class VendasFinanceiroTest {
         JsonNode trabalho = ler(mvc.perform(auth(get("/api/trabalhos/" + trabalhoId))).andExpect(status().isOk()).andReturn());
         assertThat(trabalho.get("resumo").get("valorTotal").decimalValue()).isEqualByComparingTo("400.00");
         assertThat(trabalho.get("parcelas")).hasSize(4); // sinal + 3
+        // Sinal hoje; a 1ª parcela fica para o mês seguinte.
+        assertThat(trabalho.get("parcelas").get(0).get("vencimento").asText()).isEqualTo(LocalDate.now().toString());
+        assertThat(trabalho.get("parcelas").get(1).get("vencimento").asText()).isEqualTo(LocalDate.now().plusMonths(1).toString());
         assertThat(trabalho.get("orcamentoId").asLong()).isEqualTo(orcId);
         assertThat(trabalho.get("cliente").get("nome").asText()).isEqualTo("Ana Lima");
         assertThat(trabalho.get("cliente").get("origem").asText()).isEqualTo("INDICACAO");

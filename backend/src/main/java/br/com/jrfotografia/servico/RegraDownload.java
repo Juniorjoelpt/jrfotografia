@@ -41,6 +41,9 @@ public final class RegraDownload {
                 .anyMatch(p -> p.getTipo() == TipoParcela.PARCELA && p.paga());
         boolean semParcelas = parcelas.stream().noneMatch(p -> p.getTipo() == TipoParcela.PARCELA);
         if (sinalOk && (primeiraParcelaOk || semParcelas)) return new Situacao(true, null);
-        return new Situacao(false, "O download é liberado após o pagamento da 1ª parcela.");
+        boolean temSinal = parcelas.stream().anyMatch(p -> p.getTipo() == TipoParcela.SINAL);
+        String falta = !sinalOk && temSinal && !(primeiraParcelaOk || semParcelas) ? "do sinal e da 1ª parcela"
+                : !sinalOk && temSinal ? "do sinal" : "da 1ª parcela";
+        return new Situacao(false, "O download é liberado após o pagamento " + falta + ".");
     }
 }

@@ -103,7 +103,10 @@ public class TrabalhoServico {
         List<Parcela> plano = new ArrayList<>();
         BigDecimal total = t.getValorTotal();
         if (total.signum() == 0) return plano;
-        LocalDate primeiro = d.primeiroVencimento() != null ? d.primeiroVencimento() : LocalDate.now();
+        // Sem data informada: à vista e parcela sem sinal vencem hoje; com sinal, a 1ª parcela fica para o mês seguinte.
+        boolean comSinal = d.valorSinal() != null && d.valorSinal().signum() > 0;
+        LocalDate primeiro = d.primeiroVencimento() != null ? d.primeiroVencimento()
+                : t.getFormaPagamento() == FormaPagamento.PARCELADO && comSinal ? LocalDate.now().plusMonths(1) : LocalDate.now();
 
         if (t.getFormaPagamento() == FormaPagamento.AVISTA) {
             plano.add(parcela(t, TipoParcela.AVISTA, "Pagamento à vista", total, primeiro));
@@ -231,10 +234,20 @@ public class TrabalhoServico {
                 continue;
             }
             byte[] bytes = ler(arq);
-            imagens.ler(bytes);
+            // A galeria passa a mostrar a versão editada (prévia e miniatura refeitas, ainda com a marca d'água).
+            Imagens.Gerado g = imagens.processarComMarca(bytes);
             armazenamento.apagar(f.getArquivoFinal());
-            String chave = estudioId + "/trabalhos/" + t.getId() + "/" + UUID.randomUUID() + "_final" + extensao(nome);
+            String base = estudioId + "/trabalhos/" + t.getId() + "/" + UUID.randomUUID();
+            String chave = base + "_final" + extensao(nome);
             armazenamento.gravar(chave, bytes);
+            armazenamento.apagar(f.getPrevia());
+            armazenamento.apagar(f.getMiniatura());
+            f.setPrevia(base + "_previa.jpg");
+            f.setMiniatura(base + "_mini.jpg");
+            armazenamento.gravar(f.getPrevia(), g.previa());
+            armazenamento.gravar(f.getMiniatura(), g.miniatura());
+            f.setLargura(g.largura());
+            f.setAltura(g.altura());
             f.setArquivoFinal(chave);
         }
         return semPar;

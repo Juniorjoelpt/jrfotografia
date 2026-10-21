@@ -64,7 +64,7 @@ export interface Painel {
 
 export interface ContaReceber { parcela: Parcela; trabalhoTitulo: string; clienteNome: string; clienteTelefone?: string; vencida: boolean }
 
-export interface FotoGaleria { id: number; largura?: number; altura?: number; selecionada: boolean; comentario?: string }
+export interface FotoGaleria { id: number; largura?: number; altura?: number; selecionada: boolean; comentario?: string; editada?: boolean }
 
 export interface Galeria {
   titulo: string; clienteNome: string; dataTrabalho?: string; estudioNome: string; estudioWhatsapp?: string; status: StatusTrabalho;

@@ -44,8 +44,9 @@ export function GaleriaCliente() {
     return <Entrada token={token} erroExterno={acesso ? erro : ''} aoEntrar={(a) => { gravarAcesso(token, a); setAcesso(a); }} />;
   }
 
+  // "v=e" muda o endereço quando a foto editada chega, para o navegador não mostrar a prévia antiga guardada.
   const url = (id: number, tipo: 'miniatura' | 'previa' | 'download') =>
-    `/api/galeria/${token}/fotos/${id}/${tipo}?t=${encodeURIComponent(acesso)}`;
+    `/api/galeria/${token}/fotos/${id}/${tipo}?t=${encodeURIComponent(acesso)}${galeria.fotos.find((f) => f.id === id)?.editada ? '&v=e' : ''}`;
 
   const g = galeria;
   const limite = g.fotosNoPacote ?? 0;

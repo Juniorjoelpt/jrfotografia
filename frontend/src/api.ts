@@ -51,8 +51,8 @@ export async function api<T>(caminho: string, op: Opcoes = {}): Promise<T> {
 }
 
 /** URL de imagem do painel: <img> não envia cabeçalho, então o token vai como parâmetro. */
-export function imagemPainel(trabalhoId: number, fotoId: number, tipo: 'miniatura' | 'previa') {
-  return `/api/trabalhos/${trabalhoId}/fotos/${fotoId}/${tipo}?t=${encodeURIComponent(sessaoAtual()?.token ?? '')}`;
+export function imagemPainel(trabalhoId: number, fotoId: number, tipo: 'miniatura' | 'previa', editada = false) {
+  return `/api/trabalhos/${trabalhoId}/fotos/${fotoId}/${tipo}?t=${encodeURIComponent(sessaoAtual()?.token ?? '')}${editada ? '&v=e' : ''}`;
 }
 
 /** Abre um PDF do painel numa aba nova (o token vai na URL porque a aba não envia cabeçalho). */

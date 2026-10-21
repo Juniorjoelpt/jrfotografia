@@ -87,7 +87,7 @@ public class GaleriaControle {
                                 @RequestHeader("Authorization") String auth, @Valid @RequestBody ComentarioForm f) {
         Trabalho t = galeria.autorizar(token, acesso(auth, null));
         Foto foto = galeria.comentar(t, fotoId, f.comentario());
-        return new FotoGaleria(foto.getId(), foto.getLargura(), foto.getAltura(), foto.isSelecionada(), foto.getComentario());
+        return new FotoGaleria(foto.getId(), foto.getLargura(), foto.getAltura(), foto.isSelecionada(), foto.getComentario(), foto.getArquivoFinal() != null);
     }
 
     @PostMapping("/fechar-selecao")
@@ -174,6 +174,6 @@ public class GaleriaControle {
                 download.liberado(),
                 download.motivo(),
                 t.getGaleriaExpiraEm(),
-                fotos.stream().map(f -> new FotoGaleria(f.getId(), f.getLargura(), f.getAltura(), f.isSelecionada(), f.getComentario())).toList());
+                fotos.stream().map(f -> new FotoGaleria(f.getId(), f.getLargura(), f.getAltura(), f.isSelecionada(), f.getComentario(), f.getArquivoFinal() != null)).toList());
     }
 }

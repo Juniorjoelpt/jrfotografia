@@ -37,6 +37,19 @@ class RegraDownloadTest {
     }
 
     @Test
+    void mensagemDizOQueFaltaPagar() {
+        Trabalho t = trabalho(FormaPagamento.PARCELADO);
+        Parcela sinal = parcela(TipoParcela.SINAL, false);
+        Parcela p1 = parcela(TipoParcela.PARCELA, false);
+        assertThat(RegraDownload.avaliar(t, List.of(sinal, p1)).motivo()).contains("do sinal e da 1ª parcela");
+        sinal.setPagoEm(LocalDate.now());
+        assertThat(RegraDownload.avaliar(t, List.of(sinal, p1)).motivo()).contains("da 1ª parcela").doesNotContain("sinal");
+        sinal.setPagoEm(null);
+        p1.setPagoEm(LocalDate.now());
+        assertThat(RegraDownload.avaliar(t, List.of(sinal, p1)).motivo()).endsWith("do sinal.");
+    }
+
+    @Test
     void naoLiberaAntesDaEntrega() {
         Trabalho t = trabalho(FormaPagamento.AVISTA);
         t.setStatus(StatusTrabalho.EDICAO);

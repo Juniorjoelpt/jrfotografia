@@ -132,7 +132,9 @@ export function Site() {
                   </div>
                   <button className="botao" onClick={() => escolherPacote(p.id)}>Quero este pacote</button>
                 </div>
-                <div className="foto" style={fotos.length ? { backgroundImage: `url(${img(fotos[(i + 1) % fotos.length], true)})` } : undefined} />
+                {fotos.length
+                  ? <div className="foto" style={{ backgroundImage: `url(${img(fotos[(i + 1) % fotos.length], true)})` }} />
+                  : <div className="foto vazia" aria-hidden="true"><Monograma tamanho={72} /></div>}
               </article>
             ))}
           </div>
