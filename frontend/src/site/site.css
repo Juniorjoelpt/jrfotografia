@@ -99,3 +99,6 @@
 
 /* As cópias inclinadas não encostam na borda da tela */
 .copias { margin-inline: 14px; }
+
+/* As seções param abaixo do cabeçalho fixo ao rolar até elas */
+#inicio, #portfolio, #sobre, #pacotes, #orcamento { scroll-margin-top: 72px; }

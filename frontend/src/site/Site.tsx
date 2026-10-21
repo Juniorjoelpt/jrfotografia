@@ -3,7 +3,20 @@ import { Link } from 'react-router-dom';
 import { api, ErroApi } from '../api';
 import { Logo, Monograma } from '../componentes/Logo';
 import { Visualizador } from '../componentes/Visualizador';
-import { Imagem, useRevelar } from '../componentes/Movimento';
+import { Imagem, movimentoReduzido, useRevelar } from '../componentes/Movimento';
+
+/**
+ * Rola até a seção sem mudar o endereço (#...). Alguns navegadores de celular reprocessam a página
+ * quando o endereço muda; assim o "Pedir orçamento" só desliza até o formulário.
+ */
+const irPara = (id: string) => (e: React.MouseEvent) => {
+  e.preventDefault();
+  const alvo = document.getElementById(id);
+  if (!alvo) return;
+  // Mostra de imediato as seções do caminho, para não "piscarem" durante a rolagem.
+  document.querySelectorAll('[data-revelar]').forEach((el) => el.classList.add('visivel'));
+  alvo.scrollIntoView({ behavior: movimentoReduzido() ? 'auto' : 'smooth', block: 'start' });
+};
 import type { Estudio, Pacote, PortfolioFoto } from '../tipos';
 import { linkWhatsapp, moeda, telefone } from '../util';
 import './site.css';
@@ -29,21 +42,22 @@ export function Site() {
 
   const escolherPacote = (id: number) => {
     setPacoteEscolhido(id);
-    document.getElementById('orcamento')?.scrollIntoView({ behavior: 'smooth' });
+    document.querySelectorAll('[data-revelar]').forEach((el) => el.classList.add('visivel'));
+    document.getElementById('orcamento')?.scrollIntoView({ behavior: movimentoReduzido() ? 'auto' : 'smooth', block: 'start' });
   };
 
   return (
     <>
       <header className="site-topo">
         <div className="dentro">
-          <a href="#inicio" aria-label="JR Fotografia, início" style={{ color: 'var(--tinta)' }}><Monograma tamanho={40} /></a>
+          <a href="#inicio" onClick={irPara('inicio')} aria-label="JR Fotografia, início" style={{ color: 'var(--tinta)' }}><Monograma tamanho={40} /></a>
           <nav aria-label="Seções">
-            <a href="#portfolio">Portfólio</a>
-            <a href="#sobre">Sobre</a>
-            <a href="#pacotes">Pacotes</a>
-            <a href="#orcamento">Contato</a>
+            <a href="#portfolio" onClick={irPara('portfolio')}>Portfólio</a>
+            <a href="#sobre" onClick={irPara('sobre')}>Sobre</a>
+            <a href="#pacotes" onClick={irPara('pacotes')}>Pacotes</a>
+            <a href="#orcamento" onClick={irPara('orcamento')}>Contato</a>
           </nav>
-          <a className="botao principal pequeno" href="#orcamento">Pedir orçamento</a>
+          <a className="botao principal pequeno" href="#orcamento" onClick={irPara('orcamento')}>Pedir orçamento</a>
         </div>
       </header>
 
@@ -54,8 +68,8 @@ export function Site() {
             <h1 className="display">Olá!</h1>
             <p>Seja bem-vindo. Ensaios femininos, gestante, família, infantil e eventos{estudio?.cidade ? ` em ${estudio.cidade}` : ''}, com edição completa e entrega digital.</p>
             <div className="acoes">
-              <a className="botao principal" href="#orcamento">Pedir orçamento</a>
-              <a className="botao" href="#pacotes">Ver pacotes</a>
+              <a className="botao principal" href="#orcamento" onClick={irPara('orcamento')}>Pedir orçamento</a>
+              <a className="botao" href="#pacotes" onClick={irPara('pacotes')}>Ver pacotes</a>
             </div>
           </div>
           <div className="foto">
