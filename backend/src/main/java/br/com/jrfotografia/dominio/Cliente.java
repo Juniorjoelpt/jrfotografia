@@ -29,5 +29,6 @@ public class Cliente {
     private Origem origem;
 
     private String observacoes;
+    private LocalDateTime ultimoContato;
     private LocalDateTime criadoEm = LocalDateTime.now();
 }

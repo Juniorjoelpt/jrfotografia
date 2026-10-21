@@ -168,7 +168,7 @@ public final class Dtos {
                              StatusTrabalho status, boolean exigeSelecao, Integer fotosNoPacote,
                              BigDecimal precoFotoExtra, boolean selecaoAberta, long selecionadas,
                              boolean downloadLiberado, String motivoDownload, LocalDateTime expiraEm,
-                             List<FotoGaleria> fotos) {}
+                             List<FotoGaleria> fotos, String pesquisaToken) {}
 
     public record FotoGaleria(Long id, Integer largura, Integer altura, boolean selecionada, String comentario, boolean editada) {}
 

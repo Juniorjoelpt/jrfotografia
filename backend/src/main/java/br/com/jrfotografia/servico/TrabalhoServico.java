@@ -41,9 +41,12 @@ public class TrabalhoServico {
     private final PasswordEncoder senhas;
     private final AppProps props;
 
+    private final EquipeServico equipe;
+
     public TrabalhoServico(TrabalhoRepo trabalhos, ClienteRepo clientes, PacoteRepo pacotes, ParcelaRepo parcelas,
                            FotoRepo fotos, Imagens imagens, Armazenamento armazenamento,
-                           PasswordEncoder senhas, AppProps props) {
+                           PasswordEncoder senhas, AppProps props, EquipeServico equipe) {
+        this.equipe = equipe;
         this.trabalhos = trabalhos;
         this.clientes = clientes;
         this.pacotes = pacotes;
@@ -165,6 +168,8 @@ public class TrabalhoServico {
             }
             t.setEntregueEm(LocalDateTime.now());
             t.setGaleriaExpiraEm(LocalDateTime.now().plusDays(props.galeria().validadeDias()));
+            equipe.concluirTarefasDoTrabalho(t.getId());
+            equipe.garantirPesquisa(t);
         }
         if (novo == StatusTrabalho.CANCELADO && t.getCanceladoEm() == null) {
             t.setCanceladoEm(LocalDateTime.now());

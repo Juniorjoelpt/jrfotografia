@@ -142,3 +142,6 @@ export function cpfValido(v: string) {
   }
   return true;
 }
+
+export const urlPesquisa = (token: string) => `${window.location.origin}/pesquisa/${token}`;
+export const NOMES_TAREFA: Record<'A_FAZER' | 'FAZENDO' | 'FEITA', string> = { A_FAZER: 'A fazer', FAZENDO: 'Fazendo', FEITA: 'Feita' };

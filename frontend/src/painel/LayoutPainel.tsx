@@ -17,6 +17,8 @@ const ITENS = [
   { para: '/painel/trabalhos', nome: 'Trabalhos', d: 'M4 7h16v12H4zM9 7V5h6v2M12 11a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5', admin: false, base: true },
   { para: '/painel/vendas', nome: 'Vendas', d: 'M3 12V4h8l10 10-8 8zM7.5 6.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2', admin: false, base: true },
   { para: '/painel/clientes', nome: 'Clientes', d: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4.5-6 8-6s7 2 8 6', admin: false },
+  { para: '/painel/relacionamento', nome: 'Relacionamento', d: 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z', admin: true },
+  { para: '/painel/equipe', nome: 'Equipe', d: 'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20c.6-3.4 3-5 6-5s5.4 1.6 6 5M16 5.5a3 3 0 0 1 0 5.5M18 15c1.8.6 2.8 2.2 3 5', admin: false },
   { para: '/painel/financeiro', nome: 'Financeiro', d: 'M3 7h18v10H3zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M6 7v10M18 7v10', admin: true },
   { para: '/painel/relatorios', nome: 'Relatórios', d: 'M3 20h18M6 20v-7M11 20V5M16 20v-10M21 20v-4', admin: true },
   { para: '/painel/ajustes', nome: 'Ajustes', d: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19 12l2-1-1-3-2 .3-1.4-1.4.3-2-3-1-1 2h-2l-1-2-3 1 .3 2L6 7.3 4 7 3 10l2 1v2l-2 1 1 3 2-.3 1.4 1.4-.3 2 3 1 1-2h2l1 2 3-1-.3-2 1.4-1.4 2 .3 1-3-2-1z', admin: true },

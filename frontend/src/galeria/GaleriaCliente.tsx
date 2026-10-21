@@ -149,6 +149,11 @@ export function GaleriaCliente() {
             {g.status === 'ENTREGUE' && g.downloadLiberado && (
               <div><a className="botao principal" href={`/api/galeria/${token}/download.zip?t=${encodeURIComponent(acesso)}`}>Baixar todas as fotos ({g.fotos.length})</a></div>
             )}
+            {g.pesquisaToken && (
+              <a className="aviso g-pesquisa" href={`/pesquisa/${g.pesquisaToken}`}>
+                <strong>Como foi sua experiência?</strong> <span>Me conta em 1 minuto →</span>
+              </a>
+            )}
             {erro && <p className="aviso erro" role="alert">{erro}</p>}
           </header>
 

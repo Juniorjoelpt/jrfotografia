@@ -72,6 +72,7 @@ export interface Galeria {
   titulo: string; clienteNome: string; dataTrabalho?: string; estudioNome: string; estudioWhatsapp?: string; status: StatusTrabalho;
   exigeSelecao: boolean; fotosNoPacote: number | null; precoFotoExtra: number | null; selecaoAberta: boolean;
   selecionadas: number; downloadLiberado: boolean; motivoDownload?: string; expiraEm?: string; fotos: FotoGaleria[];
+  pesquisaToken?: string | null;
 }
 
 // ---------- fase 2: agenda, orçamentos, financeiro e relatórios
@@ -165,3 +166,38 @@ export interface Verificacao {
   valido: boolean; codigo?: string; estudio?: string; contratante?: string; cpf?: string; assinadoEm?: string; enviadoEm?: string;
   hashTexto?: string; hashPdf?: string; arquivoConfere?: boolean | null;
 }
+
+// ---------- Fase 3 · bloco 3: relacionamento e equipe
+export interface ProximaData {
+  clienteId: number; nome: string; telefone?: string; tipo: 'ANIVERSARIO' | 'DATA_ESPECIAL'; descricao: string; data: string;
+  diasFaltando: number; anos?: number | null; dataId?: number | null;
+}
+export interface DataEspecial { id: number; descricao: string; dia: number; mes: number; ano?: number | null }
+export interface Inativa {
+  clienteId: number; nome: string; telefone?: string; ultimoEnsaio: string; ultimoTrabalho: string; totalTrabalhos: number;
+  totalPago: number; mesesSemEnsaio: number; ultimoContato?: string | null;
+}
+export interface PesquisaPainel {
+  id: number; trabalhoId: number; trabalho: string; cliente: string; token: string; nota?: number | null; atendimento?: number | null;
+  fotos?: number | null; prazo?: number | null; comentario?: string | null; autorizaDepoimento?: boolean | null; criadoEm: string; respondidaEm?: string | null;
+}
+export interface ResumoPesquisas {
+  enviadas: number; respondidas: number; nps?: number | null; promotores: number; neutros: number; detratores: number;
+  mediaAtendimento?: number | null; mediaFotos?: number | null; mediaPrazo?: number | null;
+}
+export interface PesquisaPublica { cliente: string; estudioNome: string; estudioInstagram?: string; respondida: boolean; nota?: number | null }
+export interface Freelancer {
+  id: number; nome: string; telefone?: string; funcao?: string; chavePix?: string; observacoes?: string; ativo: boolean;
+  aPagar: number; pago: number; trabalhos: number;
+}
+export interface Comissao {
+  id: number; trabalhoId: number; trabalho: string; freelancerId: number; freelancer: string; telefone?: string; chavePix?: string;
+  funcao?: string; percentual?: number | null; valor: number; pagoEm?: string | null;
+}
+export type StatusTarefa = 'A_FAZER' | 'FAZENDO' | 'FEITA';
+export interface Tarefa {
+  id: number; trabalhoId?: number | null; trabalho?: string | null; titulo: string; descricao?: string | null;
+  responsavelUsuarioId?: number | null; responsavelFreelancerId?: number | null; responsavel?: string | null; prazo?: string | null;
+  status: StatusTarefa; automatica: boolean; atrasada: boolean; criadoEm: string; concluidaEm?: string | null;
+}
+export interface Pessoa { id: number; nome: string; tipo: 'USUARIO' | 'FREELANCER' }

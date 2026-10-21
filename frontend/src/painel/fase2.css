@@ -136,3 +136,17 @@ a.ev-cartao:hover { background: rgba(211,47,47,.24); }
 @media (max-width: 640px) { .ao-dia { grid-template-columns: 1fr; gap: var(--espaco-2); } }
 .ass-estudio { background: #f4f3ef; border-radius: var(--raio-sm); padding: var(--espaco-3); max-width: 360px; }
 .ass-estudio img { display: block; width: 100%; height: auto; }
+
+/* Equipe: quadro de tarefas */
+.tf-quadro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--espaco-4); align-items: start; }
+.tf-coluna { display: grid; gap: var(--espaco-2); align-content: start; }
+.tf-coluna h2 { margin: 0; padding-bottom: var(--espaco-2); border-bottom: 1px solid var(--linha); }
+.tf-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--espaco-3); }
+.tf-cartao { display: grid; gap: 6px; padding: var(--espaco-3) var(--espaco-4); background: rgba(23,23,22,.6); border: 1px solid var(--linha);
+  border-left: 3px solid var(--tinta-suave); border-radius: var(--raio-sm); min-width: 0; }
+.tf-cartao.atrasada { border-left-color: var(--erro); }
+.tf-cartao.feita { opacity: .65; border-left-color: var(--sucesso); }
+.tf-cartao.feita strong { text-decoration: line-through; }
+.tf-cartao a.legenda { text-decoration: none; }
+@media (max-width: 900px) { .tf-quadro { grid-template-columns: 1fr; } }
+.lembretes { display: grid; gap: var(--espaco-2); }

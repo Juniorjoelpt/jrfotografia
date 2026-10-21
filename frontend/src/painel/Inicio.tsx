@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { sessaoAtual } from '../api';
-import type { Painel, Reserva } from '../tipos';
+import type { Painel, ProximaData, Reserva, Tarefa } from '../tipos';
 import { MESES, moeda, primeiroNome } from '../util';
 import { Erro, LinhaTrabalho, Linhas, useDados } from './comum';
 import { Numero } from '../componentes/Movimento';
@@ -12,6 +12,10 @@ export function Inicio() {
   const { dados: reservas } = useDados<Reserva[]>(admin ? '/reservas' : null);
   const pendentes = (reservas ?? []).filter((r) => r.status === 'PENDENTE');
   const comComprovante = pendentes.filter((r) => r.comprovante).length;
+  const { dados: datas } = useDados<ProximaData[]>(admin ? '/relacionamento/datas?dias=7' : null);
+  const { dados: tarefas } = useDados<Tarefa[]>('/tarefas');
+  const atrasadas = (tarefas ?? []).filter((t) => t.atrasada);
+  const hojeDatas = (datas ?? []).filter((d) => d.diasFaltando === 0);
 
   return (
     <>
@@ -38,6 +42,21 @@ export function Inicio() {
           <strong>{pendentes.length === 1 ? '1 pré-reserva do site' : `${pendentes.length} pré-reservas do site`}</strong>
           <span>{comComprovante ? `${comComprovante} com comprovante do Pix para conferir.` : 'Aguardando o Pix do sinal.'} Ver na agenda →</span>
         </Link>
+      )}
+      {(atrasadas.length > 0 || (datas && datas.length > 0)) && (
+        <div className="lembretes">
+          {atrasadas.length > 0 && (
+            <Link to="/painel/equipe" className="aviso" style={{ margin: 0, borderColor: 'var(--erro)', textDecoration: 'none', color: 'var(--tinta)' }}>
+              <strong style={{ color: 'var(--erro)' }}>{atrasadas.length === 1 ? '1 tarefa atrasada' : `${atrasadas.length} tarefas atrasadas`}</strong> · {atrasadas[0].titulo}{atrasadas.length > 1 ? '…' : ''}
+            </Link>
+          )}
+          {datas && datas.length > 0 && (
+            <Link to="/painel/relacionamento#datas" className="aviso" style={{ margin: 0, textDecoration: 'none', color: 'var(--tinta)' }}>
+              <strong>{hojeDatas.length > 0 ? `Hoje: ${hojeDatas.map((d) => `${d.descricao.toLowerCase()} de ${primeiroNome(d.nome)}`).join(', ')}` : `${datas.length} ${datas.length === 1 ? 'data especial' : 'datas especiais'} nesta semana`}</strong>
+              {' '}· mandar mensagem →
+            </Link>
+          )}
+        </div>
       )}
       <Erro msg={erro} />
       {p && (

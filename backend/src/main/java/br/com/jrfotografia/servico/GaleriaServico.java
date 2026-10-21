@@ -37,8 +37,12 @@ public class GaleriaServico {
     private final Armazenamento armazenamento;
     private final Imagens imagens;
 
+    private final EquipeServico equipe;
+
     public GaleriaServico(TrabalhoRepo trabalhos, FotoRepo fotos, ParcelaRepo parcelas,
-                          PasswordEncoder senhas, JwtService jwt, Armazenamento armazenamento, Imagens imagens) {
+                          PasswordEncoder senhas, JwtService jwt, Armazenamento armazenamento, Imagens imagens,
+                          EquipeServico equipe) {
+        this.equipe = equipe;
         this.armazenamento = armazenamento;
         this.imagens = imagens;
         this.trabalhos = trabalhos;
@@ -153,6 +157,7 @@ public class GaleriaServico {
         }
         t.setSelecaoFechadaEm(LocalDateTime.now());
         t.setStatus(StatusTrabalho.EDICAO);
+        equipe.tarefaDeEdicao(t, escolhidas);
         return new ResultadoSelecao(escolhidas, extras, valor);
     }
 

@@ -7,6 +7,7 @@ import br.com.jrfotografia.config.Tentativas;
 import br.com.jrfotografia.dominio.Enums.StatusTrabalho;
 import br.com.jrfotografia.dominio.Foto;
 import br.com.jrfotografia.dominio.Repositorios.EstudioRepo;
+import br.com.jrfotografia.dominio.Repositorios.PesquisaRepo;
 import br.com.jrfotografia.dominio.Trabalho;
 import br.com.jrfotografia.servico.Armazenamento;
 import br.com.jrfotografia.servico.GaleriaServico;
@@ -42,8 +43,11 @@ public class GaleriaControle {
     private final Armazenamento armazenamento;
     private final EstudioRepo estudios;
     private final Tentativas tentativas;
+    private final PesquisaRepo pesquisas;
 
-    public GaleriaControle(GaleriaServico galeria, Armazenamento armazenamento, EstudioRepo estudios, Tentativas tentativas) {
+    public GaleriaControle(GaleriaServico galeria, Armazenamento armazenamento, EstudioRepo estudios, Tentativas tentativas,
+                           PesquisaRepo pesquisas) {
+        this.pesquisas = pesquisas;
         this.tentativas = tentativas;
         this.galeria = galeria;
         this.armazenamento = armazenamento;
@@ -176,6 +180,9 @@ public class GaleriaControle {
                 download.liberado(),
                 download.motivo(),
                 t.getGaleriaExpiraEm(),
-                fotos.stream().map(f -> new FotoGaleria(f.getId(), f.getLargura(), f.getAltura(), f.isSelecionada(), f.getComentario(), f.getArquivoFinal() != null)).toList());
+                fotos.stream().map(f -> new FotoGaleria(f.getId(), f.getLargura(), f.getAltura(), f.isSelecionada(), f.getComentario(), f.getArquivoFinal() != null)).toList(),
+                // Depois da entrega, a galeria convida a responder a pesquisa (enquanto não respondida).
+                t.getStatus() == StatusTrabalho.ENTREGUE ? pesquisas.findByTrabalhoId(t.getId())
+                        .filter(p -> p.getRespondidaEm() == null).map(p -> p.getToken()).orElse(null) : null);
     }
 }

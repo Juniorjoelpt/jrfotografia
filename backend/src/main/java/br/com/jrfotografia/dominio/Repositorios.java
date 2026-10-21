@@ -123,6 +123,35 @@ public final class Repositorios {
         List<ContratoAssinatura> findByTrabalhoIdOrderByCriadoEmDesc(Long trabalhoId);
     }
 
+    public interface DataEspecialRepo extends JpaRepository<Equipe.DataEspecial, Long> {
+        List<Equipe.DataEspecial> findByEstudioId(Long estudioId);
+        List<Equipe.DataEspecial> findByClienteIdOrderByMesAscDiaAsc(Long clienteId);
+        Optional<Equipe.DataEspecial> findByIdAndClienteId(Long id, Long clienteId);
+    }
+
+    public interface PesquisaRepo extends JpaRepository<Equipe.PesquisaSatisfacao, Long> {
+        Optional<Equipe.PesquisaSatisfacao> findByToken(String token);
+        Optional<Equipe.PesquisaSatisfacao> findByTrabalhoId(Long trabalhoId);
+        List<Equipe.PesquisaSatisfacao> findByEstudioIdOrderByCriadoEmDesc(Long estudioId);
+    }
+
+    public interface FreelancerRepo extends JpaRepository<Equipe.Freelancer, Long> {
+        List<Equipe.Freelancer> findByEstudioIdOrderByAtivoDescNomeAsc(Long estudioId);
+        Optional<Equipe.Freelancer> findByIdAndEstudioId(Long id, Long estudioId);
+    }
+
+    public interface TrabalhoFreelancerRepo extends JpaRepository<Equipe.TrabalhoFreelancer, Long> {
+        List<Equipe.TrabalhoFreelancer> findByTrabalhoIdOrderByIdAsc(Long trabalhoId);
+        List<Equipe.TrabalhoFreelancer> findByEstudioIdOrderByCriadoEmDesc(Long estudioId);
+        Optional<Equipe.TrabalhoFreelancer> findByIdAndEstudioId(Long id, Long estudioId);
+    }
+
+    public interface TarefaRepo extends JpaRepository<Equipe.Tarefa, Long> {
+        List<Equipe.Tarefa> findByEstudioIdOrderByIdDesc(Long estudioId);
+        List<Equipe.Tarefa> findByTrabalhoIdOrderByIdAsc(Long trabalhoId);
+        Optional<Equipe.Tarefa> findByIdAndEstudioId(Long id, Long estudioId);
+    }
+
     public interface ReservaRepo extends JpaRepository<Agendamento.Reserva, Long> {
         Optional<Agendamento.Reserva> findByToken(String token);
         Optional<Agendamento.Reserva> findByIdAndEstudioId(Long id, Long estudioId);

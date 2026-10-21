@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, ErroApi, sessaoAtual } from '../api';
-import type { Cliente, Origem, TrabalhoResumo } from '../tipos';
+import type { Cliente, DataEspecial, Origem, TrabalhoResumo } from '../tipos';
 import { data, linkWhatsapp, NOMES_ORIGEM, telefone } from '../util';
 import { Erro, LinhaTrabalho, Linhas, useDados } from './comum';
 
@@ -48,6 +48,7 @@ function LinhaCliente({ c, aoEditar }: { c: Cliente; aoEditar: () => void }) {
             {sessaoAtual()?.perfil === 'ADMIN' && <Link className="botao pequeno" to={`/painel/trabalhos/novo?cliente=${c.id}`}>Novo trabalho</Link>}
           </div>
           {c.observacoes && <p className="suave" style={{ margin: 0 }}>{c.observacoes}</p>}
+          <DatasEspeciais clienteId={c.id} />
           {trabalhos && <Linhas itens={trabalhos.map((t) => <LinhaTrabalho key={t.id} t={t} />)} vazio="Nenhum trabalho com este cliente." />}
         </div>
       )}
@@ -99,5 +100,52 @@ export function FormCliente({ cliente, aoSalvar, aoCancelar }: { cliente: Client
         <button type="button" className="botao" onClick={aoCancelar}>Cancelar</button>
       </div>
     </form>
+  );
+}
+
+/** Datas que a cliente quer lembradas (casamento, filhos…). Aparecem em Relacionamento › Aniversários e datas. */
+function DatasEspeciais({ clienteId }: { clienteId: number }) {
+  const { dados, recarregar } = useDados<DataEspecial[]>(`/clientes/${clienteId}/datas`);
+  const [nova, setNova] = useState(false);
+  const [erro, setErro] = useState('');
+  async function salvar(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const [ano, mes, dia] = String(f.get('data')).split('-').map(Number);
+    setErro('');
+    try {
+      await api(`/clientes/${clienteId}/datas`, { corpo: { descricao: f.get('descricao'), dia, mes, ano: f.get('comAno') === 'on' ? ano : null } });
+      setNova(false);
+      recarregar();
+    } catch (ex) {
+      setErro(ex instanceof ErroApi ? ex.message : 'Não foi possível salvar.');
+    }
+  }
+  const apagar = async (id: number) => { await api(`/clientes/${clienteId}/datas/${id}`, { metodo: 'DELETE' }); recarregar(); };
+  return (
+    <div style={{ display: 'grid', gap: 'var(--espaco-2)' }}>
+      <div className="acoes-linha">
+        <span className="legenda">DATAS ESPECIAIS</span>
+        {dados?.map((d) => (
+          <span key={d.id} className="etiqueta">
+            {d.descricao} · {String(d.dia).padStart(2, '0')}/{String(d.mes).padStart(2, '0')}{d.ano ? `/${d.ano}` : ''}
+            <button className="botao-link" aria-label={`Apagar ${d.descricao}`} style={{ marginLeft: 6, fontSize: 14 }} onClick={() => apagar(d.id)}>×</button>
+          </span>
+        ))}
+        {!nova && <button className="botao-link legenda" onClick={() => setNova(true)}>+ adicionar</button>}
+      </div>
+      {nova && (
+        <form className="grade-form duas anima-entrada" onSubmit={salvar}>
+          <label className="campo"><span>O quê</span><input name="descricao" required maxLength={80} placeholder="Casamento, aniversário do filho…" /></label>
+          <label className="campo"><span>Data</span><input name="data" type="date" required /></label>
+          <label className="marcar"><input type="checkbox" name="comAno" defaultChecked /> Contar os anos (ex.: 5 anos de casados)</label>
+          <Erro msg={erro} />
+          <div className="acoes-linha inteira">
+            <button className="botao pequeno principal">Salvar data</button>
+            <button type="button" className="botao pequeno" onClick={() => setNova(false)}>Cancelar</button>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }
