@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Ações do NetBeans: "Run" e "Debug" sobem a API no perfil dev (banco H2 local, sem MySQL). -->
+<!-- Ações do NetBeans: "Run" e "Debug" sobem a API no perfil local (MySQL da máquina, root/araca123).
+     Para usar o banco H2 de teste em vez do MySQL, troque o perfil abaixo para dev. -->
 <actions>
     <action>
         <actionName>run</actionName>
@@ -11,7 +12,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:3.5.1:exec</goal>
         </goals>
         <properties>
-            <exec.vmArgs>-Dspring.profiles.active=dev</exec.vmArgs>
+            <exec.vmArgs>-Dspring.profiles.active=local</exec.vmArgs>
             <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
             <exec.appArgs></exec.appArgs>
             <exec.mainClass>br.com.jrfotografia.JrFotografiaApplication</exec.mainClass>
@@ -28,7 +29,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:3.5.1:exec</goal>
         </goals>
         <properties>
-            <exec.vmArgs>-Dspring.profiles.active=dev -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
+            <exec.vmArgs>-Dspring.profiles.active=local -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
             <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
             <exec.appArgs></exec.appArgs>
             <exec.mainClass>br.com.jrfotografia.JrFotografiaApplication</exec.mainClass>
