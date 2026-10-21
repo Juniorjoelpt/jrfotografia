@@ -84,7 +84,12 @@ export function useCasca(ativo = true) {
     const html = document.documentElement;
     html.classList.add('casca');
     // Ao fechar o teclado, devolve a tela ao topo para o iOS não ficar com o deslocamento preso.
-    const aoSair = () => {
+    // Só quando quem perdeu o foco foi um campo de texto (o teclado estava aberto) e a casca está valendo
+    // (celular); no computador a página rola pela janela e voltar ao topo atrapalharia (ex.: tocar no coração).
+    const aoSair = (e: FocusEvent) => {
+      const saiu = e.target;
+      if (!(saiu instanceof HTMLElement) || !saiu.matches('input:not([type=checkbox]):not([type=radio]):not([type=file]), textarea, select, [contenteditable]')) return;
+      if (getComputedStyle(html).overflow !== 'hidden') return;
       setTimeout(() => {
         const ativo = document.activeElement;
         if (!(ativo instanceof HTMLElement) || !ativo.matches('input, textarea, select, [contenteditable]')) window.scrollTo(0, 0);
