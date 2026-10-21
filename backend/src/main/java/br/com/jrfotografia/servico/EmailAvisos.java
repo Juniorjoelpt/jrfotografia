@@ -101,22 +101,44 @@ public class EmailAvisos {
 
     public void preReservaRecebida(Reserva r) {
         Estudio e = estudio(r.getEstudioId());
+        boolean automatico = e.pixAutomatico();
         List<Linha> resumo = new ArrayList<>(List.of(new Linha("Ensaio", r.getPacote().getNome().replaceFirst("^Mini-sessão · ", "Mini-sessão ")),
                 new Linha("Quando", quando(r.getInicio()))));
         if (r.getDesconto() != null) resumo.add(new Linha("Desconto (" + r.getCupomCodigo() + ")", "− " + moeda(r.getDesconto())));
         resumo.add(new Linha("Valor", moeda(r.getValorTotal())));
         resumo.add(new Linha("Sinal no Pix", moeda(r.getValorSinal())));
-        if (e.getChavePix() != null) resumo.add(new Linha("Chave Pix", e.getChavePix()));
-        paraCliente(e, r.getEmail(), "Seu horário está pré-reservado · " + e.getNome(), "Horário pré-reservado!",
-                List.of("Olá, " + esc(primeiro(r.getNome())) + "! Recebi sua reserva. O horário fica guardado por <b>" + e.getReservaHoras()
+        if (!automatico && e.getChavePix() != null) resumo.add(new Linha("Chave Pix", e.getChavePix()));
+        List<String> texto = automatico
+                ? List.of("Olá, " + esc(primeiro(r.getNome())) + "! Recebi sua reserva. O horário fica guardado por <b>" + e.getReservaHoras()
+                                + " horas</b> enquanto você paga o sinal.",
+                        "Na página da reserva tem o QR Code do Pix com o valor certinho. Pagou, a confirmação chega na hora, sem precisar mandar comprovante.")
+                : List.of("Olá, " + esc(primeiro(r.getNome())) + "! Recebi sua reserva. O horário fica guardado por <b>" + e.getReservaHoras()
                                 + " horas</b> enquanto você paga o sinal no Pix e envia o comprovante pela página da reserva.",
-                        "Assim que eu conferir o Pix, você recebe a confirmação."),
-                resumo, new Botao("Enviar comprovante do Pix", url(e, "/reserva/" + r.getToken())), "PRE_RESERVA", "reserva:" + r.getId(), null);
+                        "Assim que eu conferir o Pix, você recebe a confirmação.");
+        paraCliente(e, r.getEmail(), "Seu horário está pré-reservado · " + e.getNome(), "Horário pré-reservado!", texto,
+                resumo, new Botao(automatico ? "Pagar o sinal no Pix" : "Enviar comprovante do Pix", url(e, "/reserva/" + r.getToken())),
+                "PRE_RESERVA", "reserva:" + r.getId(), null);
         paraEstudio(e, "Nova pré-reserva: " + r.getNome() + " · " + quando(r.getInicio()), "Nova pré-reserva pelo site",
-                List.of(esc(r.getNome()) + " reservou pelo site. O horário fica seguro por " + e.getReservaHoras() + "h esperando o comprovante do Pix."),
+                List.of(esc(r.getNome()) + " reservou pelo site. O horário fica seguro por " + e.getReservaHoras() + "h esperando "
+                        + (automatico ? "o Pix (a confirmação é automática quando o PagBank avisar)." : "o comprovante do Pix.")),
                 List.of(new Linha("Ensaio", r.getPacote().getNome()), new Linha("Quando", quando(r.getInicio())),
                         new Linha("WhatsApp", PdfServico.fone(r.getTelefone())), new Linha("Valor", moeda(r.getValorTotal()))),
                 new Botao("Ver no painel", url(e, "/painel/agenda#pre-reservas")), "AVISO_PRE_RESERVA", "reserva:" + r.getId());
+    }
+
+    /** Pix do PagBank pago: aviso para o fotógrafo (e o que conferir, se a baixa automática não deu certo). */
+    public void pixRecebido(Estudio e, br.com.jrfotografia.dominio.CobrancaPix c, String problema) {
+        List<String> p = new ArrayList<>();
+        p.add((c.getNome() != null ? esc(c.getNome()) + " pagou " : "Entrou ") + "<b>" + esc(moeda(c.getValorPago() != null ? c.getValorPago() : c.getValor()))
+                + "</b> pelo Pix (" + esc(c.getDescricao()) + ").");
+        if (problema != null) p.add("<b>Atenção:</b> " + esc(problema));
+        else p.add(c.getReservaId() != null ? "A reserva foi confirmada automaticamente e a cliente recebeu o link da área dela."
+                : "O pagamento já está marcado como pago no financeiro.");
+        if (c.isSandbox()) p.add("(Pagamento de teste, no ambiente sandbox do PagBank.)");
+        paraEstudio(e, (problema != null ? "Pix recebido · conferir: " : "Pix recebido: ") + (c.getNome() != null ? c.getNome() : c.getDescricao()),
+                problema != null ? "Pix recebido, mas precisa de atenção" : "Pix recebido ✅", p,
+                List.of(new Linha("Valor", moeda(c.getValorPago() != null ? c.getValorPago() : c.getValor())), new Linha("Pedido PagBank", c.getPedidoId())),
+                new Botao("Ver pagamentos", url(e, "/painel/ajustes#pagamentos")), "AVISO_PIX", "pix:" + c.getId());
     }
 
     public void comprovanteRecebido(Reserva r) {
@@ -323,13 +345,16 @@ public class EmailAvisos {
         if (!e.isEmailLembretes()) return;
         List<Linha> resumo = new ArrayList<>(List.of(new Linha(p.getDescricao(), moeda(p.getValor())),
                 new Linha("Vencimento", DATA.format(p.getVencimento()))));
-        if (e.getChavePix() != null) resumo.add(new Linha("Chave Pix", e.getChavePix()));
+        if (!e.pixAutomatico() && e.getChavePix() != null) resumo.add(new Linha("Chave Pix", e.getChavePix()));
+        String depois = e.pixAutomatico() && t.getTokenCliente() != null
+                ? " Na sua área tem o Pix com o valor certinho, e a baixa é automática." : null;
         paraCliente(e, t.getCliente().getEmail(),
                 (vencida ? "Pagamento em aberto" : "Lembrete de pagamento") + " · " + e.getNome(),
                 vencida ? "Pagamento em aberto" : "Lembrete de pagamento",
                 List.of("Olá, " + esc(primeiro(t.getCliente().getNome())) + "! " + (vencida
                         ? "Consta em aberto o pagamento abaixo. Se já pagou, desconsidere e me mande o comprovante, por favor."
-                        : "Passando para lembrar do pagamento abaixo. Depois de pagar, é só me mandar o comprovante.")),
+                        : "Passando para lembrar do pagamento abaixo. Depois de pagar, é só me mandar o comprovante.")
+                        + (depois != null ? depois : "")),
                 resumo, t.getTokenCliente() != null ? new Botao("Ver meus pagamentos", url(e, "/meu/" + t.getTokenCliente())) : null,
                 vencida ? "COBRANCA_VENCIDA" : "COBRANCA_LEMBRETE", "parcela:" + p.getId() + ":" + p.getVencimento(), null);
     }

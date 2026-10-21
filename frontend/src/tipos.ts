@@ -128,6 +128,16 @@ export interface ReservaPublica {
   token: string; nome: string; pacote: string; inicio: string; fim: string; valorTotal: number; valorSinal: number; status: StatusReserva;
   expiraEm: string; comprovanteEnviado: boolean; chavePix?: string; estudioNome: string; estudioWhatsapp?: string;
   motivoRecusa?: string; areaCliente?: string; cupomCodigo?: string | null; desconto?: number | null; campanhaSlug?: string | null;
+  pixAutomatico: boolean; pix?: PixCobranca | null;
+}
+/** QR Code Pix do PagBank (texto = copia e cola, só enquanto aguarda). */
+export interface PixCobranca {
+  id: number; texto?: string | null; valor: number; expiraEm: string; status: 'AGUARDANDO' | 'PAGA' | 'EXPIRADA'; sandbox: boolean;
+}
+export interface ConfigPagBank { ativo: boolean; temToken: boolean; sandbox: boolean; urlNotificacao: string; notificacaoPublica: boolean }
+export interface CobrancaPainel {
+  id: number; descricao: string; nome?: string; valor: number; status: 'AGUARDANDO' | 'PAGA' | 'EXPIRADA'; sandbox: boolean; pedidoId: string;
+  criadoEm: string; expiraEm: string; pagoEm?: string; erro?: string; reservaId?: number; parcelaId?: number;
 }
 export interface Reserva {
   id: number; token: string; nome: string; telefone: string; email?: string; pacoteId: number; pacote: string; tipo?: string;
@@ -141,10 +151,11 @@ export interface RegrasCliente {
 export interface AreaCliente {
   nome: string; titulo: string; pacote?: string; tipo?: string; data?: string; duracaoMin: number; local?: string;
   status: StatusTrabalho; canceladoEm?: string; regras: RegrasCliente;
-  parcelas: { descricao: string; valor: number; vencimento?: string; paga: boolean }[];
+  parcelas: { id: number; descricao: string; valor: number; vencimento?: string; paga: boolean }[];
   galeriaToken?: string; galeriaAberta: boolean; estudioNome: string; estudioWhatsapp?: string; chavePix?: string;
   remarcacaoHoras: number; reembolsoDias: number; contratoToken?: string; contratoStatus?: StatusAssinatura;
   indicacao?: { codigo: string; descontoAmiga: number; recompensa: number; indicacoes: number } | null;
+  pixAutomatico: boolean; cpfSalvo: boolean;
 }
 export interface HorarioAtendimento { diaSemana: number; inicio: string; fim: string }
 export interface ConfigAgenda {

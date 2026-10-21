@@ -30,6 +30,7 @@ public class Tentativas {
     public static final Regra COMPROVANTE_APARELHO = new Regra("comprovante", 10, Duration.ofHours(1));
     /** Tentativas de assinar com dados inválidos e consultas de verificação de contrato. */
     public static final Regra ASSINATURA_APARELHO = new Regra("assinatura", 10, Duration.ofHours(1));
+    public static final Regra PIX_APARELHO = new Regra("pix", 12, Duration.ofHours(1));
     public static final Regra VERIFICACAO_APARELHO = new Regra("verificacao", 30, Duration.ofHours(1));
 
     private record Contagem(int erros, Instant inicio) {}

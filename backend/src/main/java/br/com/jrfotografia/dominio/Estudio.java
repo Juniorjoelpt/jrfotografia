@@ -54,7 +54,16 @@ public class Estudio {
     private String emailRemetente;
     private boolean emailAvisos = true;
     private boolean emailLembretes = true;
+    /** Pix com confirmação automática pelo PagBank (o token fica cifrado). */
+    private boolean pagbankAtivo;
+    private String pagbankToken;
+    private boolean pagbankSandbox;
     private int indicacaoDesconto = 10;
     private java.math.BigDecimal indicacaoRecompensa = java.math.BigDecimal.valueOf(50);
     private LocalDateTime criadoEm;
+
+    /** O Pix da reserva e das parcelas sai pelo PagBank, com QR Code e confirmação automática. */
+    public boolean pixAutomatico() {
+        return pagbankAtivo && pagbankToken != null;
+    }
 }

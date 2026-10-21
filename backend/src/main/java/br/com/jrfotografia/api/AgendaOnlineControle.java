@@ -23,6 +23,9 @@ import br.com.jrfotografia.servico.MarketingServico;
 import br.com.jrfotografia.dominio.Marketing.Campanha;
 import br.com.jrfotografia.dominio.ContratoAssinatura;
 import br.com.jrfotografia.servico.EstudioDoSite;
+import br.com.jrfotografia.servico.PixServico;
+import br.com.jrfotografia.servico.PixServico.PixDto;
+import br.com.jrfotografia.dominio.CobrancaPix;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -63,11 +66,13 @@ public class AgendaOnlineControle {
     private final AssinaturaServico assinaturas;
     private final MarketingServico marketing;
     private final CampanhaRepo campanhaRepo;
+    private final PixServico pix;
 
     public AgendaOnlineControle(AgendaOnlineServico servico, EstudioDoSite site, EstudioRepo estudios, PacoteRepo pacotes,
                                 HorarioRepo horarios, ReservaRepo reservas, ParcelaRepo parcelas, Armazenamento armazenamento,
                                 Tentativas tentativas, AssinaturaServico assinaturas, MarketingServico marketing,
-                                CampanhaRepo campanhaRepo, EmailAvisos avisos) {
+                                CampanhaRepo campanhaRepo, EmailAvisos avisos, PixServico pix) {
+        this.pix = pix;
         this.avisos = avisos;
         this.marketing = marketing;
         this.campanhaRepo = campanhaRepo;
@@ -113,7 +118,8 @@ public class AgendaOnlineControle {
     public record ReservaPublica(String token, String nome, String pacote, LocalDateTime inicio, LocalDateTime fim, BigDecimal valorTotal,
                                  BigDecimal valorSinal, StatusReserva status, LocalDateTime expiraEm, boolean comprovanteEnviado,
                                  String chavePix, String estudioNome, String estudioWhatsapp, String motivoRecusa, String areaCliente,
-                                 String cupomCodigo, BigDecimal desconto, String campanhaSlug) {}
+                                 String cupomCodigo, BigDecimal desconto, String campanhaSlug,
+                                 boolean pixAutomatico, PixDto pix) {}
 
     public record ReservaDto(Long id, String token, String nome, String telefone, String email, Long pacoteId, String pacote,
                              String tipo, String mensagem, String origem, LocalDateTime inicio, LocalDateTime fim,
@@ -129,13 +135,17 @@ public class AgendaOnlineControle {
         }
     }
 
-    public record ParcelaCliente(String descricao, BigDecimal valor, LocalDate vencimento, boolean paga) {}
+    public record ParcelaCliente(Long id, String descricao, BigDecimal valor, LocalDate vencimento, boolean paga) {}
+
+    /** CPF de quem paga: o PagBank pede para gerar o Pix (na área da cliente, vazio usa o do cadastro). */
+    public record PixForm(@Size(max = 20) String cpf) {}
 
     public record AreaCliente(String nome, String titulo, String pacote, String tipo, LocalDateTime data, int duracaoMin,
                               String local, StatusTrabalho status, LocalDateTime canceladoEm, Regras regras,
                               List<ParcelaCliente> parcelas, String galeriaToken, boolean galeriaAberta, String estudioNome,
                               String estudioWhatsapp, String chavePix, int remarcacaoHoras, int reembolsoDias,
-                              String contratoToken, String contratoStatus, Indicar indicacao) {}
+                              String contratoToken, String contratoStatus, Indicar indicacao,
+                              boolean pixAutomatico, boolean cpfSalvo) {}
 
     /** Programa de indicação na área da cliente: o código dela e o que cada lado ganha. */
     public record Indicar(String codigo, int descontoAmiga, BigDecimal recompensa, long indicacoes) {}
@@ -214,7 +224,32 @@ public class AgendaOnlineControle {
         return new ReservaPublica(r.getToken(), r.getNome(), r.getPacote().getNome(), r.getInicio(), r.getFim(), r.getValorTotal(), r.getValorSinal(),
                 r.statusAtual(), r.getExpiraEm(), r.getComprovanteEm() != null, e.getChavePix(), e.getNome(), e.getWhatsapp(),
                 r.getMotivoRecusa(), area, r.getCupomCodigo(), r.getDesconto(),
-                r.getCampanhaId() != null ? campanhaRepo.findById(r.getCampanhaId()).map(Campanha::getSlug).orElse(null) : null);
+                r.getCampanhaId() != null ? campanhaRepo.findById(r.getCampanhaId()).map(Campanha::getSlug).orElse(null) : null,
+                e.pixAutomatico() && r.getValorSinal() != null && r.getValorSinal().signum() > 0,
+                PixDto.de(pix.daReserva(r.getId()).orElse(null)));
+    }
+
+    // ---------------------------------------------------------------- Pix automático (PagBank)
+
+    /** Gera (ou devolve o que já existe) o QR Code do sinal, com o valor exato. */
+    @PostMapping("/api/publico/reservas/{token}/pix")
+    public ReservaPublica gerarPixReserva(HttpServletRequest req, @PathVariable String token, @Valid @RequestBody PixForm f) {
+        Reserva r = servico.porToken(token);
+        String aparelho = Tentativas.aparelho(req);
+        CobrancaPix atual = pix.daReserva(r.getId()).orElse(null);
+        boolean nova = atual == null || !CobrancaPix.AGUARDANDO.equals(atual.getStatus());
+        if (nova) tentativas.verificar(Tentativas.PIX_APARELHO, aparelho, "Muitos Pix gerados seguidos.");
+        CobrancaPix c = pix.cobrarReserva(r, f.cpf());
+        if (atual == null || !c.getId().equals(atual.getId())) tentativas.erro(Tentativas.PIX_APARELHO, aparelho);
+        return reserva(token);
+    }
+
+    /** A página da reserva pergunta de tempos em tempos: já pagou? (consulta o PagBank no máximo a cada 8 s). */
+    @GetMapping("/api/publico/reservas/{token}/pix")
+    public ReservaPublica situacaoPixReserva(@PathVariable String token) {
+        Reserva r = servico.porToken(token);
+        pix.daReserva(r.getId()).ifPresent(pix::verificarSemFalhar);
+        return reserva(token);
     }
 
     // ---------------------------------------------------------------- cupom / indicação (antes de reservar)
@@ -296,7 +331,7 @@ public class AgendaOnlineControle {
         Trabalho t = servico.trabalhoDaCliente(token);
         Estudio e = estudios.findById(t.getEstudioId()).orElseThrow();
         List<ParcelaCliente> ps = parcelas.findByTrabalhoIdOrderByVencimentoAscIdAsc(t.getId()).stream()
-                .map(p -> new ParcelaCliente(p.getDescricao(), p.getValor(), p.getVencimento(), p.paga())).toList();
+                .map(p -> new ParcelaCliente(p.getId(), p.getDescricao(), p.getValor(), p.getVencimento(), p.paga())).toList();
         boolean galeria = t.getStatus() == StatusTrabalho.SELECAO || t.getStatus() == StatusTrabalho.EDICAO
                 || t.getStatus() == StatusTrabalho.ENTREGUE;
         ContratoAssinatura contrato = t.getStatus() == StatusTrabalho.CANCELADO ? null : assinaturas.atual(t.getId());
@@ -306,7 +341,28 @@ public class AgendaOnlineControle {
                 e.getRemarcacaoHoras(), e.getReembolsoDias(),
                 contrato != null ? contrato.getToken() : null, contrato != null ? contrato.getStatus().name() : null,
                 e.isIndicacaoAtiva() ? new Indicar(marketing.codigoDaCliente(t.getCliente()), e.getIndicacaoDesconto(), e.getIndicacaoRecompensa(),
-                        marketing.indicacoesDaCliente(t.getCliente().getId()).size()) : null);
+                        marketing.indicacoesDaCliente(t.getCliente().getId()).size()) : null,
+                e.pixAutomatico() && t.getStatus() != StatusTrabalho.CANCELADO,
+                t.getCliente().getCpf() != null && !t.getCliente().getCpf().isBlank());
+    }
+
+    @PostMapping("/api/publico/cliente/{token}/parcelas/{id}/pix")
+    public PixDto gerarPixParcela(HttpServletRequest req, @PathVariable String token, @PathVariable Long id, @Valid @RequestBody PixForm f) {
+        Trabalho t = servico.trabalhoDaCliente(token);
+        String aparelho = Tentativas.aparelho(req);
+        CobrancaPix atual = pix.daParcela(id).orElse(null);
+        if (atual == null || !CobrancaPix.AGUARDANDO.equals(atual.getStatus())) tentativas.verificar(Tentativas.PIX_APARELHO, aparelho, "Muitos Pix gerados seguidos.");
+        CobrancaPix c = pix.cobrarParcela(t, id, f.cpf());
+        if (atual == null || !c.getId().equals(atual.getId())) tentativas.erro(Tentativas.PIX_APARELHO, aparelho);
+        return PixDto.de(c);
+    }
+
+    @GetMapping("/api/publico/cliente/{token}/parcelas/{id}/pix")
+    public PixDto situacaoPixParcela(@PathVariable String token, @PathVariable Long id) {
+        Trabalho t = servico.trabalhoDaCliente(token);
+        Parcela p = parcelas.findById(id).filter(x -> x.getTrabalhoId().equals(t.getId())).orElseThrow(() -> new NaoEncontrado("Pagamento não encontrado."));
+        CobrancaPix c = pix.daParcela(p.getId()).orElseThrow(() -> new NaoEncontrado("Nenhum Pix gerado para este pagamento."));
+        return PixDto.de(pix.verificarSemFalhar(c));
     }
 
     @GetMapping("/api/publico/cliente/{token}/vagas")

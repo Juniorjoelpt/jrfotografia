@@ -25,7 +25,7 @@ const NOMES_TIPO: Record<string, string> = {
   AVISO_CONTRATO_ASSINADO: 'Aviso: contrato assinado', GALERIA_SELECAO: 'Galeria para escolher', GALERIA_ENTREGA: 'Galeria entregue',
   AVISO_SELECAO: 'Aviso: seleção concluída', ENTREGA: 'Fotos prontas', AVISO_PEDIDO: 'Aviso: pedido de orçamento', ORCAMENTO: 'Orçamento',
   AVISO_ORCAMENTO: 'Aviso: orçamento respondido', ALBUM: 'Álbum para aprovar', AVISO_ALBUM: 'Aviso: álbum', LEMBRETE_ENSAIO: 'Lembrete do ensaio',
-  COBRANCA_LEMBRETE: 'Lembrete de pagamento', COBRANCA_VENCIDA: 'Pagamento em aberto',
+  COBRANCA_LEMBRETE: 'Lembrete de pagamento', COBRANCA_VENCIDA: 'Pagamento em aberto', AVISO_PIX: 'Aviso: Pix recebido',
 };
 
 /** Ajustes › E-mail: servidor SMTP, o que mandar, teste e histórico dos envios. */

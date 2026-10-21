@@ -15,3 +15,5 @@ app:
   email:
     modo: memoria
     url-publica: http://teste.local
+  pagbank:
+    verificar-auto: false

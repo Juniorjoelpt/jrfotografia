@@ -6,10 +6,15 @@ import { AgendaOnlineAjustes } from './AjustesAgenda';
 import { AssinaturaDoEstudio } from './AssinaturaPainel';
 import { Atividades } from './Atividades';
 import { AjustesEmail } from './AjustesEmail';
+import { AjustesPagamentos } from './AjustesPagamentos';
 import { Erro, useDados } from './comum';
 
 export function Ajustes() {
-  const [aba, setAba] = useState<'estudio' | 'portfolio' | 'pacotes' | 'itens' | 'contrato' | 'agenda' | 'email' | 'atividades'>(() => (window.location.hash === '#atividades' ? 'atividades' : window.location.hash === '#email' ? 'email' : 'estudio'));
+  type Aba = 'estudio' | 'portfolio' | 'pacotes' | 'itens' | 'contrato' | 'agenda' | 'pagamentos' | 'email' | 'atividades';
+  const [aba, setAba] = useState<Aba>(() => {
+    const h = window.location.hash.slice(1);
+    return (['atividades', 'email', 'pagamentos'] as const).find((x) => x === h) ?? 'estudio';
+  });
   return (
     <>
       <div className="cabeca-pagina"><div><span className="rotulo">Ajustes</span><h1 className="titulo">Ajustes do estúdio</h1></div></div>
@@ -20,6 +25,7 @@ export function Ajustes() {
         <button className="botao pequeno" aria-pressed={aba === 'itens'} onClick={() => setAba('itens')}>Itens avulsos</button>
         <button className="botao pequeno" aria-pressed={aba === 'contrato'} onClick={() => setAba('contrato')}>Contrato</button>
         <button className="botao pequeno" aria-pressed={aba === 'agenda'} onClick={() => setAba('agenda')}>Agenda online</button>
+        <button className="botao pequeno" aria-pressed={aba === 'pagamentos'} onClick={() => setAba('pagamentos')}>Pagamentos</button>
         <button className="botao pequeno" aria-pressed={aba === 'email'} onClick={() => setAba('email')}>E-mail</button>
         <button className="botao pequeno" aria-pressed={aba === 'atividades'} onClick={() => setAba('atividades')}>Atividades</button>
       </div>
@@ -29,6 +35,7 @@ export function Ajustes() {
       {aba === 'itens' && <ItensAvulsos />}
       {aba === 'contrato' && <><ModeloContrato /><AssinaturaDoEstudio /></>}
       {aba === 'agenda' && <AgendaOnlineAjustes />}
+      {aba === 'pagamentos' && <AjustesPagamentos />}
       {aba === 'email' && <AjustesEmail />}
       {aba === 'atividades' && <Atividades />}
     </>

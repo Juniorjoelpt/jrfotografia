@@ -54,6 +54,11 @@ app:
     modo: ${EMAIL_MODO:smtp}
     # Endereço do site nos links dos e-mails. Vazio = https://<domínio do estúdio>.
     url-publica: ${URL_PUBLICA:}
+  pagbank:
+    # Vazio = API oficial (produção ou sandbox, conforme Ajustes › Pagamentos).
+    url: ${PAGBANK_URL:}
+    # Consulta os Pix em aberto a cada 2 minutos, caso a notificação do PagBank não chegue.
+    verificar-auto: true
 
 ---
 # MySQL do computador de desenvolvimento (root sem senha). O banco jrfotografia é criado sozinho.

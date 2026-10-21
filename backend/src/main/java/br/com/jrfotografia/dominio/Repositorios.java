@@ -206,6 +206,20 @@ public final class Repositorios {
         List<Auditoria> findTop300ByEstudioIdAndCriadoEmBetweenOrderByIdDesc(Long estudioId, LocalDateTime de, LocalDateTime ate);
     }
 
+    public interface CobrancaPixRepo extends JpaRepository<CobrancaPix, Long> {
+        Optional<CobrancaPix> findByPedidoId(String pedidoId);
+        Optional<CobrancaPix> findFirstByReservaIdOrderByIdDesc(Long reservaId);
+        Optional<CobrancaPix> findFirstByParcelaIdOrderByIdDesc(Long parcelaId);
+        Optional<CobrancaPix> findByIdAndEstudioId(Long id, Long estudioId);
+        List<CobrancaPix> findTop100ByEstudioIdOrderByIdDesc(Long estudioId);
+        List<CobrancaPix> findByStatusAndCriadoEmAfter(String status, LocalDateTime depois);
+
+        /** Marca como paga uma vez só (webhook e consulta podem chegar juntos). */
+        @org.springframework.data.jpa.repository.Modifying
+        @Query("update CobrancaPix c set c.status = 'PAGA', c.pagoEm = :quando, c.valorPago = :valor where c.id = :id and c.status <> 'PAGA'")
+        int marcarPaga(Long id, LocalDateTime quando, java.math.BigDecimal valor);
+    }
+
     public interface EmailEnviadoRepo extends JpaRepository<EmailEnviado, Long> {
         List<EmailEnviado> findTop100ByEstudioIdOrderByIdDesc(Long estudioId);
         boolean existsByTipoAndReferenciaAndParaAndStatus(String tipo, String referencia, String para, String status);

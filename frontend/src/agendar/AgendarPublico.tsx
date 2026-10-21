@@ -4,7 +4,8 @@ import { api, ErroApi, publico } from '../api';
 import { Logo } from '../componentes/Logo';
 import { Ambiente } from '../componentes/Movimento';
 import { SeletorHorario } from '../componentes/SeletorHorario';
-import type { AgendaPublica, AreaCliente, Desconto, PacoteOnline, PortfolioFoto, ReservaPublica } from '../tipos';
+import { PixPagamento } from '../componentes/PixPagamento';
+import type { AgendaPublica, AreaCliente, Desconto, PacoteOnline, PixCobranca, PortfolioFoto, ReservaPublica } from '../tipos';
 import { CampoCodigo } from './CampoCodigo';
 import { data, diaPorExtenso, duracaoTexto, hora, linkWhatsapp, moeda, primeiroNome, TIPOS_ENSAIO } from '../util';
 import '../orcamento/orcamento.css';
@@ -215,6 +216,16 @@ export function ReservaCliente() {
     }
   }
 
+  async function gerarPix(cpf: string) {
+    setR(await api<ReservaPublica>(`/publico/reservas/${token}/pix`, { token: null, corpo: { cpf } }));
+  }
+
+  async function verificarPix() {
+    const novo = await publico<ReservaPublica>(`/publico/reservas/${token}/pix`);
+    setR(novo);
+    if (novo.status === 'CONFIRMADA') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   async function copiar(texto: string) {
     try { await navigator.clipboard.writeText(texto); } catch {
       const t = document.createElement('textarea'); t.value = texto; document.body.appendChild(t); t.select();
@@ -228,13 +239,16 @@ export function ReservaCliente() {
 
   const zap = (m: string) => linkWhatsapp(r.estudioWhatsapp, m);
   const pendente = r.status === 'PENDENTE';
+  const pixAuto = r.pixAutomatico && pendente && !r.comprovanteEnviado;
 
   return (
     <Casca titulo={r.estudioNome} rotulo="Reserva">
       {pendente && !r.comprovanteEnviado && (
         <div className="aviso oc-estado" role="status">
           <strong>Horário pré-reservado</strong>
-          <span>Envie o comprovante do Pix do sinal em até <b>{resta}</b> para garantir. Depois disso o horário volta a ficar livre.</span>
+          {pixAuto
+            ? <span>Pague o sinal pelo Pix em até <b>{resta}</b> para garantir. A confirmação é automática. Depois disso o horário volta a ficar livre.</span>
+            : <span>Envie o comprovante do Pix do sinal em até <b>{resta}</b> para garantir. Depois disso o horário volta a ficar livre.</span>}
         </div>
       )}
       {pendente && r.comprovanteEnviado && (
@@ -246,6 +260,7 @@ export function ReservaCliente() {
       {r.status === 'CONFIRMADA' && (
         <div className="aviso sucesso oc-estado" role="status">
           <strong>Ensaio confirmado!</strong>
+          {r.pix?.status === 'PAGA' && <span>Recebi o Pix do sinal ({moeda(r.pix.valor)}). Obrigado!</span>}
           <span>Pelo link da sua área você acompanha pagamentos, remarca ou cancela dentro das regras.</span>
         </div>
       )}
@@ -269,7 +284,22 @@ export function ReservaCliente() {
         </dl>
       </section>
 
-      {pendente && !r.comprovanteEnviado && (
+      {pixAuto && (
+        <section className="oc-bloco">
+          <h2 className="chamada">Pague o sinal pelo Pix</h2>
+          <PixPagamento pix={r.pix} valor={r.valorSinal} pedirCpf gerar={gerarPix} verificar={verificarPix} rotuloBotao={`Gerar Pix do sinal · ${moeda(r.valorSinal)}`} />
+          <details className="pix-outro">
+            <summary>Já pagou de outro jeito? Envie o comprovante</summary>
+            <label className={`botao ag-enviar${enviando ? ' desativado' : ''}`}>
+              {enviando ? 'Enviando…' : 'Enviar comprovante'}
+              <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" hidden disabled={enviando}
+                onChange={(e) => { enviarComprovante(e.target.files?.[0]); e.target.value = ''; }} />
+            </label>
+          </details>
+        </section>
+      )}
+
+      {pendente && !r.comprovanteEnviado && !pixAuto && (
         <section className="oc-bloco">
           <h2 className="chamada">Pague o sinal pelo Pix</h2>
           {r.chavePix ? (
@@ -312,6 +342,8 @@ export function AreaClientePagina() {
   const [motivo, setMotivo] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [aviso, setAviso] = useState('');
+  const [pagando, setPagando] = useState<number | null>(null);
+  const [pixParcela, setPixParcela] = useState<PixCobranca | null>(null);
 
   useEffect(() => {
     document.title = 'Meu ensaio';
@@ -336,6 +368,29 @@ export function AreaClientePagina() {
       setErro(e instanceof ErroApi ? e.message : 'Não foi possível concluir. Tente de novo.');
     } finally {
       setEnviando(false);
+    }
+  }
+
+  function abrirPix(id: number) {
+    setPagando(id);
+    setPixParcela(null);
+    setErro('');
+    // Se já existe um Pix para esta parcela, mostra direto
+    publico<PixCobranca>(`/publico/cliente/${token}/parcelas/${id}/pix`).then((p) => setPixParcela(p.status === 'PAGA' || p.status === 'AGUARDANDO' ? p : null)).catch(() => undefined);
+  }
+
+  async function gerarPixParcela(cpf: string) {
+    if (pagando == null) return;
+    setPixParcela(await api<PixCobranca>(`/publico/cliente/${token}/parcelas/${pagando}/pix`, { token: null, corpo: { cpf: cpf || null } }));
+  }
+
+  async function verificarPixParcela() {
+    if (pagando == null) return;
+    const p = await publico<PixCobranca>(`/publico/cliente/${token}/parcelas/${pagando}/pix`);
+    setPixParcela(p);
+    if (p.status === 'PAGA') {
+      setA(await publico<AreaCliente>(`/publico/cliente/${token}`));
+      setAviso('Pagamento recebido pelo Pix. Obrigado!');
     }
   }
 
@@ -364,11 +419,26 @@ export function AreaClientePagina() {
             {a.parcelas.map((p, i) => (
               <div key={i}>
                 <dt>{p.descricao}{p.vencimento && !p.paga && !cancelado ? <span className="suave"> · vence {data(p.vencimento)}</span> : null}</dt>
-                <dd className="num">{moeda(p.valor)} <span className={`ag-selo${p.paga ? ' pago' : ''}`}>{p.paga ? 'pago' : cancelado ? 'cancelada' : 'a pagar'}</span></dd>
+                <dd className="num">{moeda(p.valor)} <span className={`ag-selo${p.paga ? ' pago' : ''}`}>{p.paga ? 'pago' : cancelado ? 'cancelada' : 'a pagar'}</span>
+                  {a.pixAutomatico && !p.paga && !cancelado && pagando !== p.id && (
+                    <button type="button" className="botao pequeno pix-parcela" onClick={() => abrirPix(p.id)}>Pagar com Pix</button>
+                  )}
+                </dd>
               </div>
             ))}
           </dl>
-          {aPagar.length > 0 && a.chavePix && !cancelado && <p className="suave" style={{ margin: 0 }}>Chave Pix: <code>{a.chavePix}</code></p>}
+          {pagando != null && a.pixAutomatico && (() => {
+            const p = a.parcelas.find((x) => x.id === pagando);
+            if (!p || (p.paga && pixParcela?.status !== 'PAGA')) return null;
+            return (
+              <div className="oc-bloco anima-entrada">
+                <p className="suave" style={{ margin: 0 }}>Pix de <b>{p.descricao}</b></p>
+                <PixPagamento pix={pixParcela} valor={p.valor} pedirCpf={!a.cpfSalvo} gerar={gerarPixParcela} verificar={verificarPixParcela} />
+                {pixParcela?.status !== 'PAGA' && <button type="button" className="botao-link" style={{ justifySelf: 'start' }} onClick={() => { setPagando(null); setPixParcela(null); }}>Fechar</button>}
+              </div>
+            );
+          })()}
+          {aPagar.length > 0 && a.chavePix && !cancelado && !a.pixAutomatico && <p className="suave" style={{ margin: 0 }}>Chave Pix: <code>{a.chavePix}</code></p>}
         </section>
       )}
 

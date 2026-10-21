@@ -92,6 +92,21 @@ Em **Ajustes › E-mail** escolha o provedor, preencha usuário e senha, salve, 
 A senha fica cifrada no banco e não volta para a tela. Os links dos e-mails usam o domínio do estúdio; para outro endereço, defina `URL_PUBLICA`
 (ex.: `URL_PUBLICA=http://localhost:5173` para testar no computador). O histórico dos envios, com o motivo de qualquer falha, fica na mesma tela.
 
+### Pix automático (PagBank)
+
+Com o PagBank ligado, a cliente paga o sinal na página da reserva (e as parcelas na área dela) por um **QR Code com o valor exato**.
+Quando o banco confirma, a reserva é confirmada sozinha: cliente e trabalho criados, sinal baixado no financeiro, contrato gerado,
+e-mail com o link da área para a cliente e aviso para o fotógrafo. Enviar comprovante continua possível como alternativa.
+
+1. Pegue o token: no PagBank pelo computador, **Vendas › Integrações › Gerar token** (produção). Para testar sem dinheiro de verdade,
+   use o token da aba **Tokens** do Portal do Desenvolvedor do PagBank (sandbox). A conta precisa ter uma chave Pix cadastrada.
+2. Em **Ajustes › Pagamentos**, cole o token, escolha o ambiente, salve (o token é conferido no PagBank) e ligue.
+
+O token fica cifrado e não volta para a tela. O PagBank avisa o pagamento em `https://<domínio>/api/publico/pagbank/notificacao`
+(a autenticidade é conferida pelo `x-authenticity-token` e o pedido é consultado na API antes da baixa). Sem domínio com https
+(no computador), o sistema consulta sozinho: na hora, com a página da cliente aberta, e a cada 2 minutos. O histórico dos Pix gerados,
+com um botão **Consultar agora**, fica na mesma tela.
+
 ### Backup
 
 Os dados ficam em dois volumes do Docker: `banco` (MySQL) e `arquivos` (fotos). Faça cópia diária dos dois para fora da VPS.
@@ -102,4 +117,4 @@ docker compose exec banco sh -c 'mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" jrfo
 
 ## Próximas fases
 
-Fases 1, 2 e 3 concluídas, com e-mails automáticos. Falta só o Pix com baixa automática, que depende de uma conta com API de pagamento (Mercado Pago, Asaas, PagSeguro ou API Pix do banco). O detalhamento está no documento de requisitos.
+Fases 1, 2 e 3 concluídas, com e-mails automáticos e Pix com confirmação automática pelo PagBank.

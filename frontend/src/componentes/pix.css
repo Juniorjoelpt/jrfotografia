@@ -1,0 +1,43 @@
+/* Pix com QR Code (PagBank) */
+.pix-gerar { display: grid; gap: var(--espaco-3); }
+.pix-botao { min-height: 52px; justify-self: start; }
+.pix-erro { margin: 0; color: var(--erro); font-size: 14px; }
+
+.pix-caixa { display: grid; gap: var(--espaco-4); padding: var(--espaco-4); border: 1px solid var(--linha); background: var(--carvao-elevado); }
+.pix-grade { display: grid; grid-template-columns: auto 1fr; gap: var(--espaco-6); align-items: start; }
+.pix-qr { margin: 0; padding: 10px; background: #fff; line-height: 0; }
+.pix-qr img { display: block; width: 220px; height: 220px; max-width: none; image-rendering: pixelated; }
+.pix-lado { display: grid; gap: var(--espaco-3); min-width: 0; }
+.pix-valor { margin: 0; display: grid; gap: 2px; }
+.pix-valor b { font-size: 28px; letter-spacing: -.01em; }
+.pix-passos { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--tinta-suave); font-size: 14px; }
+.pix-passos b { color: var(--tinta); font-weight: 600; }
+.pix-codigo summary { cursor: pointer; font-size: 13px; color: var(--tinta-suave); }
+.pix-codigo code { display: block; margin-top: var(--espaco-2); font-size: 12px; line-height: 1.5; word-break: break-all; color: var(--tinta-suave); user-select: all; }
+.pix-espera { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--espaco-2) var(--espaco-3); font-size: 14px; color: var(--tinta-suave);
+  padding-top: var(--espaco-3); border-top: 1px solid var(--linha); }
+.pix-espera-texto { flex: 1 1 240px; min-width: 0; }
+.pix-pulso { align-self: center; }
+.pix-tempo { margin-left: auto; color: var(--tinta); font-size: 13px; }
+.pix-pulso { width: 10px; height: 10px; border-radius: 50%; background: var(--alerta); flex: none; animation: pix-pulso 1.6s ease-in-out infinite; }
+@keyframes pix-pulso { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
+@media (prefers-reduced-motion: reduce) { .pix-pulso { animation: none; } }
+.pix-teste { margin: 0; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--alerta); }
+
+.pix-pago { display: flex; align-items: center; gap: var(--espaco-3); padding: var(--espaco-4); border: 1px solid var(--sucesso); }
+.pix-pago div { display: grid; gap: 2px; }
+.pix-pago span:not(.pix-check) { color: var(--tinta-suave); font-size: 14px; }
+.pix-check { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--sucesso); color: #10140f; font-weight: 700; font-size: 18px; flex: none; }
+
+.pix-outro { font-size: 14px; }
+.pix-outro summary { cursor: pointer; color: var(--tinta-suave); }
+.pix-outro[open] summary { margin-bottom: var(--espaco-3); }
+
+@media (max-width: 640px) {
+  .pix-grade { grid-template-columns: 1fr; justify-items: center; gap: var(--espaco-4); }
+  .pix-lado { justify-self: stretch; }
+  .pix-qr img { width: min(240px, 70vw); height: min(240px, 70vw); }
+  .pix-botao { justify-self: stretch; }
+  .pix-tempo { margin-left: 22px; }
+}
+.pix-parcela { margin-left: var(--espaco-3); }
