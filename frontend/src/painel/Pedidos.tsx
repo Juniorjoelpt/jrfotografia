@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api, sessaoAtual } from '../api';
 import type { Cliente, Pacote, Pedido, StatusPedido } from '../tipos';
 import { data, dataHora, linkWhatsapp, NOMES_ORIGEM, NOMES_PEDIDO, primeiroNome, telefone } from '../util';
@@ -6,6 +6,7 @@ import { Erro, Linhas, useDados } from './comum';
 
 const CLASSE: Record<StatusPedido, string> = { NOVO: 'acento', CONTATADO: 'alerta', FECHADO: 'sucesso', PERDIDO: '' };
 
+/** Lista de pedidos que chegam pelo site (aba da tela de Vendas). */
 export function Pedidos() {
   const navegar = useNavigate();
   const { dados, erro, recarregar } = useDados<Pedido[]>('/pedidos');
@@ -23,8 +24,7 @@ export function Pedidos() {
 
   return (
     <>
-      <div className="cabeca-pagina"><div><span className="rotulo">Pedidos</span><h1 className="titulo">Pedidos de orçamento</h1></div></div>
-      <p className="suave" style={{ margin: 0 }}>Chegam pelo formulário do site. Responda pelo WhatsApp e acompanhe até fechar.</p>
+      <p className="suave" style={{ margin: 0 }}>Chegam pelo formulário do site. Responda pelo WhatsApp, mande o orçamento e acompanhe até fechar.</p>
       <Erro msg={erro} />
       {dados && (
         <Linhas vazio="Nenhum pedido ainda. Divulgue o link do site no Instagram."
@@ -41,7 +41,8 @@ export function Pedidos() {
                 <div className="acoes-linha" style={{ gridColumn: '1 / -1' }}>
                   <a className="botao principal pequeno" href={linkWhatsapp(p.telefone, msg)} target="_blank" rel="noreferrer"
                     onClick={() => p.status === 'NOVO' && mudar(p, 'CONTATADO')}>Responder · {telefone(p.telefone)}</a>
-                  {admin && p.status !== 'PERDIDO' && <button className="botao pequeno" onClick={() => virarTrabalho(p)}>Fechou: criar trabalho</button>}
+                  {admin && p.status !== 'FECHADO' && p.status !== 'PERDIDO' && <Link className="botao pequeno" to={`/painel/orcamentos/novo?pedido=${p.id}`}>Fazer orçamento</Link>}
+                  {admin && p.status !== 'PERDIDO' && p.status !== 'FECHADO' && <button className="botao pequeno" onClick={() => virarTrabalho(p)}>Fechou: criar trabalho</button>}
                   <select aria-label="Situação do pedido" className="botao pequeno" value={p.status} onChange={(e) => mudar(p, e.target.value as StatusPedido)}>
                     {Object.entries(NOMES_PEDIDO).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                   </select>

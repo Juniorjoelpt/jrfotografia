@@ -25,5 +25,8 @@ public class Estudio {
     private String email;
     private String chavePix;
     private String apresentacao;
+    private String modeloContrato;
+    private String responsavel;
+    private String documento;
     private LocalDateTime criadoEm;
 }

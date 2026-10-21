@@ -19,4 +19,7 @@ public final class Enums {
     public enum TipoParcela { AVISTA, SINAL, PARCELA, EXTRA }
 
     public enum MeioPagamento { PIX, DINHEIRO, TRANSFERENCIA, BOLETO }
+
+    /** Rascunho → Enviado → Aceito (vira trabalho) ou Recusado; vencida a validade, Expirado. */
+    public enum StatusOrcamento { RASCUNHO, ENVIADO, ACEITO, RECUSADO, EXPIRADO }
 }

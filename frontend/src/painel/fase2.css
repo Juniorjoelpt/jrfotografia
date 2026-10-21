@@ -1,0 +1,107 @@
+/* Fase 2: agenda, orçamentos, financeiro, relatórios. Mesma linguagem do painel: vidro escuro, vermelho só como destaque. */
+.anima-entrada { animation: entrar-cima var(--medio) var(--curva-suave) both; }
+.botao-texto { background: none; border: 0; padding: 0; text-align: left; color: var(--tinta); cursor: pointer; font: inherit; font-weight: 600; }
+.botao-texto:hover { color: var(--acento-texto); }
+
+/* ---------- agenda: mês ---------- */
+.calendario { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.cal-cab { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--tinta-suave); padding: 0 6px 4px; text-shadow: 0 1px 8px rgba(0,0,0,.6); }
+.cal-dia {
+  position: relative; display: grid; grid-template-rows: auto 1fr; align-content: start; gap: 4px; min-height: 96px; padding: 6px;
+  background: rgba(23,23,22,.58); border: 1px solid rgba(255,255,255,.06); color: var(--tinta); text-align: left; cursor: pointer; min-width: 0;
+  transition: background-color var(--rapido), border-color var(--rapido);
+}
+.cal-dia:hover { background: rgba(40,40,37,.78); }
+.cal-dia.fora { opacity: .45; }
+.cal-dia[aria-selected="true"] { border-color: var(--acento-texto); }
+.cal-dia.bloqueado { background: repeating-linear-gradient(135deg, rgba(23,23,22,.7) 0 6px, rgba(58,57,53,.55) 6px 7px); }
+.cal-num { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 9999px; }
+.cal-dia.hoje .cal-num { background: var(--acento); color: var(--sobre-acento); }
+.cal-eventos { display: grid; gap: 2px; align-content: start; min-width: 0; }
+.cal-ev { font-size: 11px; line-height: 16px; padding: 1px 5px; border-left: 2px solid var(--acento); background: rgba(211,47,47,.16); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-ev b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.cal-ev.bloq { border-left-color: var(--prata); background: rgba(143,141,134,.16); color: var(--tinta-suave); }
+.cal-mais { font-size: 11px; color: var(--tinta-suave); padding-left: 5px; }
+.cal-pontos { display: none; }
+@media (max-width: 640px) {
+  .cal-dia { min-height: 52px; padding: 4px; justify-items: center; }
+  .cal-eventos { display: none; }
+  .cal-pontos { display: flex; gap: 3px; justify-content: center; }
+  .cal-pontos i { width: 5px; height: 5px; border-radius: 9999px; background: var(--acento-texto); }
+  .cal-pontos i.bloq { background: var(--prata); }
+  .cal-cab { text-align: center; padding: 0 0 4px; letter-spacing: 0; }
+}
+
+/* ---------- agenda: semana ---------- */
+.semana { display: grid; gap: 2px; }
+.semana-dia { display: grid; grid-template-columns: 64px 1fr; gap: var(--espaco-3); padding: var(--espaco-2) var(--espaco-3); background: rgba(23,23,22,.58); border: 1px solid rgba(255,255,255,.06); min-height: 60px; }
+.semana-data { display: grid; justify-items: center; align-content: center; gap: 0; background: none; border: 0; color: var(--tinta); cursor: pointer; border-right: 1px solid rgba(255,255,255,.08); padding-right: var(--espaco-3); }
+.semana-data strong { font-size: 22px; line-height: 28px; font-variant-numeric: tabular-nums; }
+.semana-dia.hoje .semana-data strong { color: var(--acento-texto); }
+.semana-data[aria-pressed="true"] { box-shadow: inset -2px 0 0 var(--acento-texto); }
+.semana-eventos { display: flex; flex-wrap: wrap; gap: var(--espaco-2); align-content: center; min-width: 0; }
+.ev-cartao { display: grid; padding: 6px 10px; border-left: 3px solid var(--acento); background: rgba(211,47,47,.14); color: var(--tinta); text-decoration: none; min-width: 0; max-width: 100%; }
+.ev-cartao span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+a.ev-cartao:hover { background: rgba(211,47,47,.24); }
+.ev-cartao.bloq { border-left-color: var(--prata); background: rgba(143,141,134,.14); }
+
+/* ---------- vendas / orçamentos ---------- */
+.funil .numero { position: relative; }
+.editor-orcamento { display: grid; gap: var(--espaco-4); align-items: start; }
+.editor-orcamento fieldset { margin: 0; min-width: 0; }
+.editor-orcamento legend { padding: 0 6px; margin-left: -6px; }
+@media (min-width: 1040px) {
+  .editor-orcamento { grid-template-columns: minmax(0, 1fr) 300px; }
+  .editor-orcamento .resumo-orcamento { position: sticky; top: var(--espaco-6); }
+}
+.item-linha { display: grid; grid-template-columns: minmax(0, 1fr) 72px 120px auto; gap: var(--espaco-2); align-items: end; }
+.item-linha .botao { min-height: 44px; }
+@media (max-width: 520px) {
+  .item-linha { grid-template-columns: 64px minmax(0, 1fr) auto; }
+  .item-linha > label:first-child { grid-column: 1 / -1; }
+}
+.resumo-orcamento { display: grid; gap: var(--espaco-3); align-content: start; }
+.resumo-orcamento dl { margin: 0; display: grid; }
+.resumo-orcamento dl > div { display: flex; justify-content: space-between; gap: var(--espaco-3); padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 14px; }
+.resumo-orcamento dt { min-width: 0; overflow-wrap: anywhere; }
+.resumo-orcamento dd { margin: 0; white-space: nowrap; }
+.resumo-orcamento .total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 4px; border-top: 2px solid var(--acento); }
+.resumo-orcamento .total strong { font-size: 26px; line-height: 32px; }
+.resumo-orcamento.largo { max-width: 640px; }
+
+/* ---------- financeiro ---------- */
+.tabela { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.tabela th, .tabela td { padding: 10px 12px; text-align: right; border-bottom: 1px solid rgba(255,255,255,.08); white-space: nowrap; }
+.tabela th:first-child { text-align: left; font-weight: 600; }
+.tabela thead th { font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--tinta-suave); }
+.tabela tfoot th, .tabela tfoot td { font-weight: 700; border-bottom: 0; border-top: 2px solid rgba(255,255,255,.2); }
+.tabela tr.atual th { color: var(--acento-texto); }
+.graficos-duplos { display: grid; gap: var(--espaco-4); }
+@media (min-width: 900px) { .graficos-duplos { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- ajustes: contrato ---------- */
+.campos-contrato { display: flex; flex-wrap: wrap; gap: 6px; }
+.campos-contrato .etiqueta { cursor: pointer; background: rgba(23,23,22,.6); font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; }
+.campos-contrato .etiqueta:hover { color: var(--acento-texto); border-color: var(--acento-texto); }
+
+/* ---------- menu "Mais" no celular ---------- */
+.painel-nav button { display: grid; justify-items: center; gap: 2px; padding: 8px 2px; min-height: 56px; align-content: center; font-size: 11px; color: var(--tinta-suave); background: none; border: 0; cursor: pointer; }
+.painel-nav button.active { color: var(--acento-texto); }
+.painel-nav button svg { width: 22px; height: 22px; }
+.mais-fundo { position: fixed; inset: 0; z-index: 28; background: rgba(0,0,0,.45); animation: surgir var(--rapido) both; }
+.mais-menu {
+  position: fixed; right: max(12px, env(safe-area-inset-right)); bottom: calc(68px + env(safe-area-inset-bottom)); z-index: 29;
+  display: grid; min-width: 220px; padding: 6px; background: #1f1f1d; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 16px 40px rgba(0,0,0,.6);
+  transform-origin: bottom right; animation: entrar-escala var(--medio) var(--curva-mola) both;
+}
+.mais-menu a, .mais-menu button { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; color: var(--tinta); text-decoration: none; background: none; border: 0; font-size: 15px; cursor: pointer; text-align: left; }
+.mais-menu a.active { color: var(--acento-texto); }
+.mais-menu svg { width: 20px; height: 20px; flex: none; }
+.mais-menu button { border-top: 1px solid rgba(255,255,255,.08); color: var(--tinta-suave); }
+@media (min-width: 900px) { .mais-menu, .mais-fundo { display: none; } }
+
+@media (max-width: 899px), (pointer: coarse) {
+  .cal-dia, .semana-dia { background-color: rgba(23,23,22,.84); }
+}
+@media (pointer: coarse) { .botao.pequeno { min-width: 44px; } }
+.cabeca-pagina > .acoes-linha { display: flex; align-items: center; }

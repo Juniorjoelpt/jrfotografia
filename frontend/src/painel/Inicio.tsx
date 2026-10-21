@@ -29,7 +29,7 @@ export function Inicio() {
       {p && (
         <>
           <div className="numeros escalonado">
-            <Link to="/painel/pedidos" className={`numero${p.pedidosNovos ? ' atencao' : ''}`}>
+            <Link to="/painel/vendas" className={`numero${p.pedidosNovos ? ' atencao' : ''}`}>
               <span className="legenda">PEDIDOS NOVOS</span><strong><Numero valor={p.pedidosNovos} /></strong>
             </Link>
             <Link to="/painel/trabalhos?status=SELECAO" className="numero">
@@ -39,7 +39,7 @@ export function Inicio() {
               <span className="legenda">EM EDIÇÃO</span><strong><Numero valor={p.emEdicao} /></strong>
             </Link>
             {admin && (
-              <Link to="/painel/recebimentos" className={`numero${p.vencido ? ' critico' : ''}`}>
+              <Link to="/painel/financeiro" className={`numero${p.vencido ? ' critico' : ''}`}>
                 <span className="legenda">A RECEBER</span><strong><Numero valor={p.aReceber ?? 0} formatar={moeda} /></strong>
                 {!!p.vencido && <span className="legenda" style={{ color: 'var(--erro)' }}>{moeda(p.vencido)} VENCIDO</span>}
               </Link>
@@ -59,7 +59,7 @@ export function Inicio() {
           )}
 
           <section className="secao">
-            <h2 className="chamada">Próximos 7 dias</h2>
+            <div className="cabeca-pagina"><h2 className="chamada">Próximos 7 dias</h2><Link to="/painel/agenda" className="botao-link" style={{ fontSize: 13 }}>Abrir agenda</Link></div>
             <Linhas itens={p.proximos.map((t) => <LinhaTrabalho key={t.id} t={t} />)} vazio="Nenhum ensaio marcado para esta semana." />
           </section>
 

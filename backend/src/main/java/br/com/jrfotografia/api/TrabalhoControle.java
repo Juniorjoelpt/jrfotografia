@@ -10,7 +10,10 @@ import br.com.jrfotografia.dominio.Repositorios.FotoRepo;
 import br.com.jrfotografia.dominio.Repositorios.ParcelaRepo;
 import br.com.jrfotografia.dominio.Repositorios.TrabalhoRepo;
 import br.com.jrfotografia.dominio.Trabalho;
+import br.com.jrfotografia.dominio.Repositorios.EstudioRepo;
+import br.com.jrfotografia.servico.AgendaServico;
 import br.com.jrfotografia.servico.Armazenamento;
+import br.com.jrfotografia.servico.PdfServico;
 import br.com.jrfotografia.servico.RegraDownload;
 import br.com.jrfotografia.servico.TrabalhoServico;
 import jakarta.validation.Valid;
@@ -33,9 +36,16 @@ public class TrabalhoControle {
     private final FotoRepo fotos;
     private final ParcelaRepo parcelas;
     private final Armazenamento armazenamento;
+    private final AgendaServico agenda;
+    private final PdfServico pdf;
+    private final EstudioRepo estudios;
 
     public TrabalhoControle(TrabalhoServico servico, TrabalhoRepo trabalhos, FotoRepo fotos,
-                            ParcelaRepo parcelas, Armazenamento armazenamento) {
+                            ParcelaRepo parcelas, Armazenamento armazenamento, AgendaServico agenda,
+                            PdfServico pdf, EstudioRepo estudios) {
+        this.agenda = agenda;
+        this.pdf = pdf;
+        this.estudios = estudios;
         this.servico = servico;
         this.trabalhos = trabalhos;
         this.fotos = fotos;
@@ -66,6 +76,7 @@ public class TrabalhoControle {
                 f.clienteId(), f.pacoteId(), f.titulo(), f.tipo(), f.dataTrabalho(), f.localTrabalho(),
                 f.valorTotal(), f.formaPagamento(), f.valorSinal(), f.numParcelas(), f.primeiroVencimento(),
                 f.observacoes()));
+        if (f.duracaoMin() != null) t.setDuracaoMin(f.duracaoMin());
         return detalheDe(t);
     }
 
@@ -79,7 +90,18 @@ public class TrabalhoControle {
         t.setLocalTrabalho(f.localTrabalho());
         if (f.prazoEntrega() != null) t.setPrazoEntrega(f.prazoEntrega());
         t.setObservacoes(f.observacoes());
+        if (f.duracaoMin() != null && f.duracaoMin() >= 30) t.setDuracaoMin(Math.min(f.duracaoMin(), 1440));
         return detalheDe(t);
+    }
+
+    /** Contrato do trabalho em PDF, montado a partir do modelo do estúdio. */
+    @GetMapping("/{id}/contrato.pdf")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<byte[]> contrato(@PathVariable Long id) {
+        Trabalho t = servico.buscar(UsuarioLogado.estudio(), id);
+        var e = estudios.findById(t.getEstudioId()).orElseThrow();
+        byte[] corpo = pdf.contrato(t, e, parcelas.findByTrabalhoIdOrderByVencimentoAscIdAsc(t.getId()));
+        return Pdfs.resposta(corpo, "contrato-" + Pdfs.nomeArquivo(t.getCliente().getNome()) + ".pdf");
     }
 
     @PatchMapping("/{id}/status")
@@ -157,6 +179,10 @@ public class TrabalhoControle {
                 todas.stream().filter(f -> f.getArquivoFinal() != null).count(),
                 admin ? lista.stream().map(ParcelaDto::de).toList() : List.of(),
                 download.liberado(),
-                download.motivo());
+                download.motivo(),
+                t.getDuracaoMin(),
+                t.getOrcamentoId(),
+                t.getStatus() == StatusTrabalho.AGENDADO
+                        ? agenda.conflitos(t.getEstudioId(), t.getDataTrabalho(), t.getDuracaoMin(), t.getId()) : List.of());
     }
 }

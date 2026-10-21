@@ -1,4 +1,4 @@
-import type { StatusTrabalho, Origem, StatusPedido, TipoParcela, MeioPagamento } from './tipos';
+import type { StatusTrabalho, Origem, StatusPedido, TipoParcela, MeioPagamento, StatusOrcamento } from './tipos';
 
 const moedaFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 export const moeda = (v: number | null | undefined) => (v == null ? '—' : moedaFmt.format(v));
@@ -74,3 +74,37 @@ export const NOMES_PARCELA: Record<TipoParcela, string> = { AVISTA: 'À vista', 
 export const NOMES_MEIO: Record<MeioPagamento, string> = { PIX: 'Pix', DINHEIRO: 'Dinheiro', TRANSFERENCIA: 'Transferência', BOLETO: 'Boleto' };
 
 export const urlGaleria = (token: string) => `${window.location.origin}/g/${token}`;
+
+export const urlOrcamento = (token: string) => `${window.location.origin}/o/${token}`;
+
+export const NOMES_ORCAMENTO: Record<StatusOrcamento, string> = {
+  RASCUNHO: 'Rascunho', ENVIADO: 'Enviado', ACEITO: 'Aceito', RECUSADO: 'Recusado', EXPIRADO: 'Vencido',
+};
+export const CLASSE_ORCAMENTO: Record<StatusOrcamento, string> = {
+  RASCUNHO: '', ENVIADO: 'alerta', ACEITO: 'sucesso', RECUSADO: 'erro', EXPIRADO: '',
+};
+
+export const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+/** Data local em ISO (aaaa-mm-dd), sem passar por UTC. */
+export function isoDia(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export const hora = (iso?: string | null) => (iso && iso.length > 10 ? iso.slice(11, 16) : '');
+
+export function duracaoTexto(min: number) {
+  const h = Math.floor(min / 60), m = min % 60;
+  return h && m ? `${h}h${String(m).padStart(2, '0')}` : h ? `${h}h` : `${m} min`;
+}
+
+/** Número digitado com vírgula ou ponto. Vazio vira null. */
+export function numeroBr(v: FormDataEntryValue | string | null | undefined) {
+  if (v == null || String(v).trim() === '') return null;
+  const t = String(v).trim();
+  const n = Number(t.includes(',') ? t.replace(/\./g, '').replace(',', '.') : t);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Durações oferecidas para um ensaio, em minutos. */
+export const DURACOES = [60, 90, 120, 180, 240, 360, 480, 720];

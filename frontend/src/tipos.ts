@@ -44,7 +44,7 @@ export interface TrabalhoDetalhe {
   resumo: TrabalhoResumo; cliente: Cliente; pacote?: Pacote; formaPagamento: FormaPagamento; galeriaToken: string;
   galeriaComSenha: boolean; galeriaExpiraEm?: string; selecaoFechadaEm?: string; entregueEm?: string;
   observacoes?: string; totalFotos: number; selecionadas: number; editadas: number; parcelas: Parcela[];
-  downloadLiberado: boolean; motivoDownload?: string;
+  downloadLiberado: boolean; motivoDownload?: string; duracaoMin: number; orcamentoId?: number; conflitos: string[];
 }
 
 export interface Foto {
@@ -69,3 +69,46 @@ export interface Galeria {
   exigeSelecao: boolean; fotosNoPacote: number | null; precoFotoExtra: number | null; selecaoAberta: boolean;
   selecionadas: number; downloadLiberado: boolean; motivoDownload?: string; expiraEm?: string; fotos: FotoGaleria[];
 }
+
+// ---------- fase 2: agenda, orçamentos, financeiro e relatórios
+
+export type StatusOrcamento = 'RASCUNHO' | 'ENVIADO' | 'ACEITO' | 'RECUSADO' | 'EXPIRADO';
+
+export interface ItemOrcamento { descricao: string; quantidade: number; valorUnit: number; total: number }
+
+export interface Orcamento {
+  id: number; numero: number; token: string; clienteId?: number; pedidoId?: number; nomeCliente: string; telefone?: string;
+  email?: string; pacoteId?: number; pacoteNome?: string; tipo?: string; dataPrevista?: string; localPrevisto?: string;
+  itens: ItemOrcamento[]; subtotal: number; desconto: number; valorTotal: number; formaPagamento: FormaPagamento;
+  valorSinal?: number; numParcelas?: number; validade: string; observacoes?: string; status: StatusOrcamento;
+  enviadoEm?: string; respondidoEm?: string; trabalhoId?: number; criadoEm: string;
+}
+
+export interface OrcamentoPublico {
+  numero: number; nomeCliente: string; estudioNome: string; estudioWhatsapp?: string; estudioCidade?: string;
+  pacoteNome?: string; incluso: string[]; prazoEntregaDias?: number; precoFotoExtra?: number; tipo?: string;
+  dataPrevista?: string; localPrevisto?: string; itens: ItemOrcamento[]; subtotal: number; desconto: number;
+  valorTotal: number; condicoes: string; validade: string; observacoes?: string; status: StatusOrcamento;
+  contratoDisponivel: boolean;
+}
+
+export interface EventoAgenda {
+  tipo: 'TRABALHO' | 'BLOQUEIO'; id: number; titulo: string; detalhe?: string; inicio: string; fim: string; status?: StatusTrabalho;
+}
+
+export interface Despesa {
+  id: number; descricao: string; categoria: string; valor: number; vencimento: string; pagoEm?: string; trabalhoId?: number; vencida: boolean;
+}
+
+export interface MesCaixa { mes: number; entrou: number; saiu: number; aEntrar: number; aSair: number; saldo: number }
+export interface Fluxo { ano: number; meses: MesCaixa[]; entrouAno: number; saiuAno: number; saldoAno: number; aEntrarAno: number; aSairAno: number }
+
+export interface Fatia { nome: string; quantidade: number; valor: number }
+export interface Relatorio {
+  ano: number; faturamentoMensal: number[]; faturamentoAno: number; trabalhos: number; ticketMedio: number;
+  porTipo: Fatia[]; porOrigem: Fatia[]; pedidos: number; pedidosFechados: number; orcamentosEnviados: number;
+  orcamentosAceitos: number; conversaoOrcamentos: number | null; conversaoPedidos: number | null; despesasPorCategoria: Fatia[];
+}
+
+export interface ItemAvulso { id: number; nome: string; preco: number; ativo: boolean }
+export interface ContratoModelo { texto: string; padrao: boolean; campos: string; responsavel?: string; documento?: string }

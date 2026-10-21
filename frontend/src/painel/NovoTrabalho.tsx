@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api, ErroApi } from '../api';
 import type { Cliente, FormaPagamento, Pacote, TrabalhoDetalhe } from '../tipos';
-import { moeda } from '../util';
+import { DURACOES, duracaoTexto, moeda } from '../util';
 import { Erro, useDados } from './comum';
 
 export function NovoTrabalho() {
@@ -16,8 +16,20 @@ export function NovoTrabalho() {
   const [forma, setForma] = useState<FormaPagamento>('AVISTA');
   const [sinal, setSinal] = useState('');
   const [parcelas, setParcelas] = useState('2');
+  const [quando, setQuando] = useState(params.get('data') ? `${params.get('data')}T09:00` : '');
+  const [duracao, setDuracao] = useState('240');
+  const [avisos, setAvisos] = useState<string[]>([]);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    if (!quando) { setAvisos([]); return; }
+    const h = setTimeout(() => {
+      api<{ avisos: string[] }>(`/agenda/conflitos?inicio=${encodeURIComponent(`${quando}:00`)}&duracaoMin=${duracao}`)
+        .then((x) => setAvisos(x.avisos)).catch(() => setAvisos([]));
+    }, 300);
+    return () => clearTimeout(h);
+  }, [quando, duracao]);
 
   const pacote = useMemo(() => pacotes?.find((p) => String(p.id) === pacoteId), [pacotes, pacoteId]);
   useEffect(() => { if (pacote) setValor(String(pacote.preco)); }, [pacote]);
@@ -36,7 +48,7 @@ export function NovoTrabalho() {
         corpo: {
           clienteId: Number(clienteId), pacoteId: pacoteId ? Number(pacoteId) : null,
           tipo: f.get('tipo') || null, titulo: f.get('titulo') || null,
-          dataTrabalho: f.get('data') ? `${f.get('data')}:00` : null, localTrabalho: f.get('local') || null,
+          dataTrabalho: quando ? `${quando}:00` : null, duracaoMin: Number(duracao), localTrabalho: f.get('local') || null,
           valorTotal: total, formaPagamento: forma,
           valorSinal: forma === 'PARCELADO' && sinal ? Number(sinal) : null,
           numParcelas: forma === 'PARCELADO' ? n : null,
@@ -69,7 +81,13 @@ export function NovoTrabalho() {
           </select>
         </label>
         <label className="campo"><span>Tipo de ensaio</span><input id="nt-tipo" name="tipo" placeholder="Ensaio feminino" /></label>
-        <label className="campo"><span>Data e hora</span><input id="nt-data" name="data" type="datetime-local" /></label>
+        <label className="campo"><span>Data e hora</span><input id="nt-data" type="datetime-local" value={quando} onChange={(e) => setQuando(e.target.value)} /></label>
+        <label className="campo"><span>Duração</span>
+          <select id="nt-dur" value={duracao} onChange={(e) => setDuracao(e.target.value)}>
+            {DURACOES.map((d) => <option key={d} value={d}>{duracaoTexto(d)}</option>)}
+          </select>
+        </label>
+        {avisos.length > 0 && <div className="aviso inteira" role="status" style={{ margin: 0, borderColor: 'var(--alerta)' }}>{avisos.map((a) => <div key={a}>{a}</div>)}</div>}
         <label className="campo"><span>Local</span><input id="nt-local" name="local" placeholder="Endereço ou locação" /></label>
         <label className="campo"><span>Valor total (R$)</span>
           <input id="nt-valor" required inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value.replace(',', '.'))} />

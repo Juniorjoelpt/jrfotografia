@@ -4,6 +4,7 @@ import type { ContaReceber, Estudio } from '../tipos';
 import { data, linkWhatsapp, moeda, primeiroNome } from '../util';
 import { Erro, Linhas, useDados } from './comum';
 
+/** Parcelas em aberto (aba da tela Financeiro). */
 export function Recebimentos() {
   const { dados, erro, recarregar } = useDados<ContaReceber[]>('/financeiro/a-receber');
   const { dados: estudio } = useDados<Estudio>('/estudio');
@@ -17,7 +18,6 @@ export function Recebimentos() {
 
   return (
     <>
-      <div className="cabeca-pagina"><div><span className="rotulo">Recebimentos</span><h1 className="titulo">A receber</h1></div></div>
       <div className="numeros">
         <div className="numero"><span className="legenda">EM ABERTO</span><strong>{moeda(total)}</strong></div>
         <div className={`numero${vencido ? ' critico' : ''}`}><span className="legenda">VENCIDO</span><strong>{moeda(vencido)}</strong></div>

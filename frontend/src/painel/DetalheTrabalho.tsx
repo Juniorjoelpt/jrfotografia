@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { api, ErroApi, imagemPainel, sessaoAtual } from '../api';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { api, ErroApi, imagemPainel, sessaoAtual, urlPainel } from '../api';
 import type { Estudio, Foto, MeioPagamento, Parcela, StatusTrabalho, TrabalhoDetalhe } from '../tipos';
-import { data, dataHora, ETAPAS, linkWhatsapp, moeda, NOMES_MEIO, NOMES_PARCELA, primeiroNome, telefone, urlGaleria } from '../util';
+import { data, dataHora, DURACOES, duracaoTexto, ETAPAS, linkWhatsapp, moeda, NOMES_MEIO, NOMES_PARCELA, primeiroNome, telefone, urlGaleria } from '../util';
 import { Erro, Status, useDados } from './comum';
 import { Imagem } from '../componentes/Movimento';
 
@@ -18,6 +18,7 @@ export function DetalheTrabalho() {
   const [senha, setSenha] = useState<string | null>(null);
   const [confirmarCancelar, setConfirmarCancelar] = useState(false);
 
+  const [remarcando, setRemarcando] = useState(false);
   if (!t) return <Erro msg={erroCarga} />;
   const r = t.resumo;
   const nome = primeiroNome(t.cliente.nome);
@@ -88,7 +89,7 @@ export function DetalheTrabalho() {
         <div>
           <span className="rotulo">{t.pacote?.nome ?? r.tipo ?? 'Trabalho'}</span>
           <h1 className="titulo">{t.cliente.nome}</h1>
-          <span className="suave">{dataHora(r.dataTrabalho)}{r.localTrabalho ? ` · ${r.localTrabalho}` : ''}</span>
+          <span className="suave">{dataHora(r.dataTrabalho)}{r.dataTrabalho ? ` · ${duracaoTexto(t.duracaoMin)}` : ''}{r.localTrabalho ? ` · ${r.localTrabalho}` : ''}</span>
         </div>
         <div className="cabeca-lado">
           {r.atrasado ? <span className="etiqueta erro">Atrasado</span> : <Status s={r.status} />}
@@ -113,7 +114,18 @@ export function DetalheTrabalho() {
         {t.cliente.telefone && r.status === 'AGENDADO' && (
           <a className="botao pequeno" href={linkWhatsapp(t.cliente.telefone, msgLembrete)} target="_blank" rel="noreferrer">Enviar lembrete do ensaio</a>
         )}
+        {(r.status === 'AGENDADO' || r.status === 'FOTOGRAFADO') && (
+          <button className="botao pequeno" aria-expanded={remarcando} onClick={() => setRemarcando((v) => !v)}>{r.dataTrabalho ? 'Remarcar' : 'Marcar data'}</button>
+        )}
+        {admin && <a className="botao pequeno" href={urlPainel(`/trabalhos/${id}/contrato.pdf`)} target="_blank" rel="noreferrer">Contrato (PDF)</a>}
+        {admin && t.orcamentoId && <Link className="botao pequeno" to={`/painel/orcamentos/${t.orcamentoId}`}>Orçamento</Link>}
       </div>
+      {t.conflitos.length > 0 && (
+        <div className="aviso" role="status" style={{ margin: 0, borderColor: 'var(--alerta)', color: 'var(--alerta)' }}>
+          {t.conflitos.map((c) => <div key={c}>Choque de horário: {c}</div>)}
+        </div>
+      )}
+      {remarcando && <Remarcar t={t} aoSalvar={(n) => { setDados(n); setRemarcando(false); }} />}
 
       <Erro msg={erro} />
       {aviso && <p className="aviso sucesso" role="status" style={{ margin: 0 }}>{aviso}</p>}
@@ -210,7 +222,10 @@ export function DetalheTrabalho() {
                 </span>
                 <span className="acoes-linha" style={{ gridColumn: '1 / -1' }}>
                   {p.pagoEm
-                    ? <button className="botao-link legenda" disabled={!!ocupado} onClick={() => desfazer(p)}>Desfazer</button>
+                    ? <>
+                      <a className="botao pequeno" href={urlPainel(`/parcelas/${p.id}/recibo.pdf`)} target="_blank" rel="noreferrer">Recibo</a>
+                      <button className="botao-link legenda" disabled={!!ocupado} onClick={() => desfazer(p)}>Desfazer</button>
+                    </>
                     : <>
                       {t.cliente.telefone && (
                         <a className="botao pequeno" target="_blank" rel="noreferrer" href={linkWhatsapp(t.cliente.telefone,
@@ -251,5 +266,52 @@ function Envio({ rotulo, ajuda, ocupado, aoEscolher }: { rotulo: string; ajuda: 
       <input ref={ref} type="file" accept="image/jpeg,image/png" multiple hidden
         onChange={(e) => { aoEscolher(e.target.files); e.target.value = ''; }} />
     </div>
+  );
+}
+
+/** Muda data, hora, duração e local, avisando se bate com outro ensaio ou bloqueio. */
+function Remarcar({ t, aoSalvar }: { t: TrabalhoDetalhe; aoSalvar: (t: TrabalhoDetalhe) => void }) {
+  const r = t.resumo;
+  const [quando, setQuando] = useState(r.dataTrabalho?.slice(0, 16) ?? '');
+  const [duracao, setDuracao] = useState(String(t.duracaoMin));
+  const [local, setLocal] = useState(r.localTrabalho ?? '');
+  const [avisos, setAvisos] = useState<string[]>([]);
+  const [erro, setErro] = useState('');
+
+  useEffect(() => {
+    if (!quando) { setAvisos([]); return; }
+    const h = setTimeout(() => {
+      api<{ avisos: string[] }>(`/agenda/conflitos?inicio=${encodeURIComponent(`${quando}:00`)}&duracaoMin=${duracao}&ignorar=${r.id}`)
+        .then((x) => setAvisos(x.avisos)).catch(() => setAvisos([]));
+    }, 300);
+    return () => clearTimeout(h);
+  }, [quando, duracao, r.id]);
+
+  async function salvar(ev: FormEvent) {
+    ev.preventDefault();
+    try {
+      aoSalvar(await api<TrabalhoDetalhe>(`/trabalhos/${r.id}`, {
+        metodo: 'PUT',
+        corpo: { titulo: r.titulo, tipo: r.tipo, dataTrabalho: quando ? `${quando}:00` : null, localTrabalho: local || null,
+          prazoEntrega: null, observacoes: t.observacoes ?? null, duracaoMin: Number(duracao) },
+      }));
+    } catch (e) {
+      setErro(e instanceof ErroApi ? e.message : 'Não foi possível salvar.');
+    }
+  }
+
+  return (
+    <form className="painel-caixa grade-form duas anima-entrada" onSubmit={salvar}>
+      <label className="campo"><span>Data e hora</span><input id="rm-data" type="datetime-local" value={quando} onChange={(e) => setQuando(e.target.value)} /></label>
+      <label className="campo"><span>Duração</span>
+        <select id="rm-dur" value={duracao} onChange={(e) => setDuracao(e.target.value)}>
+          {DURACOES.map((d) => <option key={d} value={d}>{duracaoTexto(d)}</option>)}
+        </select>
+      </label>
+      <label className="campo inteira"><span>Local</span><input id="rm-local" value={local} onChange={(e) => setLocal(e.target.value)} /></label>
+      {avisos.length > 0 && <div className="aviso inteira" role="status" style={{ margin: 0, borderColor: 'var(--alerta)' }}>{avisos.map((a) => <div key={a}>{a}</div>)}</div>}
+      <Erro msg={erro} />
+      <button className="botao principal inteira">Salvar</button>
+    </form>
   );
 }

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -55,6 +56,7 @@ public final class Repositorios {
         List<Trabalho> findByEstudioIdAndStatusOrderByDataTrabalhoDesc(Long estudioId, StatusTrabalho status);
         List<Trabalho> findByEstudioIdAndClienteIdOrderByDataTrabalhoDesc(Long estudioId, Long clienteId);
         List<Trabalho> findByEstudioIdAndStatusIn(Long estudioId, Collection<StatusTrabalho> status);
+        List<Trabalho> findByEstudioIdAndDataTrabalhoBetweenOrderByDataTrabalho(Long estudioId, LocalDateTime de, LocalDateTime ate);
     }
 
     public interface FotoRepo extends JpaRepository<Foto, Long> {
@@ -68,8 +70,37 @@ public final class Repositorios {
     public interface ParcelaRepo extends JpaRepository<Parcela, Long> {
         Optional<Parcela> findByIdAndEstudioId(Long id, Long estudioId);
         List<Parcela> findByTrabalhoIdOrderByVencimentoAscIdAsc(Long trabalhoId);
+        List<Parcela> findByEstudioId(Long estudioId);
         List<Parcela> findByEstudioIdAndPagoEmIsNullOrderByVencimento(Long estudioId);
         List<Parcela> findByEstudioIdAndPagoEmBetween(Long estudioId, LocalDate inicio, LocalDate fim);
+    }
+
+    public interface OrcamentoRepo extends JpaRepository<Orcamento, Long> {
+        Optional<Orcamento> findByIdAndEstudioId(Long id, Long estudioId);
+        Optional<Orcamento> findByToken(String token);
+        List<Orcamento> findByEstudioIdOrderByCriadoEmDesc(Long estudioId);
+
+        @Query("select coalesce(max(o.numero), 0) from Orcamento o where o.estudioId = ?1")
+        int ultimoNumero(Long estudioId);
+    }
+
+    public interface ItemAvulsoRepo extends JpaRepository<Fase2.ItemAvulso, Long> {
+        Optional<Fase2.ItemAvulso> findByIdAndEstudioId(Long id, Long estudioId);
+        List<Fase2.ItemAvulso> findByEstudioIdOrderByNome(Long estudioId);
+    }
+
+    public interface BloqueioRepo extends JpaRepository<Fase2.BloqueioAgenda, Long> {
+        Optional<Fase2.BloqueioAgenda> findByIdAndEstudioId(Long id, Long estudioId);
+
+        @Query("select b from BloqueioAgenda b where b.estudioId = ?1 and b.inicio < ?3 and b.fim > ?2 order by b.inicio")
+        List<Fase2.BloqueioAgenda> noPeriodo(Long estudioId, LocalDateTime de, LocalDateTime ate);
+    }
+
+    public interface DespesaRepo extends JpaRepository<Fase2.Despesa, Long> {
+        Optional<Fase2.Despesa> findByIdAndEstudioId(Long id, Long estudioId);
+        List<Fase2.Despesa> findByEstudioIdOrderByVencimentoDesc(Long estudioId);
+        List<Fase2.Despesa> findByEstudioIdAndVencimentoBetweenOrderByVencimento(Long estudioId, LocalDate de, LocalDate ate);
+        List<Fase2.Despesa> findByEstudioIdAndPagoEmBetween(Long estudioId, LocalDate de, LocalDate ate);
     }
 
     public interface PortfolioRepo extends JpaRepository<PortfolioFoto, Long> {

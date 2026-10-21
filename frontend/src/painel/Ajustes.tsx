@@ -1,11 +1,11 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { api, ErroApi } from '../api';
-import type { Estudio, Pacote, PortfolioFoto } from '../tipos';
-import { moeda } from '../util';
+import type { ContratoModelo, Estudio, ItemAvulso, Pacote, PortfolioFoto } from '../tipos';
+import { moeda, numeroBr } from '../util';
 import { Erro, useDados } from './comum';
 
 export function Ajustes() {
-  const [aba, setAba] = useState<'estudio' | 'portfolio' | 'pacotes'>('estudio');
+  const [aba, setAba] = useState<'estudio' | 'portfolio' | 'pacotes' | 'itens' | 'contrato'>('estudio');
   return (
     <>
       <div className="cabeca-pagina"><div><span className="rotulo">Ajustes</span><h1 className="titulo">Ajustes do estúdio</h1></div></div>
@@ -13,10 +13,14 @@ export function Ajustes() {
         <button className="botao pequeno" aria-pressed={aba === 'estudio'} onClick={() => setAba('estudio')}>Dados e contato</button>
         <button className="botao pequeno" aria-pressed={aba === 'portfolio'} onClick={() => setAba('portfolio')}>Portfólio do site</button>
         <button className="botao pequeno" aria-pressed={aba === 'pacotes'} onClick={() => setAba('pacotes')}>Pacotes</button>
+        <button className="botao pequeno" aria-pressed={aba === 'itens'} onClick={() => setAba('itens')}>Itens avulsos</button>
+        <button className="botao pequeno" aria-pressed={aba === 'contrato'} onClick={() => setAba('contrato')}>Contrato</button>
       </div>
       {aba === 'estudio' && <DadosEstudio />}
       {aba === 'portfolio' && <Portfolio />}
       {aba === 'pacotes' && <Pacotes />}
+      {aba === 'itens' && <ItensAvulsos />}
+      {aba === 'contrato' && <ModeloContrato />}
     </>
   );
 }
@@ -173,5 +177,119 @@ function Pacotes() {
         ))}
       </div>
     </section>
+  );
+}
+
+function ItensAvulsos() {
+  const { dados, erro, recarregar } = useDados<ItemAvulso[]>('/itens-avulsos');
+  const [editando, setEditando] = useState<ItemAvulso | 'novo' | null>(null);
+  const [falha, setFalha] = useState('');
+
+  async function salvar(ev: FormEvent<HTMLFormElement>) {
+    ev.preventDefault();
+    const f = new FormData(ev.currentTarget);
+    const corpo = { nome: f.get('nome'), preco: numeroBr(f.get('preco')), ativo: f.get('ativo') === 'on' };
+    setFalha('');
+    try {
+      if (editando === 'novo') await api('/itens-avulsos', { corpo });
+      else if (editando) await api(`/itens-avulsos/${editando.id}`, { metodo: 'PUT', corpo });
+      setEditando(null);
+      recarregar();
+    } catch (er) {
+      setFalha(er instanceof ErroApi ? er.message : 'Não foi possível salvar.');
+    }
+  }
+  const apagar = async (i: ItemAvulso) => { await api(`/itens-avulsos/${i.id}`, { metodo: 'DELETE' }); setEditando(null); recarregar(); };
+
+  const i = editando === 'novo' ? null : editando;
+  return (
+    <section className="secao">
+      <p className="suave" style={{ margin: 0 }}>Itens que você soma aos pacotes nos orçamentos: foto extra, álbum, impressões, deslocamento.</p>
+      <Erro msg={erro} />
+      {editando ? (
+        <form className="painel-caixa grade-form duas anima-entrada" onSubmit={salvar} key={i?.id ?? 'novo'}>
+          <label className="campo"><span>Nome</span><input id="ia-nome" name="nome" required maxLength={80} defaultValue={i?.nome} /></label>
+          <label className="campo"><span>Preço (R$)</span><input id="ia-preco" name="preco" required inputMode="decimal" defaultValue={i?.preco} /></label>
+          <label className="marcar inteira"><input id="ia-ativo" type="checkbox" name="ativo" defaultChecked={i?.ativo ?? true} /> Disponível nos orçamentos</label>
+          <Erro msg={falha} />
+          <div className="acoes-linha inteira">
+            <button className="botao principal">Salvar</button>
+            <button type="button" className="botao" onClick={() => setEditando(null)}>Cancelar</button>
+            {i && <button type="button" className="botao" style={{ marginLeft: 'auto', color: 'var(--erro)' }} onClick={() => apagar(i)}>Apagar</button>}
+          </div>
+        </form>
+      ) : <div><button className="botao" onClick={() => setEditando('novo')}>Novo item</button></div>}
+      <div className="linhas">
+        {dados?.map((x) => (
+          <button key={x.id} className="linha-item" style={{ border: 0, textAlign: 'left', cursor: 'pointer', borderTop: '1px solid var(--linha)' }} onClick={() => setEditando(x)}>
+            <span className="principal">{x.nome}{!x.ativo && <span className="legenda"> · INATIVO</span>}</span>
+            <span className="lado num">{moeda(x.preco)}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ModeloContrato() {
+  const { dados, erro, setDados } = useDados<ContratoModelo>('/estudio/contrato');
+  const [texto, setTexto] = useState<string | null>(null);
+  const [falha, setFalha] = useState('');
+  const [salvo, setSalvo] = useState(false);
+  const area = useRef<HTMLTextAreaElement>(null);
+  if (!dados) return <Erro msg={erro} />;
+  const atual = texto ?? dados.texto;
+
+  const inserir = (campo: string) => {
+    const el = area.current;
+    if (!el) return;
+    const ini = el.selectionStart, fim = el.selectionEnd;
+    const novo = atual.slice(0, ini) + campo + atual.slice(fim);
+    setTexto(novo);
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(ini + campo.length, ini + campo.length); });
+  };
+
+  async function salvar(ev: FormEvent<HTMLFormElement>, padrao = false) {
+    ev.preventDefault();
+    const f = new FormData(ev.currentTarget);
+    setFalha('');
+    setSalvo(false);
+    try {
+      const r = await api<ContratoModelo>('/estudio/contrato', {
+        metodo: 'PUT', corpo: { texto: padrao ? '' : atual, responsavel: f.get('responsavel'), documento: f.get('documento') },
+      });
+      setDados(r);
+      setTexto(null);
+      setSalvo(true);
+    } catch (er) {
+      setFalha(er instanceof ErroApi ? er.message : 'Não foi possível salvar.');
+    }
+  }
+
+  return (
+    <form className="painel-caixa grade-form duas" onSubmit={(e) => salvar(e)}>
+      <label className="campo"><span>Responsável que assina</span><input id="ct-resp" name="responsavel" maxLength={120} defaultValue={dados.responsavel} placeholder="Seu nome completo" /></label>
+      <label className="campo"><span>CPF ou CNPJ do estúdio</span><input id="ct-doc" name="documento" maxLength={20} defaultValue={dados.documento} /></label>
+      <div className="inteira" style={{ display: 'grid', gap: 8 }}>
+        <span className="legenda">TOQUE PARA INSERIR UM CAMPO; ELE É PREENCHIDO COM OS DADOS DO TRABALHO NO PDF.</span>
+        <div className="campos-contrato">{dados.campos.split(/\s+/).filter(Boolean).map((c) => <button type="button" key={c} className="etiqueta" onClick={() => inserir(c)}>{c}</button>)}</div>
+      </div>
+      <label className="campo inteira"><span>Texto do contrato {dados.padrao && texto == null ? '(modelo padrão)' : ''}</span>
+        <textarea id="ct-texto" ref={area} value={atual} onChange={(e) => setTexto(e.target.value)} rows={18} style={{ fontFamily: 'ui-monospace, Menlo, Consolas, monospace', fontSize: 13, lineHeight: '20px' }} />
+      </label>
+      <p className="legenda inteira" style={{ margin: 0 }}>
+        TÍTULOS NUMERADOS EM MAIÚSCULAS (“1. OBJETO”) VIRAM CLÁUSULAS. DEIXE UMA LINHA EM BRANCO ENTRE PARÁGRAFOS. O MODELO PADRÃO É UM PONTO DE PARTIDA: REVISE COM UM ADVOGADO.
+      </p>
+      <Erro msg={falha} />
+      {salvo && <p className="aviso sucesso inteira" style={{ margin: 0 }}>Modelo salvo. Os próximos contratos já saem com este texto.</p>}
+      <div className="acoes-linha inteira">
+        <button className="botao principal">Salvar modelo</button>
+        {!dados.padrao && (
+          <button type="button" className="botao" onClick={(e) => { const form = e.currentTarget.form; if (form) salvar({ preventDefault() {}, currentTarget: form } as unknown as FormEvent<HTMLFormElement>, true); }}>
+            Voltar ao modelo padrão
+          </button>
+        )}
+      </div>
+    </form>
   );
 }

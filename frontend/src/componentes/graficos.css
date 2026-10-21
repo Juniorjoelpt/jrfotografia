@@ -1,0 +1,43 @@
+/* Gráficos simples em HTML/CSS: barras finas, grade discreta, texto sempre na cor de texto. */
+.grafico { margin: 0; display: grid; align-content: start; gap: var(--espaco-4); padding: var(--espaco-6); border: 1px solid rgba(255,255,255,.08); background: rgba(23,23,22,.58); min-width: 0; }
+.grafico-cab { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--espaco-2) var(--espaco-4); align-items: baseline; }
+.legenda-serie { display: flex; gap: var(--espaco-4); font-size: 12px; color: var(--tinta-suave); }
+.legenda-serie span { display: inline-flex; align-items: center; gap: 6px; }
+.grafico i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.cor-a { background: var(--acento); }
+.cor-b { background: #4f8fd6; } /* validado contra o carvão: separa do vermelho para daltonismo */
+
+.barras { display: grid; grid-template-columns: auto 1fr; gap: var(--espaco-2); height: 220px; }
+.barras-eixo { display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; color: var(--tinta-suave); text-align: right; padding-bottom: 22px; margin-top: -7px; font-variant-numeric: tabular-nums; }
+.barras-area { position: relative; display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; padding-bottom: 22px; }
+.barras-area .grade { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,255,255,.08); pointer-events: none; }
+.barras-area .grade:first-of-type { background: rgba(255,255,255,.22); }
+.barras-mes { position: relative; display: grid; grid-template-rows: 1fr; outline: none; }
+.barras-par { display: flex; align-items: flex-end; justify-content: center; gap: 2px; height: 100%; }
+.barras-par .barra { flex: 0 1 14px; min-height: 0; border-radius: 4px 4px 0 0; transform-origin: bottom; animation: crescer-y var(--lento, .5s) var(--curva-suave, ease) both; }
+.barras-rotulo { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--tinta-suave); }
+.barras-mes.atual .barras-rotulo { color: var(--tinta); font-weight: 600; }
+.barras-mes:hover, .barras-mes:focus-within { background: rgba(255,255,255,.04); }
+.dica { position: absolute; bottom: calc(100% - 8px); left: 50%; transform: translate(-50%, 4px); z-index: 4; display: grid; gap: 2px; min-width: 120px;
+  padding: 8px 10px; background: #0f0f0e; border: 1px solid rgba(255,255,255,.14); font-size: 12px; line-height: 16px; color: var(--tinta);
+  white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity var(--rapido, .15s), transform var(--rapido, .15s); box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+.dica span { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.barras-mes:hover .dica, .barras-mes:focus .dica { opacity: 1; transform: translate(-50%, 0); }
+.barras-mes:first-child .dica, .barras-mes:nth-child(2) .dica { left: 0; transform: translate(0, 4px); }
+.barras-mes:last-child .dica, .barras-mes:nth-last-child(2) .dica { left: auto; right: 0; transform: translate(0, 4px); }
+.barras-mes:first-child:hover .dica, .barras-mes:nth-child(2):hover .dica, .barras-mes:last-child:hover .dica, .barras-mes:nth-last-child(2):hover .dica { transform: none; }
+
+.ranking { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espaco-3); }
+.ranking li { display: grid; grid-template-columns: 1fr auto; gap: 4px var(--espaco-3); }
+.ranking-nome { min-width: 0; overflow-wrap: anywhere; }
+.ranking-trilho { grid-column: 1 / -1; height: 6px; background: rgba(255,255,255,.06); border-radius: 0 4px 4px 0; }
+.ranking-trilho .barra { display: block; height: 100%; border-radius: 0 4px 4px 0; transform-origin: left; animation: encher var(--lento, .5s) var(--curva-suave, ease) both; }
+
+@keyframes crescer-y { from { transform: scaleY(0); } }
+@media (max-width: 640px) {
+  .grafico { padding: var(--espaco-4); background: rgba(23,23,22,.86); }
+  .barras { height: 180px; }
+  .barras-par .barra { flex-basis: 8px; }
+  .barras-rotulo { font-size: 11px; }
+  .barras-mes:nth-child(even of .barras-mes) .barras-rotulo { visibility: hidden; }
+}

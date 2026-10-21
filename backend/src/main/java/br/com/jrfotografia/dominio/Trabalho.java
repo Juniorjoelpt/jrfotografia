@@ -49,7 +49,13 @@ public class Trabalho {
     private LocalDateTime selecaoFechadaEm;
     private LocalDateTime entregueEm;
     private String observacoes;
+    private int duracaoMin = 240;
+    private Long orcamentoId;
     private LocalDateTime criadoEm = LocalDateTime.now();
+
+    public LocalDateTime fim() {
+        return dataTrabalho == null ? null : dataTrabalho.plusMinutes(duracaoMin);
+    }
 
     /** Pacote com limite de fotos exige seleção do cliente; eventos entregam tudo. */
     public boolean exigeSelecao() {

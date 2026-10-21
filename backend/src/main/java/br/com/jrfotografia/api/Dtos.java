@@ -80,10 +80,11 @@ public final class Dtos {
     public record TrabalhoForm(@NotNull Long clienteId, Long pacoteId, String titulo, String tipo,
                                LocalDateTime dataTrabalho, String localTrabalho, @PositiveOrZero BigDecimal valorTotal,
                                FormaPagamento formaPagamento, @PositiveOrZero BigDecimal valorSinal,
-                               @Min(1) @Max(12) Integer numParcelas, LocalDate primeiroVencimento, String observacoes) {}
+                               @Min(1) @Max(12) Integer numParcelas, LocalDate primeiroVencimento, String observacoes,
+                               @Min(30) @Max(1440) Integer duracaoMin) {}
 
     public record TrabalhoEdicao(String titulo, String tipo, LocalDateTime dataTrabalho, String localTrabalho,
-                                 LocalDate prazoEntrega, String observacoes) {}
+                                 LocalDate prazoEntrega, String observacoes, Integer duracaoMin) {}
 
     public record StatusTrabalhoForm(@NotNull StatusTrabalho status) {}
 
@@ -112,7 +113,8 @@ public final class Dtos {
                                   Enums.FormaPagamento formaPagamento, String galeriaToken, boolean galeriaComSenha,
                                   LocalDateTime galeriaExpiraEm, LocalDateTime selecaoFechadaEm, LocalDateTime entregueEm,
                                   String observacoes, long totalFotos, long selecionadas, long editadas,
-                                  List<ParcelaDto> parcelas, boolean downloadLiberado, String motivoDownload) {}
+                                  List<ParcelaDto> parcelas, boolean downloadLiberado, String motivoDownload,
+                                  int duracaoMin, Long orcamentoId, List<String> conflitos) {}
 
     public record FotoDto(Long id, String nomeOriginal, Integer largura, Integer altura, int ordem,
                           boolean selecionada, boolean editada, String comentario) {

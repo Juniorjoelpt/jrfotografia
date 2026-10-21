@@ -11,6 +11,11 @@ Já nasce preparado para atender outros estúdios no futuro: toda tabela de neg�
 | **Site** (`/`) | Abertura no estilo da proposta, portfólio de ensaio feminino, sobre, pacotes com preço e prazo, pedido de orçamento com consentimento (LGPD) |
 | **Galeria do cliente** (`/g/<código>`) | Acesso com senha de 6 dígitos, prévias com marca d'água JR, seleção por coração com cálculo de extras, entrega com download individual ou ZIP, validade de 90 dias |
 | **Painel** (`/painel`) | Início com agenda da semana e prazos, trabalhos por etapa, envio de fotos em lote, envio das editadas por nome de arquivo, parcelas e cobrança pelo WhatsApp, pedidos do site, portfólio, pacotes e dados do estúdio |
+| **Agenda** (`/painel/agenda`) | Visão por mês e por semana, bloqueio de datas (dia inteiro ou horário), aviso de choque de horário ao agendar, remarcar ou orçar |
+| **Vendas** (`/painel/vendas`) | Funil (pedidos novos, em conversa, aguardando resposta, aceitos), orçamento com pacote + itens avulsos + desconto + forma de pagamento, envio pelo WhatsApp, PDF com a marca |
+| **Orçamento do cliente** (`/o/<código>`) | O cliente vê o orçamento e aceita ou recusa. No aceite, o cadastro, o trabalho e as parcelas são criados sozinhos e o contrato fica disponível para baixar |
+| **Financeiro** (`/painel/financeiro`) | A receber, contas a pagar (despesas por categoria), fluxo de caixa mês a mês, recibo em PDF de cada parcela paga, contrato em PDF de cada trabalho |
+| **Relatórios** (`/painel/relatorios`) | Faturamento por mês, ticket médio, por tipo de ensaio, origem dos clientes, conversão de orçamentos e de pedidos, despesas por categoria |
 
 ### Regras de negócio
 
@@ -19,7 +24,9 @@ Já nasce preparado para atender outros estúdios no futuro: toda tabela de neg�
 - **Download:** à vista, só depois de quitar tudo (inclusive extras); parcelado, depois do sinal e da 1ª parcela.
 - **Prazo de entrega:** calculado em dias úteis a partir da data do ensaio (5, 10 ou 15, conforme o pacote).
 - **Arquivos:** guarda só os JPEGs exportados e as versões editadas, nunca os brutos.
-- **Perfis:** administrador vê tudo; colaborador não vê recebimentos nem cria trabalhos.
+- **Perfis:** administrador vê tudo; colaborador não vê valores (financeiro, orçamentos, relatórios) nem cria trabalhos.
+- **Orçamentos:** valem 7 dias por padrão; vencidos aparecem como "Vencido" e não podem mais ser aceitos. Aceito, não pode ser editado nem apagado.
+- **Contrato:** sai do modelo em Ajustes › Contrato, com campos como `{CONTRATANTE}` e `{VALOR_TOTAL}` preenchidos pelo trabalho. O modelo padrão é um ponto de partida; revise com um advogado.
 
 ## Tecnologia
 
@@ -77,4 +84,4 @@ docker compose exec banco sh -c 'mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" jrfo
 
 ## Próximas fases
 
-Fase 2 (vendas): funil de orçamentos, orçamento e contrato em PDF, agenda, Pix com baixa automática, e-mails, relatórios. Fase 3: agendamento online, assinatura digital, álbuns e laboratório, campanhas. O detalhamento está no documento de requisitos.
+Fase 2 concluída, exceto o que depende de contas suas: Pix com baixa automática (precisa de conta no PagSeguro ou banco com API) e envio de e-mails (precisa de um serviço de e-mail). Fase 3: agendamento online, assinatura digital, álbuns e laboratório, campanhas. O detalhamento está no documento de requisitos.
