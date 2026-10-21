@@ -130,3 +130,17 @@ a.numero:hover { transform: translateY(-2px); }
   .album { background: rgba(44, 44, 41, .88); }
   .painel-topo { position: sticky; top: 0; z-index: 20; }
 }
+
+/* ---------- Celular: casca do tamanho da tela ----------
+   Só o miolo rola; o topo e a barra de botões ficam no fluxo normal da grade, sem position: fixed.
+   Assim a barra não "flutua" no meio da tela quando o iOS erra a posição de elementos fixos
+   depois de abrir e fechar o teclado. */
+@media (max-width: 899px) {
+  html.casca, html.casca body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  .painel { position: relative; height: 100vh; height: 100dvh; min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
+  .painel-topo { grid-row: 1; position: relative; top: auto; }
+  .painel-corpo { grid-row: 2; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: var(--espaco-8); }
+  .painel-nav { grid-row: 3; position: relative; left: auto; right: auto; bottom: auto; }
+  .mais-fundo { position: absolute; }
+  .mais-menu { position: absolute; }
+}

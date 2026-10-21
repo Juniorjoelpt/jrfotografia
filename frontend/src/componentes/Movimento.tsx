@@ -70,3 +70,25 @@ export function Ambiente({ src }: { src?: string | null }) {
     </>
   );
 }
+
+/**
+ * Modo "casca" no celular: a página fica do tamanho da tela e só o miolo rola, com a barra de baixo
+ * no fluxo normal (sem position: fixed). Contorna o defeito do iOS 26 em que, depois de abrir e
+ * fechar o teclado, barras fixas ficam paradas no meio da tela.
+ */
+export function useCasca(ativo = true) {
+  useEffect(() => {
+    if (!ativo) return;
+    const html = document.documentElement;
+    html.classList.add('casca');
+    // Ao fechar o teclado, devolve a tela ao topo para o iOS não ficar com o deslocamento preso.
+    const aoSair = () => {
+      setTimeout(() => {
+        const ativo = document.activeElement;
+        if (!(ativo instanceof HTMLElement) || !ativo.matches('input, textarea, select, [contenteditable]')) window.scrollTo(0, 0);
+      }, 120);
+    };
+    document.addEventListener('focusout', aoSair);
+    return () => { html.classList.remove('casca'); document.removeEventListener('focusout', aoSair); };
+  }, [ativo]);
+}

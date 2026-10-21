@@ -5,7 +5,7 @@ export type Serie = { nome: string; classe: 'a' | 'b'; valores: number[] };
 
 /** Arredonda o topo do eixo para um número "redondo" (1, 2, 5 × 10ⁿ). */
 function topo(max: number) {
-  if (max <= 0) return 1;
+  if (max <= 0) return 100; // sem valores: eixo 0–100 em vez de rótulos repetidos
   const p = Math.pow(10, Math.floor(Math.log10(max)));
   const m = max / p;
   return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p;
@@ -20,7 +20,8 @@ const curto = (v: number) => (v >= 1000 ? `${(v / 1000).toLocaleString('pt-BR', 
 export function BarrasMensais({ series, formatar, titulo, mesAtual }: {
   series: Serie[]; formatar: (v: number) => string; titulo: string; mesAtual?: number;
 }) {
-  const max = topo(Math.max(0, ...series.flatMap((s) => s.valores)));
+  const maior = Math.max(0, ...series.flatMap((s) => s.valores));
+  const max = topo(maior);
   const linhas = [0, 0.5, 1].map((f) => f * max);
   return (
     <figure className="grafico">
@@ -35,6 +36,7 @@ export function BarrasMensais({ series, formatar, titulo, mesAtual }: {
       <div className="barras" aria-hidden="true">
         <div className="barras-eixo">{linhas.slice().reverse().map((v) => <span key={v}>{curto(v)}</span>)}</div>
         <div className="barras-area">
+          {maior === 0 && <span className="barras-vazio">Nenhum valor neste ano</span>}
           {linhas.map((v) => <span key={v} className="grade" style={{ bottom: `calc(22px + ${v / max} * (100% - 22px))` }} />)}
           {MESES_CURTOS.map((m, i) => (
             <div key={m} className={`barras-mes${mesAtual === i + 1 ? ' atual' : ''}`} tabIndex={-1}>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { api, salvarSessao, sessaoAtual } from '../api';
 import { Monograma } from '../componentes/Logo';
-import { Ambiente, Numero } from '../componentes/Movimento';
+import { Ambiente, Numero, useCasca } from '../componentes/Movimento';
 import type { Painel, PortfolioFoto } from '../tipos';
 import { primeiroNome } from '../util';
 import './painel.css';
@@ -38,6 +38,7 @@ export function LayoutPainel() {
   const sessao = sessaoAtual();
   const navegar = useNavigate();
   const fundo = useFundo();
+  useCasca();
   const local = useLocation();
   const [resumo, setResumo] = useState<Painel | null>(null);
   const [mais, setMais] = useState(false);

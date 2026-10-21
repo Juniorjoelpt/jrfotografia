@@ -92,3 +92,16 @@
 .comentario-foto { display: grid; gap: 8px; width: min(520px, calc(100vw - 32px)); }
 .comentario-foto textarea { width: 100%; padding: 10px 12px; border-radius: var(--raio-sm); border: 1px solid rgba(255,255,255,.2); background: rgba(10,10,10,.75); color: var(--tinta); font: inherit; resize: vertical; }
 .comentario-foto textarea:focus { outline: none; border-color: var(--acento-texto); }
+
+/* ---------- Celular e tablet: casca do tamanho da tela ----------
+   As fotos rolam dentro da casca e a barra de seleção fica embaixo, no fluxo normal (sem position: fixed),
+   para não "flutuar" no meio da tela no iOS depois que o teclado abre e fecha. */
+@media (max-width: 899px), (pointer: coarse) {
+  html.casca, html.casca body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  .g-casca { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+  .g-casca > .g-layout { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: var(--espaco-6); }
+  .g-casca > .barra-tempo { position: relative; flex: none; left: auto; right: auto; bottom: auto; }
+}
+@media (min-width: 900px) and (pointer: coarse) {
+  .g-casca .g-lateral { height: 100%; max-height: 100%; }
+}

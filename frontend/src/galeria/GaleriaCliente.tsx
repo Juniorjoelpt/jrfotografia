@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { api, ErroApi } from '../api';
 import { Monograma } from '../componentes/Logo';
 import { Visualizador } from '../componentes/Visualizador';
-import { Ambiente, Imagem, Numero } from '../componentes/Movimento';
+import { Ambiente, Imagem, Numero, useCasca } from '../componentes/Movimento';
 import type { FotoGaleria, Galeria } from '../tipos';
 import { data, diaMes, inclinacao, linkWhatsapp, moeda, primeiroNome } from '../util';
 import './galeria.css';
@@ -38,6 +38,7 @@ export function GaleriaCliente() {
   }, [token]);
 
   useEffect(() => { if (acesso) carregar(acesso); }, [acesso, carregar]);
+  useCasca(!!(acesso && galeria));
 
   if (!acesso || !galeria) {
     return <Entrada token={token} erroExterno={acesso ? erro : ''} aoEntrar={(a) => { gravarAcesso(token, a); setAcesso(a); }} />;
@@ -102,6 +103,7 @@ export function GaleriaCliente() {
   return (
     <>
       <Ambiente src={fundo} />
+      <div className="g-casca">
       <div className="g-layout">
         <aside className="g-lateral lateral">
           <div className="marca">
@@ -164,6 +166,7 @@ export function GaleriaCliente() {
       <BarraSelecao g={g} limite={limite} extras={extras} valorExtras={valorExtras}
         confirmando={confirmando} ocupado={ocupado} aoConfirmar={() => setConfirmando(true)}
         aoVoltar={() => setConfirmando(false)} aoConcluir={concluir} />
+      </div>
 
       {foto && aberta !== null && (
         <Visualizador src={url(foto.id, 'previa')} alt={`Foto ${aberta + 1} de ${fotos.length}`}

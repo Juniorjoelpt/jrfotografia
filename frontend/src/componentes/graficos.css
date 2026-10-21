@@ -12,6 +12,7 @@
 .barras-area { position: relative; display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; padding-bottom: 22px; }
 .barras-area .grade { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,255,255,.08); pointer-events: none; }
 .barras-area .grade:first-of-type { background: rgba(255,255,255,.22); }
+.barras-vazio { position: absolute; left: 0; right: 0; top: 38%; text-align: center; font-size: 13px; color: var(--tinta-suave); pointer-events: none; z-index: 1; }
 .barras-mes { position: relative; display: grid; grid-template-rows: 1fr; outline: none; }
 .barras-par { display: flex; align-items: flex-end; justify-content: center; gap: 2px; height: 100%; }
 .barras-par .barra { flex: 0 1 14px; min-height: 0; border-radius: 4px 4px 0 0; transform-origin: bottom; animation: crescer-y var(--lento, .5s) var(--curva-suave, ease) both; }
