@@ -1,0 +1,24 @@
+/* Aprovação da diagramação do álbum (página do cliente) */
+.ab-laminas { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--espaco-3); }
+.ab-lamina { display: grid; gap: 6px; padding: 6px; background: #f4f3ef; border: 0; border-radius: var(--raio-sm); cursor: pointer; font: inherit; text-align: left; }
+.ab-lamina img { width: 100%; height: auto; display: block; background: #ddd; aspect-ratio: 2 / 1; object-fit: contain; }
+.ab-lamina span { color: #171716; font-size: 13px; font-weight: 600; padding: 0 2px 2px; }
+.ab-lamina.comentada { box-shadow: 0 0 0 3px var(--alerta); }
+.ab-zoom { position: fixed; inset: 0; z-index: 50; background: rgba(10,10,10,.94); display: grid; grid-template-rows: 1fr auto; }
+.ab-zoom img { width: 100%; height: 100%; object-fit: contain; min-height: 0; padding: var(--espaco-4); }
+.ab-zoom-barra { display: grid; gap: var(--espaco-2); padding: var(--espaco-3) max(16px, env(safe-area-inset-left)) max(var(--espaco-4), env(safe-area-inset-bottom));
+  background: rgba(23,23,22,.96); border-top: 1px solid rgba(255,255,255,.12); max-width: 900px; width: 100%; justify-self: center; }
+.ab-zoom-barra textarea { width: 100%; font: inherit; color: var(--tinta); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.2);
+  border-radius: var(--raio-sm); padding: 10px 12px; }
+.pd-dados { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--espaco-3); }
+.pd-dados dt { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--tinta-suave); }
+.pd-dados dd { margin: 2px 0 0; }
+.pd-laminas { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--espaco-3); }
+.pd-laminas figure { margin: 0; display: grid; gap: 6px; padding: 6px; background: #f4f3ef; border-radius: var(--raio-sm); }
+.pd-laminas figure.com-comentario { box-shadow: 0 0 0 3px var(--alerta); }
+.pd-laminas img { width: 100%; aspect-ratio: 2 / 1; object-fit: contain; background: #ddd; }
+.pd-laminas figcaption { display: grid; gap: 2px; color: #171716; }
+.pd-laminas figcaption .legenda { color: #5e5c56; }
+.pd-laminas figcaption .botao-link { justify-self: start; }
+.pd-comentario { font-size: 13px; color: #8a4b00; font-weight: 600; }
+.pd-historico summary { cursor: pointer; }

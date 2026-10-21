@@ -25,6 +25,10 @@ import { Ajustes } from './painel/Ajustes';
 import { Agendar, AreaClientePagina, ReservaCliente } from './agendar/AgendarPublico';
 import { AssinarContrato, VerificarContrato } from './contrato/AssinarContrato';
 import { PesquisaCliente } from './pesquisa/PesquisaCliente';
+import { AprovarAlbum } from './album/AprovarAlbum';
+import { Produtos } from './painel/Produtos';
+import { DetalhePedido } from './painel/DetalhePedido';
+import './album/album.css';
 import { Relacionamento } from './painel/Relacionamento';
 import { Equipe } from './painel/Equipe';
 
@@ -40,6 +44,7 @@ createRoot(document.getElementById('raiz')!).render(
         <Route path="/meu/:token" element={<AreaClientePagina />} />
         <Route path="/assinar/:token" element={<AssinarContrato />} />
         <Route path="/pesquisa/:token" element={<PesquisaCliente />} />
+        <Route path="/album/:token" element={<AprovarAlbum />} />
         <Route path="/verificar" element={<VerificarContrato />} />
         <Route path="/verificar/:codigo" element={<VerificarContrato />} />
         <Route path="/painel/entrar" element={<Entrar />} />
@@ -60,6 +65,8 @@ createRoot(document.getElementById('raiz')!).render(
           <Route path="relatorios" element={<SoAdmin><Relatorios /></SoAdmin>} />
           <Route path="relacionamento" element={<SoAdmin><Relacionamento /></SoAdmin>} />
           <Route path="equipe" element={<Equipe />} />
+          <Route path="produtos" element={<SoAdmin><Produtos /></SoAdmin>} />
+          <Route path="produtos/:id" element={<SoAdmin><DetalhePedido /></SoAdmin>} />
           <Route path="conta" element={<Conta />} />
           <Route path="ajustes" element={<SoAdmin><Ajustes /></SoAdmin>} />
         </Route>

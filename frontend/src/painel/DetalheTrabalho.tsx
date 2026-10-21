@@ -5,6 +5,7 @@ import type { Estudio, Foto, MeioPagamento, Parcela, StatusTrabalho, TrabalhoDet
 import { data, dataHora, DURACOES, duracaoTexto, ETAPAS, linkWhatsapp, moeda, NOMES_MEIO, NOMES_PARCELA, primeiroNome, telefone, urlAreaCliente, urlGaleria } from '../util';
 import { ContratoTrabalho } from './AssinaturaPainel';
 import { PesquisaTrabalho, TrabalhoEquipe } from './TrabalhoEquipe';
+import { ProdutosDoTrabalho } from './Produtos';
 import { Erro, Status, useDados } from './comum';
 import { Imagem } from '../componentes/Movimento';
 
@@ -284,6 +285,8 @@ export function DetalheTrabalho() {
       })()}
 
       {admin && r.status === 'ENTREGUE' && <PesquisaTrabalho trabalhoId={r.id} cliente={t.cliente.nome} telefoneCliente={t.cliente.telefone ?? undefined} />}
+
+      {admin && r.status !== 'CANCELADO' && <ProdutosDoTrabalho trabalhoId={r.id} />}
 
       {r.status !== 'CANCELADO' && <TrabalhoEquipe trabalhoId={r.id} admin={admin} valorTotal={r.valorTotal} />}
 

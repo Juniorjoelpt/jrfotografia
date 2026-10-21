@@ -16,7 +16,7 @@ public final class Enums {
 
     public enum FormaPagamento { AVISTA, PARCELADO }
 
-    public enum TipoParcela { AVISTA, SINAL, PARCELA, EXTRA }
+    public enum TipoParcela { AVISTA, SINAL, PARCELA, EXTRA, PRODUTO }
 
     public enum MeioPagamento { PIX, DINHEIRO, TRANSFERENCIA, BOLETO }
 

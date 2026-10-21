@@ -50,6 +50,14 @@ class RegraDownloadTest {
     }
 
     @Test
+    void produtoVendidoDepoisNaoSeguraODownload() {
+        Trabalho t = trabalho(FormaPagamento.AVISTA);
+        Parcela avista = parcela(TipoParcela.AVISTA, true);
+        Parcela album = parcela(TipoParcela.PRODUTO, false);
+        assertThat(RegraDownload.avaliar(t, List.of(avista, album)).liberado()).isTrue();
+    }
+
+    @Test
     void naoLiberaAntesDaEntrega() {
         Trabalho t = trabalho(FormaPagamento.AVISTA);
         t.setStatus(StatusTrabalho.EDICAO);

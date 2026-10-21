@@ -69,7 +69,7 @@ export const NOMES_PEDIDO: Record<StatusPedido, string> = {
   NOVO: 'Novo', CONTATADO: 'Em conversa', FECHADO: 'Fechado', PERDIDO: 'Perdido',
 };
 
-export const NOMES_PARCELA: Record<TipoParcela, string> = { AVISTA: 'À vista', SINAL: 'Sinal', PARCELA: 'Parcela', EXTRA: 'Fotos extras' };
+export const NOMES_PARCELA: Record<TipoParcela, string> = { AVISTA: 'À vista', SINAL: 'Sinal', PARCELA: 'Parcela', EXTRA: 'Fotos extras', PRODUTO: 'Produto' };
 
 export const NOMES_MEIO: Record<MeioPagamento, string> = { PIX: 'Pix', DINHEIRO: 'Dinheiro', TRANSFERENCIA: 'Transferência', BOLETO: 'Boleto' };
 
@@ -145,3 +145,12 @@ export function cpfValido(v: string) {
 
 export const urlPesquisa = (token: string) => `${window.location.origin}/pesquisa/${token}`;
 export const NOMES_TAREFA: Record<'A_FAZER' | 'FAZENDO' | 'FEITA', string> = { A_FAZER: 'A fazer', FAZENDO: 'Fazendo', FEITA: 'Feita' };
+
+export const urlAlbum = (token: string) => `${window.location.origin}/album/${token}`;
+export const NOMES_PRODUTO: Record<'ALBUM' | 'QUADRO' | 'IMPRESSAO' | 'OUTRO', string> = { ALBUM: 'Álbum', QUADRO: 'Quadro', IMPRESSAO: 'Impressões', OUTRO: 'Outro' };
+export const NOMES_PEDIDO_PRODUTO: Record<string, string> = {
+  NOVO: 'Novo', DIAGRAMACAO: 'Diagramação', APROVACAO: 'Com o cliente', APROVADO: 'Aprovado', LABORATORIO: 'No laboratório',
+  PRONTO: 'Pronto', ENTREGUE: 'Entregue', CANCELADO: 'Cancelado',
+};
+/** Quantidade sem zeros sobrando: 6, 2,5. */
+export const qtd = (n: number) => String(Number(n.toFixed(2))).replace('.', ',');

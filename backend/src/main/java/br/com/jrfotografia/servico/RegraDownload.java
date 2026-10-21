@@ -21,7 +21,9 @@ public final class RegraDownload {
 
     public record Situacao(boolean liberado, String motivo) {}
 
-    public static Situacao avaliar(Trabalho t, List<Parcela> parcelas) {
+    public static Situacao avaliar(Trabalho t, List<Parcela> todas) {
+        // Produtos vendidos depois (álbum, quadro) não seguram o download das fotos.
+        List<Parcela> parcelas = todas.stream().filter(p -> p.getTipo() != TipoParcela.PRODUTO).toList();
         if (t.getStatus() != StatusTrabalho.ENTREGUE) {
             return new Situacao(false, "As fotos ainda estão em edição.");
         }

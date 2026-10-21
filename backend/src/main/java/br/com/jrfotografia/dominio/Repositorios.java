@@ -152,6 +152,30 @@ public final class Repositorios {
         Optional<Equipe.Tarefa> findByIdAndEstudioId(Long id, Long estudioId);
     }
 
+    public interface PedidoProdutoRepo extends JpaRepository<Produtos.PedidoProduto, Long> {
+        List<Produtos.PedidoProduto> findByEstudioIdOrderByIdDesc(Long estudioId);
+        List<Produtos.PedidoProduto> findByTrabalhoIdOrderByIdAsc(Long trabalhoId);
+        Optional<Produtos.PedidoProduto> findByIdAndEstudioId(Long id, Long estudioId);
+        Optional<Produtos.PedidoProduto> findByTokenAprovacao(String token);
+    }
+
+    public interface AlbumLaminaRepo extends JpaRepository<Produtos.AlbumLamina, Long> {
+        List<Produtos.AlbumLamina> findByPedidoIdAndVersaoOrderByOrdemAscIdAsc(Long pedidoId, int versao);
+        List<Produtos.AlbumLamina> findByPedidoIdOrderByVersaoAscOrdemAsc(Long pedidoId);
+        Optional<Produtos.AlbumLamina> findByIdAndPedidoId(Long id, Long pedidoId);
+    }
+
+    public interface MaterialRepo extends JpaRepository<Produtos.Material, Long> {
+        List<Produtos.Material> findByEstudioIdOrderByAtivoDescNomeAsc(Long estudioId);
+        Optional<Produtos.Material> findByIdAndEstudioId(Long id, Long estudioId);
+    }
+
+    public interface MovimentoMaterialRepo extends JpaRepository<Produtos.MovimentoMaterial, Long> {
+        List<Produtos.MovimentoMaterial> findTop50ByEstudioIdOrderByIdDesc(Long estudioId);
+        List<Produtos.MovimentoMaterial> findByMaterialIdOrderByIdDesc(Long materialId);
+        List<Produtos.MovimentoMaterial> findByPedidoIdOrderByIdAsc(Long pedidoId);
+    }
+
     public interface ReservaRepo extends JpaRepository<Agendamento.Reserva, Long> {
         Optional<Agendamento.Reserva> findByToken(String token);
         Optional<Agendamento.Reserva> findByIdAndEstudioId(Long id, Long estudioId);

@@ -4,7 +4,7 @@ export type Origem = 'INSTAGRAM' | 'WHATSAPP' | 'INDICACAO' | 'FEIRA' | 'SITE' |
 export type StatusTrabalho = 'AGENDADO' | 'FOTOGRAFADO' | 'SELECAO' | 'EDICAO' | 'ENTREGUE' | 'CANCELADO';
 export type StatusPedido = 'NOVO' | 'CONTATADO' | 'FECHADO' | 'PERDIDO';
 export type FormaPagamento = 'AVISTA' | 'PARCELADO';
-export type TipoParcela = 'AVISTA' | 'SINAL' | 'PARCELA' | 'EXTRA';
+export type TipoParcela = 'AVISTA' | 'SINAL' | 'PARCELA' | 'EXTRA' | 'PRODUTO';
 export type MeioPagamento = 'PIX' | 'DINHEIRO' | 'TRANSFERENCIA' | 'BOLETO';
 
 export type Perfil = 'ADMIN' | 'COLABORADOR';
@@ -201,3 +201,29 @@ export interface Tarefa {
   status: StatusTarefa; automatica: boolean; atrasada: boolean; criadoEm: string; concluidaEm?: string | null;
 }
 export interface Pessoa { id: number; nome: string; tipo: 'USUARIO' | 'FREELANCER' }
+
+// ---------- Fase 3 · bloco 4: produtos e estoque
+export type TipoProduto = 'ALBUM' | 'QUADRO' | 'IMPRESSAO' | 'OUTRO';
+export type StatusPedidoProduto = 'NOVO' | 'DIAGRAMACAO' | 'APROVACAO' | 'APROVADO' | 'LABORATORIO' | 'PRONTO' | 'ENTREGUE' | 'CANCELADO';
+export type Aprovacao = 'PENDENTE' | 'APROVADO' | 'AJUSTES';
+export interface Lamina { id: number; versao: number; ordem: number; nome?: string; largura?: number; altura?: number; comentario?: string | null }
+export interface PedidoProduto {
+  id: number; trabalhoId: number; trabalho: string; cliente: string; clienteTelefone?: string; tipo: TipoProduto; descricao: string;
+  quantidade: number; valorVenda: number; custo?: number | null; laboratorio?: string | null; status: StatusPedidoProduto;
+  prazo?: string | null; previsaoLab?: string | null; enviadoLabEm?: string | null; recebidoEm?: string | null; entregueEm?: string | null;
+  observacoes?: string | null; cobrado: boolean; recebido: boolean; custoLancado: boolean; custoPago: boolean; tokenAprovacao?: string | null;
+  versaoLayout: number; aprovacao?: Aprovacao | null; aprovacaoEm?: string | null; comentarioCliente?: string | null; atrasado: boolean;
+  laminas: Lamina[]; versoesAnteriores: Lamina[]; criadoEm: string;
+}
+export interface AlbumPublico {
+  cliente: string; estudioNome: string; estudioWhatsapp?: string; descricao: string; versao: number; aprovacao?: Aprovacao | null;
+  aprovacaoEm?: string | null; comentarioCliente?: string | null; laminas: Lamina[];
+}
+export interface Material {
+  id: number; nome: string; unidade: string; quantidade: number; minimo: number; custoUnitario?: number | null; ativo: boolean; baixo: boolean;
+}
+export type TipoMovimento = 'ENTRADA' | 'SAIDA' | 'AJUSTE';
+export interface MovimentoMaterial {
+  id: number; materialId: number; material: string; unidade: string; tipo: TipoMovimento; quantidade: number; saldo: number;
+  motivo?: string | null; pedidoId?: number | null; usuario?: string | null; criadoEm: string;
+}

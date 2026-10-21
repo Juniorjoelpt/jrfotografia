@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { sessaoAtual } from '../api';
-import type { Painel, ProximaData, Reserva, Tarefa } from '../tipos';
+import type { Material, Painel, PedidoProduto, ProximaData, Reserva, Tarefa } from '../tipos';
 import { MESES, moeda, primeiroNome } from '../util';
 import { Erro, LinhaTrabalho, Linhas, useDados } from './comum';
 import { Numero } from '../componentes/Movimento';
@@ -15,6 +15,10 @@ export function Inicio() {
   const { dados: datas } = useDados<ProximaData[]>(admin ? '/relacionamento/datas?dias=7' : null);
   const { dados: tarefas } = useDados<Tarefa[]>('/tarefas');
   const atrasadas = (tarefas ?? []).filter((t) => t.atrasada);
+  const { dados: materiais } = useDados<Material[]>(admin ? '/estoque/materiais' : null);
+  const { dados: pedidosProd } = useDados<PedidoProduto[]>(admin ? '/produtos/pedidos' : null);
+  const acabando = (materiais ?? []).filter((m) => m.baixo);
+  const ajustesOuAtraso = (pedidosProd ?? []).filter((p) => p.atrasado || (p.aprovacao === 'AJUSTES' && p.status === 'DIAGRAMACAO') || p.aprovacao === 'APROVADO' && p.status === 'APROVADO');
   const hojeDatas = (datas ?? []).filter((d) => d.diasFaltando === 0);
 
   return (
@@ -43,8 +47,19 @@ export function Inicio() {
           <span>{comComprovante ? `${comComprovante} com comprovante do Pix para conferir.` : 'Aguardando o Pix do sinal.'} Ver na agenda →</span>
         </Link>
       )}
-      {(atrasadas.length > 0 || (datas && datas.length > 0)) && (
+      {(atrasadas.length > 0 || (datas && datas.length > 0) || acabando.length > 0 || ajustesOuAtraso.length > 0) && (
         <div className="lembretes">
+          {ajustesOuAtraso.length > 0 && (
+            <Link to="/painel/produtos" className="aviso" style={{ margin: 0, borderColor: 'var(--alerta)', textDecoration: 'none', color: 'var(--tinta)' }}>
+              <strong style={{ color: 'var(--alerta)' }}>{ajustesOuAtraso.length === 1 ? '1 pedido de produto precisa de você' : `${ajustesOuAtraso.length} pedidos de produtos precisam de você`}</strong>
+              {' '}· {ajustesOuAtraso.map((p) => (p.atrasado ? `${p.descricao} (atrasado)` : p.aprovacao === 'AJUSTES' ? `${p.descricao} (ajustes)` : `${p.descricao} (aprovado, mandar ao lab)`)).join(', ')}
+            </Link>
+          )}
+          {acabando.length > 0 && (
+            <Link to="/painel/produtos#estoque" className="aviso" style={{ margin: 0, textDecoration: 'none', color: 'var(--tinta)' }}>
+              <strong>Estoque acabando:</strong> {acabando.map((m) => m.nome).join(', ')}
+            </Link>
+          )}
           {atrasadas.length > 0 && (
             <Link to="/painel/equipe" className="aviso" style={{ margin: 0, borderColor: 'var(--erro)', textDecoration: 'none', color: 'var(--tinta)' }}>
               <strong style={{ color: 'var(--erro)' }}>{atrasadas.length === 1 ? '1 tarefa atrasada' : `${atrasadas.length} tarefas atrasadas`}</strong> · {atrasadas[0].titulo}{atrasadas.length > 1 ? '…' : ''}
