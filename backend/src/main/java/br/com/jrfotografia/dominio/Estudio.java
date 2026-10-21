@@ -44,6 +44,16 @@ public class Estudio {
     private int reembolsoDias = 7;
     /** Programa de indicação: desconto (%) para quem é indicada e recompensa (R$) para quem indicou. */
     private boolean indicacaoAtiva;
+    /** E-mails por SMTP (a senha fica cifrada). */
+    private boolean emailAtivo;
+    private String smtpHost;
+    private Integer smtpPorta;
+    private String smtpUsuario;
+    private String smtpSenha;
+    private String smtpSeguranca;
+    private String emailRemetente;
+    private boolean emailAvisos = true;
+    private boolean emailLembretes = true;
     private int indicacaoDesconto = 10;
     private java.math.BigDecimal indicacaoRecompensa = java.math.BigDecimal.valueOf(50);
     private LocalDateTime criadoEm;

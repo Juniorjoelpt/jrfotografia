@@ -49,6 +49,11 @@ app:
     validade-dias: 90
   cors:
     origens: ${CORS_ORIGENS:http://localhost:5173}
+  email:
+    # smtp = envia de verdade (configurado em Ajustes › E-mail); memoria = só guarda (testes)
+    modo: ${EMAIL_MODO:smtp}
+    # Endereço do site nos links dos e-mails. Vazio = https://<domínio do estúdio>.
+    url-publica: ${URL_PUBLICA:}
 
 ---
 # MySQL do computador de desenvolvimento (root sem senha). O banco jrfotografia é criado sozinho.
@@ -65,6 +70,9 @@ app:
   admin:
     email: ${ADMIN_EMAIL:admin@jrfotografia.local}
     senha: ${ADMIN_SENHA:trocar123}
+  email:
+    # No computador, os links dos e-mails abrem o site local (Vite).
+    url-publica: ${URL_PUBLICA:http://localhost:5173}
 
 ---
 spring:

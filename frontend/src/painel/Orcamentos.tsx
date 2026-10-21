@@ -5,6 +5,7 @@ import type { Cliente, FormaPagamento, ItemAvulso, Orcamento, Pacote, Pedido } f
 import {
   CLASSE_ORCAMENTO, data, dataHora, isoDia, linkWhatsapp, moeda, NOMES_ORCAMENTO, numeroBr, primeiroNome, telefone, urlOrcamento,
 } from '../util';
+import { BotaoEmail } from './BotaoEmail';
 import { Erro, useDados } from './comum';
 
 type Linha = { chave: number; descricao: string; quantidade: string; valorUnit: string };
@@ -279,6 +280,7 @@ export function DetalheOrcamento() {
             Enviar pelo WhatsApp
           </a>
         )}
+        {!fechado && o.email && <BotaoEmail caminho={`/orcamentos/${o.id}/email`} para={o.email} aoEnviar={marcarEnviado} />}
         {!fechado && <button className="botao" onClick={copiar}>{copiado ? 'Link copiado' : 'Copiar link'}</button>}
         <a className="botao" href={urlPainel(`/orcamentos/${o.id}/pdf`)} target="_blank" rel="noreferrer">PDF</a>
         <a className="botao" href={link} target="_blank" rel="noreferrer">Ver como o cliente</a>

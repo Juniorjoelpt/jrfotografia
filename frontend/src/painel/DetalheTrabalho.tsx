@@ -4,6 +4,7 @@ import { api, ErroApi, imagemPainel, sessaoAtual, urlPainel } from '../api';
 import type { Estudio, Foto, MeioPagamento, Parcela, StatusTrabalho, TrabalhoDetalhe } from '../tipos';
 import { data, dataHora, DURACOES, duracaoTexto, ETAPAS, linkWhatsapp, moeda, NOMES_MEIO, NOMES_PARCELA, primeiroNome, telefone, urlAreaCliente, urlGaleria } from '../util';
 import { ContratoTrabalho } from './AssinaturaPainel';
+import { BotaoEmail } from './BotaoEmail';
 import { PesquisaTrabalho, TrabalhoEquipe } from './TrabalhoEquipe';
 import { ProdutosDoTrabalho } from './Produtos';
 import { Erro, Status, useDados } from './comum';
@@ -204,7 +205,7 @@ export function DetalheTrabalho() {
         )}
       </section>
 
-      {admin && <ContratoTrabalho trabalhoId={Number(id)} cliente={t.cliente.nome} telefoneCliente={t.cliente.telefone ?? undefined} cancelado={r.status === 'CANCELADO'} />}
+      {admin && <ContratoTrabalho trabalhoId={Number(id)} cliente={t.cliente.nome} telefoneCliente={t.cliente.telefone ?? undefined} emailCliente={t.cliente.email ?? undefined} cancelado={r.status === 'CANCELADO'} />}
 
       {/* Galeria do cliente */}
       {(r.status === 'SELECAO' || r.status === 'EDICAO' || r.status === 'ENTREGUE') && (
@@ -220,6 +221,7 @@ export function DetalheTrabalho() {
               {senha && t.cliente.telefone && (
                 <a className="botao principal pequeno" href={linkWhatsapp(t.cliente.telefone, msgGaleria)} target="_blank" rel="noreferrer">Enviar pelo WhatsApp</a>
               )}
+              {senha && t.cliente.email && <BotaoEmail caminho={`/trabalhos/${id}/galeria/email`} corpo={{ senha }} para={t.cliente.email} />}
               <a className="botao pequeno" href={link} target="_blank" rel="noreferrer">Abrir galeria</a>
             </div>
           </div>

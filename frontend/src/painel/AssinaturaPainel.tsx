@@ -4,6 +4,7 @@ import { QuadroAssinatura, type QuadroRef } from '../componentes/QuadroAssinatur
 import type { Assinatura } from '../tipos';
 import { dataHora, linkWhatsapp, primeiroNome, urlAssinar } from '../util';
 import { Erro, useDados } from './comum';
+import { BotaoEmail } from './BotaoEmail';
 import '../contrato/contrato.css';
 
 /** Ajustes > Contrato: a assinatura desenhada do fotógrafo, que vai no PDF dos contratos assinados. */
@@ -65,8 +66,8 @@ export function AssinaturaDoEstudio() {
 }
 
 /** Detalhe do trabalho: enviar o contrato para assinatura e acompanhar. */
-export function ContratoTrabalho({ trabalhoId, cliente, telefoneCliente, cancelado }: {
-  trabalhoId: number; cliente: string; telefoneCliente?: string; cancelado: boolean;
+export function ContratoTrabalho({ trabalhoId, cliente, telefoneCliente, emailCliente, cancelado }: {
+  trabalhoId: number; cliente: string; telefoneCliente?: string; emailCliente?: string; cancelado: boolean;
 }) {
   const { dados: a, recarregar } = useDados<Assinatura | undefined>(`/trabalhos/${trabalhoId}/assinatura`);
   const [erro, setErro] = useState('');
@@ -129,6 +130,7 @@ export function ContratoTrabalho({ trabalhoId, cliente, telefoneCliente, cancela
           {a?.status === 'PENDENTE' && telefoneCliente && (
             <a className={`botao pequeno${a.desatualizado ? '' : ' principal'}`} href={linkWhatsapp(telefoneCliente, msg)} target="_blank" rel="noreferrer">Enviar pelo WhatsApp</a>
           )}
+          {a?.status === 'PENDENTE' && emailCliente && !a.desatualizado && <BotaoEmail caminho={`/trabalhos/${trabalhoId}/assinatura/email`} para={emailCliente} />}
           {a?.status === 'PENDENTE' && <button className="botao pequeno" onClick={() => copiar(link)}>{copiado ? 'Copiado!' : 'Copiar link'}</button>}
           {a?.status === 'PENDENTE' && <button className="botao-link" style={{ fontSize: 13 }} onClick={cancelar}>Cancelar link</button>}
           {a?.status === 'ASSINADO' && (

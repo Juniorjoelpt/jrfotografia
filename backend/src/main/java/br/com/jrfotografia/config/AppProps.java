@@ -11,8 +11,15 @@ public record AppProps(
         Admin admin,
         Arquivos arquivos,
         Galeria galeria,
-        Cors cors
+        Cors cors,
+        Email email
 ) {
+    /**
+     * modo: "smtp" (padrão) envia de verdade; "memoria" guarda na memória (testes).
+     * urlPublica: endereço do site usado nos links dos e-mails (ex.: https://jrfotografiagnf.com).
+     */
+    public record Email(String modo, String urlPublica) {}
+
     public record Jwt(String segredo, int horasPainel, int horasGaleria) {}
 
     public record Admin(String nome, String email, String senha) {}

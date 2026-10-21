@@ -1,5 +1,6 @@
 package br.com.jrfotografia.api;
 
+import br.com.jrfotografia.servico.EmailAvisos;
 import br.com.jrfotografia.config.Erros.NaoEncontrado;
 import br.com.jrfotografia.config.Erros.RegraNegocio;
 import br.com.jrfotografia.config.Tentativas;
@@ -49,6 +50,7 @@ import java.util.Map;
 @RestController
 public class AgendaOnlineControle {
 
+    private final EmailAvisos avisos;
     private final AgendaOnlineServico servico;
     private final EstudioDoSite site;
     private final EstudioRepo estudios;
@@ -65,7 +67,8 @@ public class AgendaOnlineControle {
     public AgendaOnlineControle(AgendaOnlineServico servico, EstudioDoSite site, EstudioRepo estudios, PacoteRepo pacotes,
                                 HorarioRepo horarios, ReservaRepo reservas, ParcelaRepo parcelas, Armazenamento armazenamento,
                                 Tentativas tentativas, AssinaturaServico assinaturas, MarketingServico marketing,
-                                CampanhaRepo campanhaRepo) {
+                                CampanhaRepo campanhaRepo, EmailAvisos avisos) {
+        this.avisos = avisos;
         this.marketing = marketing;
         this.campanhaRepo = campanhaRepo;
         this.servico = servico;
@@ -183,6 +186,7 @@ public class AgendaOnlineControle {
         Reserva r = servico.reservar(e, new AgendaOnlineServico.NovaReserva(f.pacoteId(), f.inicio(), f.nome(), f.telefone(),
                 f.email(), f.tipo(), f.mensagem(), f.origem(), f.codigo()));
         tentativas.erro(Tentativas.RESERVA_APARELHO, aparelho); // conta cada pré-reserva feita
+        avisos.preReservaRecebida(r);
         return publica(r, e);
     }
 
@@ -198,6 +202,7 @@ public class AgendaOnlineControle {
         tentativas.verificar(Tentativas.COMPROVANTE_APARELHO, aparelho, "Muitos envios seguidos.");
         tentativas.erro(Tentativas.COMPROVANTE_APARELHO, aparelho);
         Reserva r = servico.enviarComprovante(token, arquivo);
+        avisos.comprovanteRecebido(r);
         return publica(r, estudios.findById(r.getEstudioId()).orElseThrow());
     }
 
@@ -280,6 +285,7 @@ public class AgendaOnlineControle {
         Reserva r = servico.reservarCampanha(e, c, new AgendaOnlineServico.NovaReserva(null, f.inicio(), f.nome(), f.telefone(), f.email(),
                 c.getTitulo(), f.mensagem(), f.origem(), f.codigo()));
         tentativas.erro(Tentativas.RESERVA_APARELHO, aparelho);
+        avisos.preReservaRecebida(r);
         return publica(r, e);
     }
 
@@ -313,17 +319,21 @@ public class AgendaOnlineControle {
 
     @PostMapping("/api/publico/cliente/{token}/remarcar")
     public AreaCliente remarcar(@PathVariable String token, @Valid @RequestBody RemarcarForm f) {
+        java.time.LocalDateTime antes = servico.trabalhoDaCliente(token).getDataTrabalho();
         servico.remarcar(token, f.inicio());
         // Contrato ainda não assinado acompanha a nova data.
         Trabalho t = servico.trabalhoDaCliente(token);
         ContratoAssinatura c = assinaturas.atual(t.getId());
         if (c != null && c.getStatus() == ContratoAssinatura.Status.PENDENTE) assinaturas.gerar(t.getEstudioId(), t.getId());
+        avisos.remarcadoPelaCliente(servico.trabalhoDaCliente(token), antes);
         return areaCliente(token);
     }
 
     @PostMapping("/api/publico/cliente/{token}/cancelar")
     public AreaCliente cancelar(@PathVariable String token, @Valid @RequestBody(required = false) CancelarForm f) {
+        String texto = servico.regras(servico.trabalhoDaCliente(token)).textoCancelamento();
         servico.cancelar(token, f == null ? null : f.motivo());
+        avisos.canceladoPelaCliente(servico.trabalhoDaCliente(token), texto);
         return areaCliente(token);
     }
 
@@ -352,13 +362,18 @@ public class AgendaOnlineControle {
     public ReservaDto confirmar(@PathVariable Long id) {
         Reserva r = servico.confirmar(UsuarioLogado.estudio(), id);
         assinaturas.gerarSePossivel(UsuarioLogado.estudio(), r.getTrabalhoId());
+        ContratoAssinatura contrato = assinaturas.atual(r.getTrabalhoId());
+        avisos.reservaConfirmada(r, servico.trabalhoDaClienteOuNulo(r.getTrabalhoId()),
+                contrato != null && contrato.getStatus() == ContratoAssinatura.Status.PENDENTE ? contrato.getToken() : null);
         return ReservaDto.de(r);
     }
 
     @PostMapping("/api/reservas/{id}/recusa")
     @PreAuthorize("hasRole('ADMIN')")
     public ReservaDto recusar(@PathVariable Long id, @Valid @RequestBody(required = false) RecusaForm f) {
-        return ReservaDto.de(servico.recusar(UsuarioLogado.estudio(), id, f == null ? null : f.motivo()));
+        Reserva r = servico.recusar(UsuarioLogado.estudio(), id, f == null ? null : f.motivo());
+        avisos.reservaRecusada(r);
+        return ReservaDto.de(r);
     }
 
     @GetMapping("/api/estudio/agenda-online")

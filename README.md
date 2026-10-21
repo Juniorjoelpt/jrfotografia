@@ -75,6 +75,22 @@ Depois:
 2. Coloque HTTPS na frente (Caddy ou Nginx com Let's Encrypt).
 3. Entre em `/painel`, abra **Ajustes** e preencha WhatsApp, Instagram e uma chave Pix aleatória ou de e-mail.
 4. Em **Ajustes › Portfólio do site**, envie as fotos de ensaio feminino e marque uma como destaque.
+5. Em **Ajustes › E-mail**, configure o envio de e-mails (veja abaixo) e ligue a verificação em duas etapas em **Minha conta**.
+
+### E-mails automáticos
+
+O painel envia e-mails por SMTP para clientes que informaram e-mail (pré-reserva, confirmação, contrato para assinar e assinado com o PDF,
+fotos prontas, lembrete do ensaio na véspera, lembrete de pagamento) e avisos para o fotógrafo (nova pré-reserva, comprovante,
+contrato assinado, seleção concluída, pedido de orçamento, álbum aprovado). Os lembretes saem todo dia às 8h.
+
+Em **Ajustes › E-mail** escolha o provedor, preencha usuário e senha, salve, clique em **Enviar e-mail de teste** e ligue o envio:
+
+- **Gmail**: `smtp.gmail.com`, porta 587, STARTTLS. A senha é uma **senha de app** (Conta Google › Segurança › Verificação em duas etapas › Senhas de app).
+- **Outlook/Hotmail**: `smtp-mail.outlook.com`, porta 587, STARTTLS.
+- **Brevo**: `smtp-relay.brevo.com`, porta 587, com o login e a chave SMTP do Brevo.
+
+A senha fica cifrada no banco e não volta para a tela. Os links dos e-mails usam o domínio do estúdio; para outro endereço, defina `URL_PUBLICA`
+(ex.: `URL_PUBLICA=http://localhost:5173` para testar no computador). O histórico dos envios, com o motivo de qualquer falha, fica na mesma tela.
 
 ### Backup
 
@@ -86,4 +102,4 @@ docker compose exec banco sh -c 'mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" jrfo
 
 ## Próximas fases
 
-Fase 2 concluída, exceto o que depende de contas suas: Pix com baixa automática (precisa de conta no PagSeguro ou banco com API) e envio de e-mails (precisa de um serviço de e-mail). Fase 3: agendamento online, assinatura digital, álbuns e laboratório, campanhas. O detalhamento está no documento de requisitos.
+Fases 1, 2 e 3 concluídas, com e-mails automáticos. Falta só o Pix com baixa automática, que depende de uma conta com API de pagamento (Mercado Pago, Asaas, PagSeguro ou API Pix do banco). O detalhamento está no documento de requisitos.

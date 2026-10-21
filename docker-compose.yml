@@ -30,6 +30,7 @@ services:
       DB_USUARIO: jrfotografia
       DB_SENHA: ${DB_SENHA}
       JWT_SEGREDO: ${JWT_SEGREDO}
+      URL_PUBLICA: ${URL_PUBLICA:-}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_SENHA: ${ADMIN_SENHA}
       CORS_ORIGENS: https://jrfotografiagnf.com,https://www.jrfotografiagnf.com

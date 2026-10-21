@@ -111,6 +111,11 @@ public class GaleriaServico {
         return f;
     }
 
+    @Transactional(readOnly = true)
+    public Trabalho recarregar(Long id) {
+        return trabalhos.findById(id).orElseThrow();
+    }
+
     public record ResultadoSelecao(long escolhidas, long extras, BigDecimal valorExtras) {}
 
     /** Fecha a seleção. Fotos além do pacote viram uma parcela EXTRA (R$ 35 por foto na JR). */

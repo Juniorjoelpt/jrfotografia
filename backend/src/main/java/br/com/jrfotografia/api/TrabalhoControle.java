@@ -1,5 +1,7 @@
 package br.com.jrfotografia.api;
 
+import br.com.jrfotografia.dominio.Repositorios.PesquisaRepo;
+import br.com.jrfotografia.servico.EmailAvisos;
 import br.com.jrfotografia.api.Dtos.*;
 import br.com.jrfotografia.config.Erros.NaoEncontrado;
 import br.com.jrfotografia.config.Erros.RegraNegocio;
@@ -31,6 +33,8 @@ import java.util.List;
 @RequestMapping("/api/trabalhos")
 public class TrabalhoControle {
 
+    private final PesquisaRepo pesquisas;
+    private final EmailAvisos avisos;
     private final TrabalhoServico servico;
     private final TrabalhoRepo trabalhos;
     private final FotoRepo fotos;
@@ -42,7 +46,9 @@ public class TrabalhoControle {
 
     public TrabalhoControle(TrabalhoServico servico, TrabalhoRepo trabalhos, FotoRepo fotos,
                             ParcelaRepo parcelas, Armazenamento armazenamento, AgendaServico agenda,
-                            PdfServico pdf, EstudioRepo estudios) {
+                            PdfServico pdf, EstudioRepo estudios, EmailAvisos avisos, PesquisaRepo pesquisas) {
+        this.pesquisas = pesquisas;
+        this.avisos = avisos;
         this.agenda = agenda;
         this.pdf = pdf;
         this.estudios = estudios;
@@ -107,13 +113,32 @@ public class TrabalhoControle {
     @PatchMapping("/{id}/status")
     public TrabalhoDetalhe mudarStatus(@PathVariable Long id, @Valid @RequestBody StatusTrabalhoForm f) {
         br.com.jrfotografia.servico.AuditoriaServico.detalhe("Para " + f.status().name().toLowerCase().replace("selecao", "seleção").replace("edicao", "edição"));
-        return detalheDe(servico.mudarStatus(UsuarioLogado.estudio(), id, f.status()));
+        Trabalho t = servico.mudarStatus(UsuarioLogado.estudio(), id, f.status());
+        if (f.status() == StatusTrabalho.ENTREGUE) {
+            avisos.fotosEntregues(t, pesquisas.findByTrabalhoId(t.getId()).filter(p -> p.getRespondidaEm() == null).map(p -> p.getToken()).orElse(null));
+        }
+        return detalheDe(t);
     }
 
     /** Reabre a seleção para o cliente escolher mais fotos. */
     @PostMapping("/{id}/reabrir-selecao")
     public TrabalhoDetalhe reabrirSelecao(@PathVariable Long id) {
         return detalheDe(servico.reabrirSelecao(UsuarioLogado.estudio(), id));
+    }
+
+    public record EmailGaleria(@jakarta.validation.constraints.NotBlank String senha) {}
+
+    /** Manda o link e a senha da galeria por e-mail (a senha só existe na tela de quem acabou de gerar). */
+    @PostMapping("/{id}/galeria/email")
+    public java.util.Map<String, Boolean> galeriaPorEmail(@PathVariable Long id, @Valid @RequestBody EmailGaleria f) {
+        Trabalho t = servico.buscar(UsuarioLogado.estudio(), id);
+        if (t.getCliente().getEmail() == null || t.getCliente().getEmail().isBlank()) {
+            throw new br.com.jrfotografia.config.Erros.RegraNegocio("A cliente não tem e-mail no cadastro.");
+        }
+        if (!estudios.findById(t.getEstudioId()).orElseThrow().isEmailAtivo()) {
+            throw new br.com.jrfotografia.config.Erros.RegraNegocio("Os e-mails estão desligados. Ligue em Ajustes › E-mail.");
+        }
+        return java.util.Map.of("enviado", avisos.galeria(t, f.senha()));
     }
 
     /** Gera uma nova senha para a galeria; ela aparece só nesta resposta, para enviar ao cliente. */

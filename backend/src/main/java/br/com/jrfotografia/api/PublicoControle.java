@@ -1,5 +1,6 @@
 package br.com.jrfotografia.api;
 
+import br.com.jrfotografia.servico.EmailAvisos;
 import br.com.jrfotografia.api.Dtos.*;
 import br.com.jrfotografia.config.AppProps;
 import br.com.jrfotografia.config.Erros.NaoEncontrado;
@@ -30,6 +31,7 @@ import java.util.List;
 @RequestMapping("/api/publico")
 public class PublicoControle {
 
+    private final EmailAvisos avisos;
     private final EstudioRepo estudios;
     private final PacoteRepo pacotes;
     private final PortfolioRepo portfolio;
@@ -38,7 +40,8 @@ public class PublicoControle {
     private final AppProps props;
 
     public PublicoControle(EstudioRepo estudios, PacoteRepo pacotes, PortfolioRepo portfolio, PedidoRepo pedidos,
-                           Armazenamento armazenamento, AppProps props) {
+                           Armazenamento armazenamento, AppProps props, EmailAvisos avisos) {
+        this.avisos = avisos;
         this.estudios = estudios;
         this.pacotes = pacotes;
         this.portfolio = portfolio;
@@ -96,7 +99,7 @@ public class PublicoControle {
         p.setDataDesejada(f.dataDesejada());
         p.setMensagem(f.mensagem());
         p.setOrigem(f.origem() != null ? f.origem() : Origem.SITE);
-        pedidos.save(p);
+        avisos.novoPedidoOrcamento(pedidos.save(p));
     }
 
     private PortfolioFoto foto(HttpServletRequest req, Long id) {

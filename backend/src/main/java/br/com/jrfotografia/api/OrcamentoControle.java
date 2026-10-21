@@ -1,5 +1,6 @@
 package br.com.jrfotografia.api;
 
+import br.com.jrfotografia.servico.EmailAvisos;
 import br.com.jrfotografia.api.Fase2Dtos.*;
 import br.com.jrfotografia.config.Erros.RegraNegocio;
 import br.com.jrfotografia.config.UsuarioLogado;
@@ -22,6 +23,7 @@ import java.util.List;
 @RestController
 public class OrcamentoControle {
 
+    private final EmailAvisos avisos;
     private final OrcamentoServico servico;
     private final OrcamentoRepo orcamentos;
     private final EstudioRepo estudios;
@@ -30,7 +32,8 @@ public class OrcamentoControle {
     private final PdfServico pdf;
 
     public OrcamentoControle(OrcamentoServico servico, OrcamentoRepo orcamentos, EstudioRepo estudios,
-                             TrabalhoRepo trabalhos, ParcelaRepo parcelas, PdfServico pdf) {
+                             TrabalhoRepo trabalhos, ParcelaRepo parcelas, PdfServico pdf, EmailAvisos avisos) {
+        this.avisos = avisos;
         this.servico = servico;
         this.orcamentos = orcamentos;
         this.estudios = estudios;
@@ -97,12 +100,29 @@ public class OrcamentoControle {
 
     @PostMapping("/api/publico/orcamentos/{token}/aceite")
     public OrcamentoPublico aceitar(@PathVariable String token) {
-        return publicoDe(servico.aceitar(token));
+        Orcamento o = servico.aceitar(token);
+        avisos.orcamentoRespondido(o, true);
+        return publicoDe(o);
     }
 
     @PostMapping("/api/publico/orcamentos/{token}/recusa")
     public OrcamentoPublico recusar(@PathVariable String token) {
-        return publicoDe(servico.recusar(token));
+        Orcamento o = servico.recusar(token);
+        avisos.orcamentoRespondido(o, false);
+        return publicoDe(o);
+    }
+
+    /** Manda o link do orçamento por e-mail (além do WhatsApp). */
+    @PostMapping("/api/orcamentos/{id}/email")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public java.util.Map<String, Boolean> enviarPorEmail(@PathVariable Long id) {
+        Orcamento o = orcamentos.findByIdAndEstudioId(id, br.com.jrfotografia.config.UsuarioLogado.estudio())
+                .orElseThrow(() -> new br.com.jrfotografia.config.Erros.NaoEncontrado("Orçamento não encontrado"));
+        if (o.getEmail() == null || o.getEmail().isBlank()) throw new br.com.jrfotografia.config.Erros.RegraNegocio("O orçamento não tem e-mail da cliente.");
+        if (!estudios.findById(o.getEstudioId()).orElseThrow().isEmailAtivo()) {
+            throw new br.com.jrfotografia.config.Erros.RegraNegocio("Os e-mails estão desligados. Ligue em Ajustes › E-mail.");
+        }
+        return java.util.Map.of("enviado", avisos.orcamentoParaCliente(o));
     }
 
     @GetMapping("/api/publico/orcamentos/{token}/pdf")

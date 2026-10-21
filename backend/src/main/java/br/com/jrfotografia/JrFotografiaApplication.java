@@ -11,6 +11,7 @@ import java.util.TimeZone;
 @SpringBootApplication
 @EnableConfigurationProperties(AppProps.class)
 @EnableJpaRepositories(considerNestedRepositories = true)
+@org.springframework.scheduling.annotation.EnableScheduling
 public class JrFotografiaApplication {
 
     public static void main(String[] args) {

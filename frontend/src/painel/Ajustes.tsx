@@ -5,10 +5,11 @@ import { DURACOES, duracaoTexto, moeda, numeroBr } from '../util';
 import { AgendaOnlineAjustes } from './AjustesAgenda';
 import { AssinaturaDoEstudio } from './AssinaturaPainel';
 import { Atividades } from './Atividades';
+import { AjustesEmail } from './AjustesEmail';
 import { Erro, useDados } from './comum';
 
 export function Ajustes() {
-  const [aba, setAba] = useState<'estudio' | 'portfolio' | 'pacotes' | 'itens' | 'contrato' | 'agenda' | 'atividades'>(() => (window.location.hash === '#atividades' ? 'atividades' : 'estudio'));
+  const [aba, setAba] = useState<'estudio' | 'portfolio' | 'pacotes' | 'itens' | 'contrato' | 'agenda' | 'email' | 'atividades'>(() => (window.location.hash === '#atividades' ? 'atividades' : window.location.hash === '#email' ? 'email' : 'estudio'));
   return (
     <>
       <div className="cabeca-pagina"><div><span className="rotulo">Ajustes</span><h1 className="titulo">Ajustes do estúdio</h1></div></div>
@@ -19,6 +20,7 @@ export function Ajustes() {
         <button className="botao pequeno" aria-pressed={aba === 'itens'} onClick={() => setAba('itens')}>Itens avulsos</button>
         <button className="botao pequeno" aria-pressed={aba === 'contrato'} onClick={() => setAba('contrato')}>Contrato</button>
         <button className="botao pequeno" aria-pressed={aba === 'agenda'} onClick={() => setAba('agenda')}>Agenda online</button>
+        <button className="botao pequeno" aria-pressed={aba === 'email'} onClick={() => setAba('email')}>E-mail</button>
         <button className="botao pequeno" aria-pressed={aba === 'atividades'} onClick={() => setAba('atividades')}>Atividades</button>
       </div>
       {aba === 'estudio' && <DadosEstudio />}
@@ -27,6 +29,7 @@ export function Ajustes() {
       {aba === 'itens' && <ItensAvulsos />}
       {aba === 'contrato' && <><ModeloContrato /><AssinaturaDoEstudio /></>}
       {aba === 'agenda' && <AgendaOnlineAjustes />}
+      {aba === 'email' && <AjustesEmail />}
       {aba === 'atividades' && <Atividades />}
     </>
   );

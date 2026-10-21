@@ -206,6 +206,11 @@ public final class Repositorios {
         List<Auditoria> findTop300ByEstudioIdAndCriadoEmBetweenOrderByIdDesc(Long estudioId, LocalDateTime de, LocalDateTime ate);
     }
 
+    public interface EmailEnviadoRepo extends JpaRepository<EmailEnviado, Long> {
+        List<EmailEnviado> findTop100ByEstudioIdOrderByIdDesc(Long estudioId);
+        boolean existsByTipoAndReferenciaAndParaAndStatus(String tipo, String referencia, String para, String status);
+    }
+
     public interface ReservaRepo extends JpaRepository<Agendamento.Reserva, Long> {
         Optional<Agendamento.Reserva> findByToken(String token);
         Optional<Agendamento.Reserva> findByIdAndEstudioId(Long id, Long estudioId);

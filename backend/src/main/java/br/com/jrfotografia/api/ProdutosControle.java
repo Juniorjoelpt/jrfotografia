@@ -1,5 +1,6 @@
 package br.com.jrfotografia.api;
 
+import br.com.jrfotografia.servico.EmailAvisos;
 import br.com.jrfotografia.config.UsuarioLogado;
 import br.com.jrfotografia.dominio.Estudio;
 import br.com.jrfotografia.dominio.Produtos.*;
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 @RestController
 public class ProdutosControle {
 
+    private final EmailAvisos avisos;
     private final ProdutosServico servico;
     private final TrabalhoRepo trabalhos;
     private final ParcelaRepo parcelas;
@@ -42,7 +44,8 @@ public class ProdutosControle {
     private final Armazenamento armazenamento;
 
     public ProdutosControle(ProdutosServico servico, TrabalhoRepo trabalhos, ParcelaRepo parcelas, DespesaRepo despesas,
-                            EstudioRepo estudios, UsuarioRepo usuarios, Armazenamento armazenamento) {
+                            EstudioRepo estudios, UsuarioRepo usuarios, Armazenamento armazenamento, EmailAvisos avisos) {
+        this.avisos = avisos;
         this.servico = servico;
         this.trabalhos = trabalhos;
         this.parcelas = parcelas;
@@ -127,7 +130,10 @@ public class ProdutosControle {
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public PedidoDto status(@PathVariable Long id, @Valid @RequestBody StatusForm f) {
-        return dto(servico.mudarStatus(UsuarioLogado.estudio(), id, f.status(), f.previsaoLab()), true);
+        PedidoProduto p = servico.mudarStatus(UsuarioLogado.estudio(), id, f.status(), f.previsaoLab());
+        // Álbum enviado para aprovação: o link vai por e-mail também (se a cliente tiver e-mail).
+        if (f.status() == StatusPedidoProduto.APROVACAO) avisos.albumParaAprovar(p, trabalhos.findById(p.getTrabalhoId()).orElseThrow());
+        return dto(p, true);
     }
 
     @PostMapping(value = "/api/produtos/pedidos/{id}/laminas", consumes = "multipart/form-data")
@@ -168,7 +174,9 @@ public class ProdutosControle {
     @PostMapping("/api/publico/albuns/{token}")
     @Transactional
     public AlbumPublico responder(@PathVariable String token, @Valid @RequestBody RespostaAlbum f) {
-        return publico(servico.responderAprovacao(token, f.aprova(), f.comentario(), f.comentarios()));
+        PedidoProduto p = servico.responderAprovacao(token, f.aprova(), f.comentario(), f.comentarios());
+        avisos.albumRespondido(p, trabalhos.findById(p.getTrabalhoId()).orElseThrow());
+        return publico(p);
     }
 
     @GetMapping("/api/publico/albuns/{token}/laminas/{laminaId}/{tamanho}")

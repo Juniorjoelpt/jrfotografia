@@ -1,5 +1,6 @@
 package br.com.jrfotografia.api;
 
+import br.com.jrfotografia.servico.EmailAvisos;
 import br.com.jrfotografia.api.Dtos.*;
 import br.com.jrfotografia.config.Erros.NaoAutorizado;
 import br.com.jrfotografia.config.Erros.Proibido;
@@ -39,6 +40,7 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/api/galeria/{token}")
 public class GaleriaControle {
 
+    private final EmailAvisos avisos;
     private final GaleriaServico galeria;
     private final Armazenamento armazenamento;
     private final EstudioRepo estudios;
@@ -46,7 +48,8 @@ public class GaleriaControle {
     private final PesquisaRepo pesquisas;
 
     public GaleriaControle(GaleriaServico galeria, Armazenamento armazenamento, EstudioRepo estudios, Tentativas tentativas,
-                           PesquisaRepo pesquisas) {
+                           PesquisaRepo pesquisas, EmailAvisos avisos) {
+        this.avisos = avisos;
         this.pesquisas = pesquisas;
         this.tentativas = tentativas;
         this.galeria = galeria;
@@ -96,7 +99,10 @@ public class GaleriaControle {
 
     @PostMapping("/fechar-selecao")
     public GaleriaServico.ResultadoSelecao fechar(@PathVariable String token, @RequestHeader("Authorization") String auth) {
-        return galeria.fecharSelecao(galeria.autorizar(token, acesso(auth, null)));
+        Trabalho t = galeria.autorizar(token, acesso(auth, null));
+        GaleriaServico.ResultadoSelecao r = galeria.fecharSelecao(t);
+        avisos.selecaoConcluida(galeria.recarregar(t.getId()), r.escolhidas(), r.extras(), r.valorExtras());
+        return r;
     }
 
     @GetMapping("/fotos/{fotoId}/miniatura")

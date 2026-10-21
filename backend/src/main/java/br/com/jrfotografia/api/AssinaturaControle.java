@@ -1,5 +1,6 @@
 package br.com.jrfotografia.api;
 
+import br.com.jrfotografia.servico.EmailAvisos;
 import br.com.jrfotografia.config.Erros.NaoEncontrado;
 import br.com.jrfotografia.config.Erros.RegraNegocio;
 import br.com.jrfotografia.config.Tentativas;
@@ -30,11 +31,13 @@ import java.util.List;
 @RestController
 public class AssinaturaControle {
 
+    private final EmailAvisos avisos;
     private final AssinaturaServico servico;
     private final EstudioRepo estudios;
     private final Tentativas tentativas;
 
-    public AssinaturaControle(AssinaturaServico servico, EstudioRepo estudios, Tentativas tentativas) {
+    public AssinaturaControle(AssinaturaServico servico, EstudioRepo estudios, Tentativas tentativas, EmailAvisos avisos) {
+        this.avisos = avisos;
         this.servico = servico;
         this.estudios = estudios;
         this.tentativas = tentativas;
@@ -72,6 +75,23 @@ public class AssinaturaControle {
     @PreAuthorize("hasRole('ADMIN')")
     public AssinaturaDto gerar(@PathVariable Long id) {
         return dto(servico.gerar(UsuarioLogado.estudio(), id));
+    }
+
+    /** Manda o link de assinatura por e-mail para a cliente (além do WhatsApp). */
+    @PostMapping("/api/trabalhos/{id}/assinatura/email")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Boolean> enviarPorEmail(@PathVariable Long id) {
+        ContratoAssinatura a = doEstudio(id);
+        if (a == null || a.getStatus() != Status.PENDENTE) throw new RegraNegocio("Gere o link de assinatura primeiro.");
+        exigirEmail(a.getTrabalho().getCliente().getEmail(), a.getEstudioId());
+        return java.util.Map.of("enviado", avisos.contratoParaAssinar(a));
+    }
+
+    private void exigirEmail(String para, Long estudioId) {
+        if (para == null || para.isBlank()) throw new RegraNegocio("A cliente não tem e-mail no cadastro.");
+        Estudio e = estudios.findById(estudioId).orElseThrow();
+        if (!e.isEmailAtivo()) throw new RegraNegocio("Os e-mails estão desligados. Ligue em Ajustes › E-mail.");
     }
 
     @DeleteMapping("/api/trabalhos/{id}/assinatura")
@@ -132,6 +152,7 @@ public class AssinaturaControle {
         try {
             ContratoAssinatura a = servico.assinar(token, f.nome(), f.cpf(), f.assinatura(), Boolean.TRUE.equals(f.aceite()),
                     f.autorizaImagem(), aparelho, req.getHeader("User-Agent"), origem(req));
+            avisos.contratoAssinado(a, servico.pdfAssinado(a));
             return publica(a);
         } catch (RegraNegocio ex) {
             tentativas.erro(Tentativas.ASSINATURA_APARELHO, aparelho);

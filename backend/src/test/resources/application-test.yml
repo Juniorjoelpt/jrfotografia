@@ -12,3 +12,6 @@ app:
     pasta: ./target/arquivos-teste
   jwt:
     segredo: segredo-de-teste-com-mais-de-trinta-e-dois-caracteres
+  email:
+    modo: memoria
+    url-publica: http://teste.local
