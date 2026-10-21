@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { api, ErroApi, imagemPainel, sessaoAtual, urlPainel } from '../api';
 import type { Estudio, Foto, MeioPagamento, Parcela, StatusTrabalho, TrabalhoDetalhe } from '../tipos';
 import { data, dataHora, DURACOES, duracaoTexto, ETAPAS, linkWhatsapp, moeda, NOMES_MEIO, NOMES_PARCELA, primeiroNome, telefone, urlAreaCliente, urlGaleria } from '../util';
+import { ContratoTrabalho } from './AssinaturaPainel';
 import { Erro, Status, useDados } from './comum';
 import { Imagem } from '../componentes/Movimento';
 
@@ -175,6 +176,8 @@ export function DetalheTrabalho() {
           </p>
         )}
       </section>
+
+      {admin && <ContratoTrabalho trabalhoId={Number(id)} cliente={t.cliente.nome} telefoneCliente={t.cliente.telefone ?? undefined} cancelado={r.status === 'CANCELADO'} />}
 
       {/* Galeria do cliente */}
       {(r.status === 'SELECAO' || r.status === 'EDICAO' || r.status === 'ENTREGUE') && (

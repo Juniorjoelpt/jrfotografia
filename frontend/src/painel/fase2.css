@@ -134,3 +134,5 @@ a.ev-cartao:hover { background: rgba(211,47,47,.24); }
 .ao-faixa input[type="time"] { background: none; border: 0; color: var(--tinta); font: inherit; font-variant-numeric: tabular-nums; padding: 4px; min-height: 36px; color-scheme: dark; }
 .ao-faixa .botao-link { font-size: 20px; line-height: 1; padding: 4px 8px; color: var(--tinta-suave); }
 @media (max-width: 640px) { .ao-dia { grid-template-columns: 1fr; gap: var(--espaco-2); } }
+.ass-estudio { background: #f4f3ef; border-radius: var(--raio-sm); padding: var(--espaco-3); max-width: 360px; }
+.ass-estudio img { display: block; width: 100%; height: auto; }

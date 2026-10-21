@@ -142,10 +142,26 @@ export interface AreaCliente {
   status: StatusTrabalho; canceladoEm?: string; regras: RegrasCliente;
   parcelas: { descricao: string; valor: number; vencimento?: string; paga: boolean }[];
   galeriaToken?: string; galeriaAberta: boolean; estudioNome: string; estudioWhatsapp?: string; chavePix?: string;
-  remarcacaoHoras: number; reembolsoDias: number;
+  remarcacaoHoras: number; reembolsoDias: number; contratoToken?: string; contratoStatus?: StatusAssinatura;
 }
 export interface HorarioAtendimento { diaSemana: number; inicio: string; fim: string }
 export interface ConfigAgenda {
   ativo: boolean; antecedenciaHoras: number; horizonteDias: number; intervaloMin: number; passoMin: number; sinalPercentual: number;
   reservaHoras: number; remarcacaoHoras: number; remarcacoesMax: number; reembolsoDias: number; horarios: HorarioAtendimento[];
+}
+
+// ---------- Fase 3 · assinatura eletrônica do contrato
+export type StatusAssinatura = 'PENDENTE' | 'ASSINADO' | 'CANCELADO';
+export interface Assinatura {
+  id: number; token: string; codigo: string; status: StatusAssinatura; criadoEm: string; assinadoEm?: string;
+  nomeAssinante?: string; cpfAssinante?: string; ip?: string; desatualizado: boolean;
+}
+export interface AssinaturaPublica {
+  status: StatusAssinatura; titulo: string; texto: string; contratante: string; estudioNome: string; estudioWhatsapp?: string;
+  responsavel?: string; enviadoEm: string; assinadoEm?: string; nomeAssinante?: string; codigo?: string; hashTexto: string;
+  perguntaUsoImagem: boolean; autorizaImagem?: boolean | null;
+}
+export interface Verificacao {
+  valido: boolean; codigo?: string; estudio?: string; contratante?: string; cpf?: string; assinadoEm?: string; enviadoEm?: string;
+  hashTexto?: string; hashPdf?: string; arquivoConfere?: boolean | null;
 }

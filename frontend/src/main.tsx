@@ -23,6 +23,7 @@ import { SoAdmin } from './painel/comum';
 import { OrcamentoCliente } from './orcamento/OrcamentoCliente';
 import { Ajustes } from './painel/Ajustes';
 import { Agendar, AreaClientePagina, ReservaCliente } from './agendar/AgendarPublico';
+import { AssinarContrato, VerificarContrato } from './contrato/AssinarContrato';
 
 createRoot(document.getElementById('raiz')!).render(
   <StrictMode>
@@ -34,6 +35,9 @@ createRoot(document.getElementById('raiz')!).render(
         <Route path="/agendar" element={<Agendar />} />
         <Route path="/reserva/:token" element={<ReservaCliente />} />
         <Route path="/meu/:token" element={<AreaClientePagina />} />
+        <Route path="/assinar/:token" element={<AssinarContrato />} />
+        <Route path="/verificar" element={<VerificarContrato />} />
+        <Route path="/verificar/:codigo" element={<VerificarContrato />} />
         <Route path="/painel/entrar" element={<Entrar />} />
         <Route path="/painel" element={<LayoutPainel />}>
           <Route index element={<Inicio />} />

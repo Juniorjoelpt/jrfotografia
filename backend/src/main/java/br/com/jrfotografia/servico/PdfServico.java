@@ -101,9 +101,27 @@ public class PdfServico {
 
     // ------------------------------------------------------------------ contrato
     public byte[] contrato(Trabalho t, Estudio e, List<Parcela> parcelas) {
+        return contrato(e, textoContrato(t, e, parcelas), t.getCliente().getNome(), null, null, null, null);
+    }
+
+    /** Texto do contrato já preenchido com os dados do trabalho (é o que fica congelado para assinatura). */
+    public String textoContrato(Trabalho t, Estudio e, List<Parcela> parcelas) {
         String modelo = e.getModeloContrato() != null && !e.getModeloContrato().isBlank() ? e.getModeloContrato() : ContratoPadrao.TEXTO;
-        String texto = preencher(modelo, campos(t, e, parcelas));
-        return gerar(e, "CONTRATO", "Prestação de serviços fotográficos", doc -> {
+        return preencher(modelo, campos(t, e, parcelas)).strip();
+    }
+
+    /** Dados do registro de assinatura eletrônica, impressos na última página do contrato assinado. */
+    public record Auditoria(String codigo, String nomeAssinante, String cpf, LocalDateTime assinadoEm, String ip, String navegador,
+                            String hashTexto, LocalDateTime enviadoEm, String urlVerificacao, Boolean autorizaImagem) {}
+
+    /**
+     * Contrato em PDF. Com {@code auditoria}, é a via assinada: desenho das assinaturas sobre as linhas,
+     * código de verificação no rodapé de todas as páginas e uma página final com o registro da assinatura.
+     */
+    public byte[] contrato(Estudio e, String texto, String contratante, byte[] assinaturaCliente, byte[] assinaturaEstudio,
+                           Auditoria auditoria, String nomeCliente) {
+        String rodape = auditoria != null ? "Assinado eletronicamente · código " + auditoria.codigo() : null;
+        return gerar(e, "CONTRATO", "Prestação de serviços fotográficos", rodape, doc -> {
             for (String bloco : texto.split("\\n\\s*\\n")) {
                 String b = bloco.strip();
                 if (b.isEmpty()) continue;
@@ -128,11 +146,63 @@ public class PdfServico {
             }
             PdfPTable ass = new PdfPTable(2);
             ass.setWidthPercentage(100);
-            ass.setSpacingBefore(48);
-            assinatura(ass, t.getCliente().getNome(), "CONTRATANTE");
+            ass.setSpacingBefore(auditoria != null ? 24 : 48);
+            ass.setKeepTogether(true);
+            if (assinaturaCliente != null || assinaturaEstudio != null) {
+                desenhoAssinatura(ass, assinaturaCliente);
+                desenhoAssinatura(ass, assinaturaEstudio);
+            }
+            assinatura(ass, auditoria != null ? auditoria.nomeAssinante() : contratante, "CONTRATANTE");
             assinatura(ass, e.getResponsavel() != null ? e.getResponsavel() : e.getNome(), "CONTRATADO");
             doc.add(ass);
+            if (auditoria != null) registroAssinatura(doc, e, auditoria, nomeCliente);
         });
+    }
+
+    private void registroAssinatura(Document doc, Estudio e, Auditoria a, String nomeCliente) throws DocumentException {
+        doc.newPage();
+        Paragraph t = new Paragraph("REGISTRO DE ASSINATURA ELETRÔNICA", CHAMADA);
+        t.setSpacingAfter(10);
+        doc.add(t);
+        PdfPTable tab = new PdfPTable(new float[]{3f, 7f});
+        tab.setWidthPercentage(100);
+        String[][] linhas = {
+                {"Código de verificação", a.codigo()},
+                {"Contratante (cadastro)", nomeCliente},
+                {"Nome informado na assinatura", a.nomeAssinante()},
+                {"CPF informado", a.cpf()},
+                {"Assinado em", DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm:ss").format(a.assinadoEm()) + " (horário de Brasília)"},
+                {"Endereço IP", a.ip()},
+                {"Navegador", a.navegador()},
+                {"Uso de imagem no portfólio", a.autorizaImagem() == null ? null : a.autorizaImagem() ? "Autoriza" : "Não autoriza"},
+                {"Contrato enviado em", DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm").format(a.enviadoEm())},
+                {"Contratado", (e.getResponsavel() != null ? e.getResponsavel() + " · " : "") + e.getNome()
+                        + (e.getDocumento() != null && !e.getDocumento().isBlank() ? " · " + e.getDocumento() : "")},
+                {"Hash SHA-256 do texto", a.hashTexto() + (a.autorizaImagem() != null ? " (texto enviado, antes da marcação do uso de imagem)" : "")},
+        };
+        for (String[] l : linhas) {
+            PdfPCell r = new PdfPCell(new Phrase(l[0].toUpperCase(BR), SUAVE));
+            r.setBorder(Rectangle.BOTTOM);
+            r.setBorderColor(LINHA);
+            r.setPadding(6);
+            tab.addCell(r);
+            PdfPCell v = new PdfPCell(new Phrase(vazio(l[1], "—"), l[0].startsWith("Hash") || l[0].startsWith("Navegador") ? SUAVE : TEXTO));
+            v.setBorder(Rectangle.BOTTOM);
+            v.setBorderColor(LINHA);
+            v.setPadding(6);
+            tab.addCell(v);
+        }
+        doc.add(tab);
+        Paragraph lei = justificado("Este contrato foi assinado eletronicamente pelo contratante por meio de link individual enviado pelo contratado, "
+                + "com identificação por nome e CPF, aceite expresso dos termos e assinatura desenhada na tela. As partes reconhecem esta forma "
+                + "de assinatura como válida, nos termos do art. 10, § 2º, da Medida Provisória nº 2.200-2/2001 e da Lei nº 14.063/2020 "
+                + "(assinatura eletrônica simples). O hash SHA-256 acima identifica o texto aceito; qualquer alteração gera um hash diferente.");
+        lei.setSpacingBefore(16);
+        doc.add(lei);
+        Paragraph v = new Paragraph("Para conferir a autenticidade deste documento, acesse " + a.urlVerificacao()
+                + " ou envie este PDF na página de verificação.", TEXTO);
+        v.setSpacingBefore(12);
+        doc.add(v);
     }
 
     Map<String, String> campos(Trabalho t, Estudio e, List<Parcela> parcelas) {
@@ -194,10 +264,14 @@ public class PdfServico {
     private interface Corpo { void escrever(Document doc) throws DocumentException; }
 
     private byte[] gerar(Estudio e, String titulo, String subtitulo, Corpo corpo) {
+        return gerar(e, titulo, subtitulo, null, corpo);
+    }
+
+    private byte[] gerar(Estudio e, String titulo, String subtitulo, String rodape, Corpo corpo) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Document doc = new Document(PageSize.A4, 48, 48, 132, 64);
         PdfWriter w = PdfWriter.getInstance(doc, out);
-        w.setPageEvent(new Moldura(e, titulo, subtitulo));
+        w.setPageEvent(new Moldura(e, titulo, subtitulo, rodape));
         doc.addTitle(titulo + " — " + e.getNome());
         doc.addAuthor(e.getNome());
         doc.open();
@@ -215,11 +289,13 @@ public class PdfServico {
         private final Estudio e;
         private final String titulo;
         private final String subtitulo;
+        private final String rodape;
 
-        Moldura(Estudio e, String titulo, String subtitulo) {
+        Moldura(Estudio e, String titulo, String subtitulo, String rodape) {
             this.e = e;
             this.titulo = titulo;
             this.subtitulo = subtitulo;
+            this.rodape = rodape;
         }
 
         @Override
@@ -249,6 +325,7 @@ public class PdfServico {
             cb.stroke();
             texto(cb, contato, BaseFont.HELVETICA, 7.5f, 48, 30, TINTA_SUAVE, Element.ALIGN_LEFT);
             texto(cb, String.valueOf(w.getPageNumber()), BaseFont.HELVETICA, 7.5f, largura - 48, 30, TINTA_SUAVE, Element.ALIGN_RIGHT);
+            if (rodape != null) texto(cb, rodape, BaseFont.HELVETICA, 7f, 48, 20, TINTA_SUAVE, Element.ALIGN_LEFT);
             cb.restoreState();
         }
 
@@ -373,6 +450,27 @@ public class PdfServico {
         v.setHorizontalAlignment(Element.ALIGN_RIGHT);
         v.setPaddingTop(8);
         t.addCell(v);
+    }
+
+    /** Célula com o desenho da assinatura (PNG), logo acima da linha; vazia quando não há desenho. */
+    private static void desenhoAssinatura(PdfPTable t, byte[] desenho) {
+        PdfPCell c;
+        if (desenho != null) {
+            try {
+                Image img = Image.getInstance(desenho);
+                img.scaleToFit(170, 56);
+                c = new PdfPCell(img, false);
+            } catch (Exception ex) {
+                throw new IllegalStateException("Imagem de assinatura inválida", ex);
+            }
+        } else {
+            c = new PdfPCell();
+        }
+        c.setBorder(Rectangle.NO_BORDER);
+        c.setFixedHeight(60);
+        c.setVerticalAlignment(Element.ALIGN_BOTTOM);
+        c.setPaddingRight(24);
+        t.addCell(c);
     }
 
     private static void assinatura(PdfPTable t, String nome, String papel) {

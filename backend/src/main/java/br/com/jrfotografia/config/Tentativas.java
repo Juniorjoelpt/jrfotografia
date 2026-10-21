@@ -26,6 +26,9 @@ public class Tentativas {
     /** Pré-reservas do site por aparelho: evita alguém lotar a agenda com reservas falsas. */
     public static final Regra RESERVA_APARELHO = new Regra("reserva", 4, Duration.ofHours(6));
     public static final Regra COMPROVANTE_APARELHO = new Regra("comprovante", 10, Duration.ofHours(1));
+    /** Tentativas de assinar com dados inválidos e consultas de verificação de contrato. */
+    public static final Regra ASSINATURA_APARELHO = new Regra("assinatura", 10, Duration.ofHours(1));
+    public static final Regra VERIFICACAO_APARELHO = new Regra("verificacao", 30, Duration.ofHours(1));
 
     private record Contagem(int erros, Instant inicio) {}
 

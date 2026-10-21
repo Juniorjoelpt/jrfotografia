@@ -3,6 +3,7 @@ import { api, ErroApi } from '../api';
 import type { ContratoModelo, Estudio, ItemAvulso, Pacote, PortfolioFoto } from '../tipos';
 import { DURACOES, duracaoTexto, moeda, numeroBr } from '../util';
 import { AgendaOnlineAjustes } from './AjustesAgenda';
+import { AssinaturaDoEstudio } from './AssinaturaPainel';
 import { Erro, useDados } from './comum';
 
 export function Ajustes() {
@@ -22,7 +23,7 @@ export function Ajustes() {
       {aba === 'portfolio' && <Portfolio />}
       {aba === 'pacotes' && <Pacotes />}
       {aba === 'itens' && <ItensAvulsos />}
-      {aba === 'contrato' && <ModeloContrato />}
+      {aba === 'contrato' && <><ModeloContrato /><AssinaturaDoEstudio /></>}
       {aba === 'agenda' && <AgendaOnlineAjustes />}
     </>
   );

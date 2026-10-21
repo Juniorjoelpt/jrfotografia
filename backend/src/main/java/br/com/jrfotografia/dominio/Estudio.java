@@ -28,6 +28,8 @@ public class Estudio {
     private String modeloContrato;
     private String responsavel;
     private String documento;
+    /** PNG da assinatura desenhada do fotógrafo (chave no armazenamento). */
+    private String assinaturaImagem;
 
     // Agenda online (fase 3)
     private boolean agendaOnline;

@@ -1,0 +1,26 @@
+/* Assinatura eletrônica: texto do contrato, quadro de assinatura e verificação. */
+.ct-texto { display: grid; gap: var(--espaco-3); padding: var(--espaco-6); background: #f4f3ef; color: #171716;
+  font-size: 14px; line-height: 22px; border-radius: var(--raio-sm); }
+.ct-texto p { margin: 0; white-space: pre-line; text-align: justify; hyphens: auto; }
+.ct-texto strong { font-weight: 700; letter-spacing: .02em; }
+.ct-assinar { padding-top: var(--espaco-4); border-top: 2px solid var(--acento); }
+.quadro-assinatura { position: relative; height: 190px; background: #f4f3ef; border-radius: var(--raio-sm); overflow: hidden;
+  touch-action: none; user-select: none; -webkit-user-select: none; }
+.quadro-assinatura canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.quadro-dica { position: absolute; left: 0; right: 0; top: 40%; text-align: center; color: rgba(23,23,22,.35); font-size: 15px; pointer-events: none; }
+.quadro-linha { position: absolute; left: 24px; right: 24px; bottom: 44px; border-bottom: 1px solid rgba(23,23,22,.35); pointer-events: none; }
+.quadro-limpar { position: absolute; right: 8px; top: 6px; color: #5e5c56; font-size: 13px; padding: 8px; }
+.quadro-limpar:disabled { visibility: hidden; }
+.ct-codigo { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+.ct-dados { margin: var(--espaco-2) 0 0; display: grid; gap: 6px; }
+.ct-dados > div { display: grid; grid-template-columns: 120px 1fr; gap: var(--espaco-3); }
+.ct-dados dt { color: var(--tinta-suave); font-size: 13px; }
+.ct-dados dd { margin: 0; color: var(--tinta); }
+.ct-hash { font-family: ui-monospace, Menlo, monospace; font-size: 11px; word-break: break-all; }
+@media (max-width: 640px) {
+  .ct-texto { padding: var(--espaco-4); font-size: 13.5px; }
+  .ct-texto p { text-align: left; }
+  .ct-dados > div { grid-template-columns: 1fr; gap: 0; }
+}
+.ct-imagem { margin: 0; padding: var(--espaco-3) var(--espaco-4); border: 1px solid rgba(255,255,255,.14); display: flex; flex-wrap: wrap; gap: var(--espaco-2) var(--espaco-6); }
+.ct-imagem legend { padding: 0 6px; font-weight: 600; }

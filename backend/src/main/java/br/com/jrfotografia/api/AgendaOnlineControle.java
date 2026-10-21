@@ -17,6 +17,8 @@ import br.com.jrfotografia.servico.AgendaOnlineServico;
 import br.com.jrfotografia.servico.AgendaOnlineServico.Dia;
 import br.com.jrfotografia.servico.AgendaOnlineServico.Regras;
 import br.com.jrfotografia.servico.Armazenamento;
+import br.com.jrfotografia.servico.AssinaturaServico;
+import br.com.jrfotografia.dominio.ContratoAssinatura;
 import br.com.jrfotografia.servico.EstudioDoSite;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -52,10 +54,11 @@ public class AgendaOnlineControle {
     private final ParcelaRepo parcelas;
     private final Armazenamento armazenamento;
     private final Tentativas tentativas;
+    private final AssinaturaServico assinaturas;
 
     public AgendaOnlineControle(AgendaOnlineServico servico, EstudioDoSite site, EstudioRepo estudios, PacoteRepo pacotes,
                                 HorarioRepo horarios, ReservaRepo reservas, ParcelaRepo parcelas, Armazenamento armazenamento,
-                                Tentativas tentativas) {
+                                Tentativas tentativas, AssinaturaServico assinaturas) {
         this.servico = servico;
         this.site = site;
         this.estudios = estudios;
@@ -65,6 +68,7 @@ public class AgendaOnlineControle {
         this.parcelas = parcelas;
         this.armazenamento = armazenamento;
         this.tentativas = tentativas;
+        this.assinaturas = assinaturas;
     }
 
     // ================================================================ formatos
@@ -101,7 +105,8 @@ public class AgendaOnlineControle {
     public record AreaCliente(String nome, String titulo, String pacote, String tipo, LocalDateTime data, int duracaoMin,
                               String local, StatusTrabalho status, LocalDateTime canceladoEm, Regras regras,
                               List<ParcelaCliente> parcelas, String galeriaToken, boolean galeriaAberta, String estudioNome,
-                              String estudioWhatsapp, String chavePix, int remarcacaoHoras, int reembolsoDias) {}
+                              String estudioWhatsapp, String chavePix, int remarcacaoHoras, int reembolsoDias,
+                              String contratoToken, String contratoStatus) {}
 
     public record RemarcarForm(@NotNull LocalDateTime inicio) {}
 
@@ -187,10 +192,12 @@ public class AgendaOnlineControle {
                 .map(p -> new ParcelaCliente(p.getDescricao(), p.getValor(), p.getVencimento(), p.paga())).toList();
         boolean galeria = t.getStatus() == StatusTrabalho.SELECAO || t.getStatus() == StatusTrabalho.EDICAO
                 || t.getStatus() == StatusTrabalho.ENTREGUE;
+        ContratoAssinatura contrato = t.getStatus() == StatusTrabalho.CANCELADO ? null : assinaturas.atual(t.getId());
         return new AreaCliente(t.getCliente().getNome(), t.getTitulo(), t.getPacote() != null ? t.getPacote().getNome() : null,
                 t.getTipo(), t.getDataTrabalho(), t.getDuracaoMin(), t.getLocalTrabalho(), t.getStatus(), t.getCanceladoEm(),
                 servico.regras(t), ps, galeria ? t.getGaleriaToken() : null, galeria, e.getNome(), e.getWhatsapp(), e.getChavePix(),
-                e.getRemarcacaoHoras(), e.getReembolsoDias());
+                e.getRemarcacaoHoras(), e.getReembolsoDias(),
+                contrato != null ? contrato.getToken() : null, contrato != null ? contrato.getStatus().name() : null);
     }
 
     @GetMapping("/api/publico/cliente/{token}/vagas")
@@ -204,6 +211,10 @@ public class AgendaOnlineControle {
     @PostMapping("/api/publico/cliente/{token}/remarcar")
     public AreaCliente remarcar(@PathVariable String token, @Valid @RequestBody RemarcarForm f) {
         servico.remarcar(token, f.inicio());
+        // Contrato ainda não assinado acompanha a nova data.
+        Trabalho t = servico.trabalhoDaCliente(token);
+        ContratoAssinatura c = assinaturas.atual(t.getId());
+        if (c != null && c.getStatus() == ContratoAssinatura.Status.PENDENTE) assinaturas.gerar(t.getEstudioId(), t.getId());
         return areaCliente(token);
     }
 
@@ -236,7 +247,9 @@ public class AgendaOnlineControle {
     @PostMapping("/api/reservas/{id}/confirmacao")
     @PreAuthorize("hasRole('ADMIN')")
     public ReservaDto confirmar(@PathVariable Long id) {
-        return ReservaDto.de(servico.confirmar(UsuarioLogado.estudio(), id));
+        Reserva r = servico.confirmar(UsuarioLogado.estudio(), id);
+        assinaturas.gerarSePossivel(UsuarioLogado.estudio(), r.getTrabalhoId());
+        return ReservaDto.de(r);
     }
 
     @PostMapping("/api/reservas/{id}/recusa")

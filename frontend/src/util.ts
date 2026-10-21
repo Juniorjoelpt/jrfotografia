@@ -122,3 +122,23 @@ export function diaPorExtenso(iso: string) {
 }
 
 export const TIPOS_ENSAIO = ['Ensaio feminino', 'Gestante', 'Família', 'Infantil / smash the cake', 'Newborn', '15 anos', 'Casal', 'Casamento', 'Formatura', 'Corporativo', 'Evento', 'Outro'];
+
+export const urlAssinar = (token: string) => `${window.location.origin}/assinar/${token}`;
+export const urlVerificar = () => `${window.location.origin}/verificar`;
+
+/** CPF enquanto digita: 000.000.000-00. */
+export function mascaraCpf(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 11);
+  return d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+}
+
+export function cpfValido(v: string) {
+  const d = v.replace(/\D/g, '');
+  if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
+  for (let n = 9; n <= 10; n++) {
+    let soma = 0;
+    for (let i = 0; i < n; i++) soma += Number(d[i]) * (n + 1 - i);
+    if ((soma * 10) % 11 % 10 !== Number(d[n])) return false;
+  }
+  return true;
+}

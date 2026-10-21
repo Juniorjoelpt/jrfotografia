@@ -116,6 +116,13 @@ public final class Repositorios {
         void deleteByEstudioId(Long estudioId);
     }
 
+    public interface AssinaturaRepo extends JpaRepository<ContratoAssinatura, Long> {
+        Optional<ContratoAssinatura> findByToken(String token);
+        Optional<ContratoAssinatura> findByCodigo(String codigo);
+        Optional<ContratoAssinatura> findByHashPdf(String hashPdf);
+        List<ContratoAssinatura> findByTrabalhoIdOrderByCriadoEmDesc(Long trabalhoId);
+    }
+
     public interface ReservaRepo extends JpaRepository<Agendamento.Reserva, Long> {
         Optional<Agendamento.Reserva> findByToken(String token);
         Optional<Agendamento.Reserva> findByIdAndEstudioId(Long id, Long estudioId);

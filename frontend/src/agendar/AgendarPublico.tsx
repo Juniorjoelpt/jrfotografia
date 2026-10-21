@@ -20,7 +20,7 @@ function useFundo() {
   return fundo;
 }
 
-function Casca({ children, titulo, rotulo }: { children: React.ReactNode; titulo?: string; rotulo?: string }) {
+export function Casca({ children, titulo, rotulo }: { children: React.ReactNode; titulo?: string; rotulo?: string }) {
   const fundo = useFundo();
   return (
     <>
@@ -38,7 +38,7 @@ function Casca({ children, titulo, rotulo }: { children: React.ReactNode; titulo
   );
 }
 
-const Erro = ({ msg }: { msg: string }) => (msg ? <p className="aviso erro" role="alert" style={{ margin: 0 }}>{msg}</p> : null);
+export const Erro = ({ msg }: { msg: string }) => (msg ? <p className="aviso erro" role="alert" style={{ margin: 0 }}>{msg}</p> : null);
 const quando = (inicio: string, fim?: string) => `${diaPorExtenso(inicio)} · ${hora(inicio)}${fim ? ` às ${hora(fim)}` : ''}`;
 
 // ====================================================================== /agendar
@@ -362,6 +362,23 @@ export function AreaClientePagina() {
             ))}
           </dl>
           {aPagar.length > 0 && a.chavePix && !cancelado && <p className="suave" style={{ margin: 0 }}>Chave Pix: <code>{a.chavePix}</code></p>}
+        </section>
+      )}
+
+      {a.contratoToken && !cancelado && (
+        <section className="oc-bloco">
+          <h2 className="chamada">Contrato</h2>
+          {a.contratoStatus === 'ASSINADO' ? (
+            <div className="oc-acoes">
+              <span className="ag-selo pago" style={{ marginLeft: 0 }}>assinado</span>
+              <a className="botao" href={`/api/publico/assinaturas/${a.contratoToken}/contrato.pdf`} target="_blank" rel="noreferrer">Baixar contrato assinado</a>
+            </div>
+          ) : (
+            <>
+              <p className="suave" style={{ margin: 0 }}>Seu contrato está pronto. Leia e assine pelo celular, leva um minuto.</p>
+              <div className="oc-acoes"><Link className="botao principal" to={`/assinar/${a.contratoToken}`}>Ler e assinar o contrato</Link></div>
+            </>
+          )}
         </section>
       )}
 
