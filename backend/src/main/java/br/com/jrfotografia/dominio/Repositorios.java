@@ -32,6 +32,7 @@ public final class Repositorios {
     public interface ClienteRepo extends JpaRepository<Cliente, Long> {
         Optional<Cliente> findByIdAndEstudioId(Long id, Long estudioId);
         List<Cliente> findByEstudioIdOrderByNome(Long estudioId);
+        List<Cliente> findByEstudioIdAndTelefone(Long estudioId, String telefone);
 
         @Query("select c from Cliente c where c.estudioId = ?1 and (lower(c.nome) like lower(concat('%', ?2, '%')) or c.telefone like concat('%', ?2, '%')) order by c.nome")
         List<Cliente> buscar(Long estudioId, String termo);
@@ -52,6 +53,7 @@ public final class Repositorios {
     public interface TrabalhoRepo extends JpaRepository<Trabalho, Long> {
         Optional<Trabalho> findByIdAndEstudioId(Long id, Long estudioId);
         Optional<Trabalho> findByGaleriaToken(String galeriaToken);
+        Optional<Trabalho> findByTokenCliente(String tokenCliente);
         List<Trabalho> findByEstudioIdOrderByDataTrabalhoDesc(Long estudioId);
         List<Trabalho> findByEstudioIdAndStatusOrderByDataTrabalhoDesc(Long estudioId, StatusTrabalho status);
         List<Trabalho> findByEstudioIdAndClienteIdOrderByDataTrabalhoDesc(Long estudioId, Long clienteId);
@@ -107,5 +109,19 @@ public final class Repositorios {
         Optional<PortfolioFoto> findByIdAndEstudioId(Long id, Long estudioId);
         List<PortfolioFoto> findByEstudioIdOrderByOrdemAscIdDesc(Long estudioId);
         List<PortfolioFoto> findByEstudioIdAndCategoriaOrderByOrdemAscIdDesc(Long estudioId, String categoria);
+    }
+
+    public interface HorarioRepo extends JpaRepository<Agendamento.HorarioAtendimento, Long> {
+        List<Agendamento.HorarioAtendimento> findByEstudioIdOrderByDiaSemanaAscInicioAsc(Long estudioId);
+        void deleteByEstudioId(Long estudioId);
+    }
+
+    public interface ReservaRepo extends JpaRepository<Agendamento.Reserva, Long> {
+        Optional<Agendamento.Reserva> findByToken(String token);
+        Optional<Agendamento.Reserva> findByIdAndEstudioId(Long id, Long estudioId);
+        List<Agendamento.Reserva> findByEstudioIdOrderByCriadoEmDesc(Long estudioId);
+
+        @Query("select r from Reserva r where r.estudioId = ?1 and r.status = br.com.jrfotografia.dominio.Enums.StatusReserva.PENDENTE and r.inicio < ?3 and r.fim > ?2")
+        List<Agendamento.Reserva> pendentesNoPeriodo(Long estudioId, LocalDateTime de, LocalDateTime ate);
     }
 }

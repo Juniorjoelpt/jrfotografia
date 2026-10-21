@@ -1,0 +1,13 @@
+/* Calendário de horários livres (agendar e remarcar) */
+.seletor { display: grid; gap: var(--espaco-4); }
+.seletor-cab { display: flex; align-items: center; justify-content: space-between; gap: var(--espaco-3); }
+.seletor-cab strong { font-size: 17px; }
+.seletor-grade { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.seletor-sem { font-size: 11px; text-align: center; color: var(--tinta-suave); text-transform: uppercase; letter-spacing: .06em; padding-bottom: 2px; }
+.seletor-dia { height: 44px; border: 1px solid transparent; border-radius: var(--raio-sm); background: none;
+  color: rgba(244,243,239,.3); font: inherit; font-variant-numeric: tabular-nums; cursor: default; }
+.seletor-dia.livre { color: var(--tinta); background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); cursor: pointer; font-weight: 600; }
+.seletor-dia.livre:hover { border-color: var(--tinta-suave); }
+.seletor-dia[aria-selected="true"] { background: var(--acento); border-color: var(--acento); color: var(--sobre-acento); }
+.seletor-horas { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: var(--espaco-2); }
+.seletor-horas .botao[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--sobre-acento); }

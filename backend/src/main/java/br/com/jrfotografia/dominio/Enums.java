@@ -22,4 +22,6 @@ public final class Enums {
 
     /** Rascunho → Enviado → Aceito (vira trabalho) ou Recusado; vencida a validade, Expirado. */
     public enum StatusOrcamento { RASCUNHO, ENVIADO, ACEITO, RECUSADO, EXPIRADO }
+    /** Pré-reserva do site: pendente até o fotógrafo confirmar o sinal. */
+    public enum StatusReserva { PENDENTE, CONFIRMADA, RECUSADA, EXPIRADA, CANCELADA }
 }

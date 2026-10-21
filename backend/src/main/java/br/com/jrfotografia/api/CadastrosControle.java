@@ -125,6 +125,8 @@ public class CadastrosControle {
         if (f.publico() != null) p.setPublico(f.publico());
         if (f.ativo() != null) p.setAtivo(f.ativo());
         if (f.ordem() != null) p.setOrdem(f.ordem());
+        if (f.duracaoMin() != null) p.setDuracaoMin(f.duracaoMin());
+        if (f.agendaOnline() != null) p.setAgendaOnline(f.agendaOnline());
     }
 
     // ---------- pedidos de orçamento ----------

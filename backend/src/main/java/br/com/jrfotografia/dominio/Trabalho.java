@@ -51,6 +51,12 @@ public class Trabalho {
     private String observacoes;
     private int duracaoMin = 240;
     private Long orcamentoId;
+    /** Link da área da cliente (acompanhar, remarcar, cancelar). */
+    private String tokenCliente;
+    private int remarcacoes;
+    private LocalDateTime canceladoEm;
+    private String canceladoPor;
+    private String motivoCancelamento;
     private LocalDateTime criadoEm = LocalDateTime.now();
 
     public LocalDateTime fim() {

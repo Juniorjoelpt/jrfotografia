@@ -35,6 +35,8 @@ public class Pacote {
     private boolean publico = true;
     private boolean ativo = true;
     private int ordem;
+    private int duracaoMin = 120;
+    private boolean agendaOnline = true;
 
     public boolean temSelecao() {
         return qtdFotos != null;

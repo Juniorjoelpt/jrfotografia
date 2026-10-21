@@ -1,11 +1,12 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { api, ErroApi } from '../api';
 import type { ContratoModelo, Estudio, ItemAvulso, Pacote, PortfolioFoto } from '../tipos';
-import { moeda, numeroBr } from '../util';
+import { DURACOES, duracaoTexto, moeda, numeroBr } from '../util';
+import { AgendaOnlineAjustes } from './AjustesAgenda';
 import { Erro, useDados } from './comum';
 
 export function Ajustes() {
-  const [aba, setAba] = useState<'estudio' | 'portfolio' | 'pacotes' | 'itens' | 'contrato'>('estudio');
+  const [aba, setAba] = useState<'estudio' | 'portfolio' | 'pacotes' | 'itens' | 'contrato' | 'agenda'>('estudio');
   return (
     <>
       <div className="cabeca-pagina"><div><span className="rotulo">Ajustes</span><h1 className="titulo">Ajustes do estúdio</h1></div></div>
@@ -15,12 +16,14 @@ export function Ajustes() {
         <button className="botao pequeno" aria-pressed={aba === 'pacotes'} onClick={() => setAba('pacotes')}>Pacotes</button>
         <button className="botao pequeno" aria-pressed={aba === 'itens'} onClick={() => setAba('itens')}>Itens avulsos</button>
         <button className="botao pequeno" aria-pressed={aba === 'contrato'} onClick={() => setAba('contrato')}>Contrato</button>
+        <button className="botao pequeno" aria-pressed={aba === 'agenda'} onClick={() => setAba('agenda')}>Agenda online</button>
       </div>
       {aba === 'estudio' && <DadosEstudio />}
       {aba === 'portfolio' && <Portfolio />}
       {aba === 'pacotes' && <Pacotes />}
       {aba === 'itens' && <ItensAvulsos />}
       {aba === 'contrato' && <ModeloContrato />}
+      {aba === 'agenda' && <AgendaOnlineAjustes />}
     </>
   );
 }
@@ -132,6 +135,7 @@ function Pacotes() {
       nome: f.get('nome'), qtdFotos: num('qtd'), preco: num('preco'), precoFotoExtra: num('extra'),
       prazoEntregaDias: num('prazo'), itens: String(f.get('itens') ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
       materialEntregue: f.get('material') || null, publico: f.get('publico') === 'on', ativo: f.get('ativo') === 'on', ordem: num('ordem'),
+      duracaoMin: num('duracao'), agendaOnline: f.get('agendaOnline') === 'on',
     };
     try {
       if (editando === 'novo') await api('/pacotes', { corpo });
@@ -155,6 +159,12 @@ function Pacotes() {
           <label className="campo"><span>Foto extra (R$)</span><input id="pc-extra" name="extra" inputMode="decimal" defaultValue={p?.precoFotoExtra ?? ''} /></label>
           <label className="campo"><span>Prazo de entrega (dias úteis)</span><input id="pc-prazo" name="prazo" required inputMode="numeric" defaultValue={p?.prazoEntregaDias} /></label>
           <label className="campo"><span>Ordem no site</span><input id="pc-ordem" name="ordem" inputMode="numeric" defaultValue={p?.ordem} /></label>
+          <label className="campo"><span>Duração do ensaio</span>
+            <select id="pc-duracao" name="duracao" defaultValue={p?.duracaoMin ?? 120}>
+              {[...new Set([...DURACOES, p?.duracaoMin ?? 120])].sort((a, b) => a - b).map((d) => <option key={d} value={d}>{duracaoTexto(d)}</option>)}
+            </select>
+          </label>
+          <label className="marcar" style={{ alignSelf: 'end' }}><input id="pc-agenda" type="checkbox" name="agendaOnline" defaultChecked={p?.agendaOnline ?? true} /> Disponível na agenda online</label>
           <label className="campo inteira"><span>Itens (um por linha)</span><textarea id="pc-itens" name="itens" defaultValue={p?.itens.join('\n')} /></label>
           <label className="campo inteira"><span>Material entregue</span><input id="pc-material" name="material" defaultValue={p?.materialEntregue} /></label>
           <label className="marcar"><input id="pc-publico" type="checkbox" name="publico" defaultChecked={p?.publico ?? true} /> Mostrar no site</label>
@@ -171,8 +181,8 @@ function Pacotes() {
           <button key={x.id} className="linha-item" style={{ border: 0, textAlign: 'left', cursor: 'pointer', borderTop: '1px solid var(--linha)' }} onClick={() => setEditando(x)}>
             <span className="principal">{x.nome}{!x.ativo && <span className="legenda"> · INATIVO</span>}</span>
             <span className="lado num">{moeda(x.preco)}</span>
-            <span className="legenda">{x.qtdFotos ? `${x.qtdFotos} FOTOS · EXTRA ${moeda(x.precoFotoExtra)}` : 'TODAS AS FOTOS'} · {x.prazoEntregaDias} DIAS ÚTEIS</span>
-            <span className="legenda lado">{x.publico ? 'NO SITE' : 'OCULTO'}</span>
+            <span className="legenda">{x.qtdFotos ? `${x.qtdFotos} FOTOS · EXTRA ${moeda(x.precoFotoExtra)}` : 'TODAS AS FOTOS'} · {x.prazoEntregaDias} DIAS ÚTEIS · {duracaoTexto(x.duracaoMin).toUpperCase()}</span>
+            <span className="legenda lado">{x.publico ? 'NO SITE' : 'OCULTO'}{x.agendaOnline ? ' · AGENDA' : ''}</span>
           </button>
         ))}
       </div>

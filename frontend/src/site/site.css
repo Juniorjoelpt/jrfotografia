@@ -106,3 +106,5 @@
 
 /* As seções param abaixo do cabeçalho fixo ao rolar até elas */
 #inicio, #portfolio, #sobre, #pacotes, #orcamento { scroll-margin-top: 72px; }
+
+.acoes-pacote { display: flex; flex-wrap: wrap; gap: var(--espaco-2); }

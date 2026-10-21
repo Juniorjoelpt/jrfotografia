@@ -2,7 +2,9 @@ package br.com.jrfotografia.servico;
 
 import br.com.jrfotografia.dominio.Enums.StatusTrabalho;
 import br.com.jrfotografia.dominio.Fase2.BloqueioAgenda;
+import br.com.jrfotografia.dominio.Agendamento.Reserva;
 import br.com.jrfotografia.dominio.Repositorios.BloqueioRepo;
+import br.com.jrfotografia.dominio.Repositorios.ReservaRepo;
 import br.com.jrfotografia.dominio.Repositorios.TrabalhoRepo;
 import br.com.jrfotografia.dominio.Trabalho;
 import org.springframework.stereotype.Service;
@@ -21,13 +23,15 @@ public class AgendaServico {
 
     private final TrabalhoRepo trabalhos;
     private final BloqueioRepo bloqueios;
+    private final ReservaRepo reservas;
 
-    public AgendaServico(TrabalhoRepo trabalhos, BloqueioRepo bloqueios) {
+    public AgendaServico(TrabalhoRepo trabalhos, BloqueioRepo bloqueios, ReservaRepo reservas) {
         this.trabalhos = trabalhos;
         this.bloqueios = bloqueios;
+        this.reservas = reservas;
     }
 
-    public enum TipoEvento { TRABALHO, BLOQUEIO }
+    public enum TipoEvento { TRABALHO, BLOQUEIO, RESERVA }
 
     public record Evento(TipoEvento tipo, Long id, String titulo, String detalhe, LocalDateTime inicio,
                          LocalDateTime fim, String status) {}
@@ -45,6 +49,12 @@ public class AgendaServico {
         for (BloqueioAgenda b : bloqueios.noPeriodo(estudioId, de, ate)) {
             lista.add(new Evento(TipoEvento.BLOQUEIO, b.getId(), b.getMotivo(), null, b.getInicio(), b.getFim(), null));
         }
+        // Pré-reservas do site seguram o horário enquanto aguardam o sinal.
+        for (Reserva r : reservas.pendentesNoPeriodo(estudioId, de, ate)) {
+            if (!r.ocupaHorario()) continue;
+            lista.add(new Evento(TipoEvento.RESERVA, r.getId(), r.getNome(), "Pré-reserva · " + r.getPacote().getNome(),
+                    r.getInicio(), r.getFim(), r.getComprovanteEm() != null ? "COMPROVANTE" : "AGUARDANDO"));
+        }
         lista.sort(Comparator.comparing(Evento::inicio));
         return lista;
     }
@@ -58,9 +68,11 @@ public class AgendaServico {
             boolean choca = e.inicio().isBefore(fim) && e.fim().isAfter(inicio);
             if (!choca) continue;
             if (e.tipo() == TipoEvento.TRABALHO && e.id().equals(ignorarTrabalhoId)) continue;
-            avisos.add(e.tipo() == TipoEvento.BLOQUEIO
-                    ? "Agenda bloqueada: " + e.titulo() + " (" + HORA.format(e.inicio()) + ")"
-                    : "Já há ensaio com " + e.titulo() + " em " + HORA.format(e.inicio()));
+            avisos.add(switch (e.tipo()) {
+                case BLOQUEIO -> "Agenda bloqueada: " + e.titulo() + " (" + HORA.format(e.inicio()) + ")";
+                case RESERVA -> "Pré-reserva do site de " + e.titulo() + " em " + HORA.format(e.inicio());
+                case TRABALHO -> "Já há ensaio com " + e.titulo() + " em " + HORA.format(e.inicio());
+            });
         }
         return avisos;
     }

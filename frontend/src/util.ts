@@ -108,3 +108,17 @@ export function numeroBr(v: FormDataEntryValue | string | null | undefined) {
 
 /** Durações oferecidas para um ensaio, em minutos. */
 export const DURACOES = [60, 90, 120, 180, 240, 360, 480, 720];
+
+export const urlAgendar = () => `${window.location.origin}/agendar`;
+export const urlAreaCliente = (token: string) => `${window.location.origin}/meu/${token}`;
+export const DIAS_SEMANA = ['', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
+/** "sábado, 14 de novembro" a partir de uma data ISO. */
+export function diaPorExtenso(iso: string) {
+  const [a, m, d] = iso.slice(0, 10).split('-').map(Number);
+  const dt = new Date(a, m - 1, d);
+  const sem = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'][dt.getDay()];
+  return `${sem}, ${d} de ${MESES[m - 1].toLowerCase()}`;
+}
+
+export const TIPOS_ENSAIO = ['Ensaio feminino', 'Gestante', 'Família', 'Infantil / smash the cake', 'Newborn', '15 anos', 'Casal', 'Casamento', 'Formatura', 'Corporativo', 'Evento', 'Outro'];

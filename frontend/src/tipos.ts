@@ -24,6 +24,7 @@ export interface Cliente {
 export interface Pacote {
   id: number; nome: string; qtdFotos: number | null; preco: number; precoFotoExtra: number | null;
   prazoEntregaDias: number; itens: string[]; materialEntregue?: string; publico: boolean; ativo: boolean; ordem: number;
+  duracaoMin: number; agendaOnline: boolean;
 }
 
 export interface Pedido {
@@ -47,6 +48,7 @@ export interface TrabalhoDetalhe {
   galeriaComSenha: boolean; galeriaExpiraEm?: string; selecaoFechadaEm?: string; entregueEm?: string;
   observacoes?: string; totalFotos: number; selecionadas: number; editadas: number; parcelas: Parcela[];
   downloadLiberado: boolean; motivoDownload?: string; duracaoMin: number; orcamentoId?: number; conflitos: string[];
+  areaCliente: string; remarcacoes: number; canceladoEm?: string; canceladoPor?: 'CLIENTE' | 'ESTUDIO'; motivoCancelamento?: string;
 }
 
 export interface Foto {
@@ -95,7 +97,7 @@ export interface OrcamentoPublico {
 }
 
 export interface EventoAgenda {
-  tipo: 'TRABALHO' | 'BLOQUEIO'; id: number; titulo: string; detalhe?: string; inicio: string; fim: string; status?: StatusTrabalho;
+  tipo: 'TRABALHO' | 'BLOQUEIO' | 'RESERVA'; id: number; titulo: string; detalhe?: string; inicio: string; fim: string; status?: StatusTrabalho | 'COMPROVANTE' | 'AGUARDANDO';
 }
 
 export interface Despesa {
@@ -114,3 +116,36 @@ export interface Relatorio {
 
 export interface ItemAvulso { id: number; nome: string; preco: number; ativo: boolean }
 export interface ContratoModelo { texto: string; padrao: boolean; campos: string; responsavel?: string; documento?: string }
+
+// ---------- fase 3: agendamento online
+
+export type StatusReserva = 'PENDENTE' | 'CONFIRMADA' | 'RECUSADA' | 'EXPIRADA' | 'CANCELADA';
+export interface PacoteOnline { id: number; nome: string; preco: number; duracaoMin: number; sinal: number; qtdFotos?: number | null }
+export interface AgendaPublica { ativo: boolean; sinalPercentual: number; reservaHoras: number; remarcacaoHoras: number; reembolsoDias: number; pacotes: PacoteOnline[] }
+export interface DiaVago { data: string; horarios: string[] }
+export interface ReservaPublica {
+  token: string; nome: string; pacote: string; inicio: string; fim: string; valorTotal: number; valorSinal: number; status: StatusReserva;
+  expiraEm: string; comprovanteEnviado: boolean; chavePix?: string; estudioNome: string; estudioWhatsapp?: string;
+  motivoRecusa?: string; areaCliente?: string;
+}
+export interface Reserva {
+  id: number; token: string; nome: string; telefone: string; email?: string; pacoteId: number; pacote: string; tipo?: string;
+  mensagem?: string; origem?: string; inicio: string; fim: string; valorTotal: number; valorSinal: number; status: StatusReserva;
+  expiraEm: string; comprovante: boolean; comprovanteEm?: string; comprovanteTipo?: string; motivoRecusa?: string;
+  trabalhoId?: number; criadoEm: string;
+}
+export interface RegrasCliente {
+  podeRemarcar: boolean; motivoRemarcar?: string; podeCancelar: boolean; reembolsaSinal: boolean; textoCancelamento?: string; sinalPago: number;
+}
+export interface AreaCliente {
+  nome: string; titulo: string; pacote?: string; tipo?: string; data?: string; duracaoMin: number; local?: string;
+  status: StatusTrabalho; canceladoEm?: string; regras: RegrasCliente;
+  parcelas: { descricao: string; valor: number; vencimento?: string; paga: boolean }[];
+  galeriaToken?: string; galeriaAberta: boolean; estudioNome: string; estudioWhatsapp?: string; chavePix?: string;
+  remarcacaoHoras: number; reembolsoDias: number;
+}
+export interface HorarioAtendimento { diaSemana: number; inicio: string; fim: string }
+export interface ConfigAgenda {
+  ativo: boolean; antecedenciaHoras: number; horizonteDias: number; intervaloMin: number; passoMin: number; sinalPercentual: number;
+  reservaHoras: number; remarcacaoHoras: number; remarcacoesMax: number; reembolsoDias: number; horarios: HorarioAtendimento[];
+}

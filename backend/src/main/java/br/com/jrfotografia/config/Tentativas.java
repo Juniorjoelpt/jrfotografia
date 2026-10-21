@@ -23,6 +23,9 @@ public class Tentativas {
     public static final Regra LOGIN_EMAIL = new Regra("login-email", 20, Duration.ofHours(1));
     public static final Regra GALERIA_APARELHO = new Regra("galeria", 5, Duration.ofMinutes(15));
     public static final Regra GALERIA_TOTAL = new Regra("galeria-total", 30, Duration.ofHours(1));
+    /** Pré-reservas do site por aparelho: evita alguém lotar a agenda com reservas falsas. */
+    public static final Regra RESERVA_APARELHO = new Regra("reserva", 4, Duration.ofHours(6));
+    public static final Regra COMPROVANTE_APARELHO = new Regra("comprovante", 10, Duration.ofHours(1));
 
     private record Contagem(int erros, Instant inicio) {}
 
@@ -35,11 +38,16 @@ public class Tentativas {
 
     /** Lança {@link Erros.MuitasTentativas} se a chave já passou do limite. */
     public void verificar(Regra r, String chave) {
+        verificar(r, chave, "Muitas tentativas erradas.");
+    }
+
+    /** Igual a {@link #verificar(Regra, String)}, com o começo da mensagem próprio da situação. */
+    public void verificar(Regra r, String chave, String inicioMensagem) {
         Contagem c = atual(r, chave);
         if (c != null && c.erros() >= r.maximo()) {
             long min = Math.max(1, Duration.between(relogio.instant(), c.inicio().plus(r.janela())).toMinutes() + 1);
-            throw new Erros.MuitasTentativas("Muitas tentativas erradas. Aguarde " + min + (min == 1 ? " minuto" : " minutos")
-                    + " e tente de novo.");
+            String espera = min >= 120 ? (min / 60) + " horas" : min + (min == 1 ? " minuto" : " minutos");
+            throw new Erros.MuitasTentativas(inicioMensagem + " Aguarde " + espera + " e tente de novo.");
         }
     }
 

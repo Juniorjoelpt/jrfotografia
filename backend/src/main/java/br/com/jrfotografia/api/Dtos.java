@@ -47,14 +47,16 @@ public final class Dtos {
     // ---------- pacotes ----------
     public record PacoteForm(@NotBlank String nome, @Positive Integer qtdFotos, @NotNull @PositiveOrZero BigDecimal preco,
                              @PositiveOrZero BigDecimal precoFotoExtra, @NotNull @PositiveOrZero Integer prazoEntregaDias,
-                             List<String> itens, String materialEntregue, Boolean publico, Boolean ativo, Integer ordem) {}
+                             List<String> itens, String materialEntregue, Boolean publico, Boolean ativo, Integer ordem,
+                             @Min(30) @Max(1440) Integer duracaoMin, Boolean agendaOnline) {}
 
     public record PacoteDto(Long id, String nome, Integer qtdFotos, BigDecimal preco, BigDecimal precoFotoExtra,
                             int prazoEntregaDias, List<String> itens, String materialEntregue,
-                            boolean publico, boolean ativo, int ordem) {
+                            boolean publico, boolean ativo, int ordem, int duracaoMin, boolean agendaOnline) {
         static PacoteDto de(Pacote p) {
             return new PacoteDto(p.getId(), p.getNome(), p.getQtdFotos(), p.getPreco(), p.getPrecoFotoExtra(),
-                    p.getPrazoEntregaDias(), p.listaItens(), p.getMaterialEntregue(), p.isPublico(), p.isAtivo(), p.getOrdem());
+                    p.getPrazoEntregaDias(), p.listaItens(), p.getMaterialEntregue(), p.isPublico(), p.isAtivo(), p.getOrdem(),
+                    p.getDuracaoMin(), p.isAgendaOnline());
         }
     }
 
@@ -114,7 +116,8 @@ public final class Dtos {
                                   LocalDateTime galeriaExpiraEm, LocalDateTime selecaoFechadaEm, LocalDateTime entregueEm,
                                   String observacoes, long totalFotos, long selecionadas, long editadas,
                                   List<ParcelaDto> parcelas, boolean downloadLiberado, String motivoDownload,
-                                  int duracaoMin, Long orcamentoId, List<String> conflitos) {}
+                                  int duracaoMin, Long orcamentoId, List<String> conflitos, String areaCliente, int remarcacoes,
+                                  LocalDateTime canceladoEm, String canceladoPor, String motivoCancelamento) {}
 
     public record FotoDto(Long id, String nomeOriginal, Integer largura, Integer altura, int ordem,
                           boolean selecionada, boolean editada, String comentario) {

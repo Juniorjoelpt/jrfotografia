@@ -107,3 +107,30 @@ a.ev-cartao:hover { background: rgba(211,47,47,.24); }
 .cabeca-pagina > .acoes-linha { display: flex; align-items: center; }
 .acoes-conta { display: flex; gap: var(--espaco-4); justify-self: start; }
 .acoes-conta a.active { color: var(--tinta); }
+
+/* Agenda online: pré-reservas */
+.cal-ev.res { border-left-style: dashed; border-left-color: var(--alerta); background: rgba(240,180,60,.12); }
+.cal-pontos i.res { background: var(--alerta); }
+.ev-cartao.res { border-left-style: dashed; border-left-color: var(--alerta); background: rgba(240,180,60,.12); }
+.pr-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--espaco-3); }
+.pr-cartao { display: grid; gap: var(--espaco-2); align-content: start; border-left: 3px dashed var(--alerta); }
+.pr-cartao.pronto { border-left: 3px solid var(--acento); }
+.pr-cartao.encerrado { border-left-color: var(--prata); opacity: .8; }
+.pr-topo { display: flex; justify-content: space-between; gap: var(--espaco-3); align-items: start; }
+.pr-topo > div { display: grid; gap: 2px; }
+.pr-quando { margin: 0; font-weight: 600; }
+.pr-quando::first-letter { text-transform: uppercase; }
+@media (max-width: 640px) { .pr-lista { grid-template-columns: 1fr; } }
+.pr-banner { display: grid; gap: 2px; margin: 0; text-decoration: none; color: var(--tinta); border-color: var(--alerta); }
+.pr-banner strong { color: var(--alerta); }
+
+/* Ajustes > Agenda online */
+.ao-liga { display: grid; gap: var(--espaco-3); }
+.ao-link { font-size: 13px; word-break: break-all; padding: 6px 8px; background: rgba(255,255,255,.06); }
+.ao-semana { display: grid; gap: 0; }
+.ao-dia { display: grid; grid-template-columns: 110px 1fr; gap: var(--espaco-3); align-items: center; padding: var(--espaco-2) 0; border-top: 1px solid var(--linha); }
+.ao-faixas { display: flex; flex-wrap: wrap; gap: var(--espaco-2); align-items: center; }
+.ao-faixa { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px solid var(--linha); }
+.ao-faixa input[type="time"] { background: none; border: 0; color: var(--tinta); font: inherit; font-variant-numeric: tabular-nums; padding: 4px; min-height: 36px; color-scheme: dark; }
+.ao-faixa .botao-link { font-size: 20px; line-height: 1; padding: 4px 8px; color: var(--tinta-suave); }
+@media (max-width: 640px) { .ao-dia { grid-template-columns: 1fr; gap: var(--espaco-2); } }

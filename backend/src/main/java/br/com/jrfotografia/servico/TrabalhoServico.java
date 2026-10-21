@@ -89,6 +89,7 @@ public class TrabalhoServico {
         t.setFormaPagamento(d.formaPagamento() != null ? d.formaPagamento() : FormaPagamento.AVISTA);
         t.setStatus(StatusTrabalho.AGENDADO);
         t.setGaleriaToken(novoTokenGaleria());
+        t.setTokenCliente(novoTokenGaleria());
         t.setObservacoes(d.observacoes());
         if (pacote != null && d.dataTrabalho() != null) {
             t.setPrazoEntrega(Prazos.somarDiasUteis(d.dataTrabalho().toLocalDate(), pacote.getPrazoEntregaDias()));
@@ -164,6 +165,10 @@ public class TrabalhoServico {
             t.setEntregueEm(LocalDateTime.now());
             t.setGaleriaExpiraEm(LocalDateTime.now().plusDays(props.galeria().validadeDias()));
         }
+        if (novo == StatusTrabalho.CANCELADO && t.getCanceladoEm() == null) {
+            t.setCanceladoEm(LocalDateTime.now());
+            t.setCanceladoPor("ESTUDIO");
+        }
         t.setStatus(novo);
         return t;
     }
@@ -175,6 +180,17 @@ public class TrabalhoServico {
         String senha = String.format("%06d", ALEATORIO.nextInt(1_000_000));
         t.setGaleriaSenhaHash(senhas.encode(senha));
         return senha;
+    }
+
+    /** Trabalhos antigos não tinham o link da área da cliente: cria na primeira vez que for pedido. */
+    @Transactional
+    public String garantirTokenCliente(Trabalho t) {
+        if (t.getTokenCliente() == null) {
+            Trabalho gravavel = trabalhos.findById(t.getId()).orElseThrow();
+            gravavel.setTokenCliente(novoTokenGaleria());
+            t.setTokenCliente(gravavel.getTokenCliente());
+        }
+        return t.getTokenCliente();
     }
 
     @Transactional
@@ -311,7 +327,7 @@ public class TrabalhoServico {
         }
     }
 
-    private static String novoTokenGaleria() {
+    static String novoTokenGaleria() {
         byte[] b = new byte[16];
         ALEATORIO.nextBytes(b);
         return HexFormat.of().formatHex(b);

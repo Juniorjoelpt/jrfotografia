@@ -4,6 +4,9 @@ import { api, ErroApi, sessaoAtual } from '../api';
 import type { EventoAgenda } from '../tipos';
 import { hora, isoDia, MESES, NOMES_STATUS } from '../util';
 import { Erro, useDados } from './comum';
+import { PreReservas } from './PreReservas';
+
+const classeEv = (e: EventoAgenda) => (e.tipo === 'BLOQUEIO' ? 'bloq' : e.tipo === 'RESERVA' ? 'res' : '');
 
 const DIAS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
 
@@ -96,13 +99,13 @@ export function Agenda() {
                 <span className="cal-num">{d.getDate()}</span>
                 <span className="cal-eventos">
                   {ev.slice(0, 3).map((e) => (
-                    <span key={`${e.tipo}${e.id}`} className={`cal-ev ${e.tipo === 'BLOQUEIO' ? 'bloq' : ''}`}>
-                      {e.tipo === 'TRABALHO' && <b>{hora(e.inicio)}</b>} {e.titulo}
+                    <span key={`${e.tipo}${e.id}`} className={`cal-ev ${classeEv(e)}`}>
+                      {e.tipo !== 'BLOQUEIO' && <b>{hora(e.inicio)}</b>} {e.titulo}
                     </span>
                   ))}
                   {ev.length > 3 && <span className="cal-mais">+{ev.length - 3}</span>}
                 </span>
-                {ev.length > 0 && <span className="cal-pontos" aria-hidden="true">{ev.slice(0, 4).map((e) => <i key={`${e.tipo}${e.id}`} className={e.tipo === 'BLOQUEIO' ? 'bloq' : ''} />)}</span>}
+                {ev.length > 0 && <span className="cal-pontos" aria-hidden="true">{ev.slice(0, 4).map((e) => <i key={`${e.tipo}${e.id}`} className={classeEv(e)} />)}</span>}
               </button>
             );
           })}
@@ -140,6 +143,8 @@ export function Agenda() {
           ? <p className="vazio" style={{ margin: 0 }}>Nada marcado neste dia.</p>
           : <div className="linhas escalonado">{doSelecionado.map((e) => <LinhaEvento key={`${e.tipo}${e.id}`} e={e} aoMudar={recarregar} />)}</div>}
       </section>
+
+      {sessaoAtual()?.perfil === 'ADMIN' && <PreReservas aoMudar={recarregar} />}
     </>
   );
 }
@@ -152,9 +157,9 @@ function ItemEvento({ e, dia }: { e: EventoAgenda; dia: string }) {
       <span>{e.titulo}</span>
     </>
   );
-  return e.tipo === 'TRABALHO'
-    ? <Link to={`/painel/trabalhos/${e.id}`} className="ev-cartao">{conteudo}</Link>
-    : <span className="ev-cartao bloq">{conteudo}</span>;
+  if (e.tipo === 'TRABALHO') return <Link to={`/painel/trabalhos/${e.id}`} className="ev-cartao">{conteudo}</Link>;
+  if (e.tipo === 'RESERVA') return <a href="#pre-reservas" className="ev-cartao res">{conteudo}</a>;
+  return <span className="ev-cartao bloq">{conteudo}</span>;
 }
 
 function LinhaEvento({ e, aoMudar }: { e: EventoAgenda; aoMudar: () => void }) {
@@ -178,10 +183,20 @@ function LinhaEvento({ e, aoMudar }: { e: EventoAgenda; aoMudar: () => void }) {
       </div>
     );
   }
+  if (e.tipo === 'RESERVA') {
+    return (
+      <a href="#pre-reservas" className="linha-item">
+        <span className="principal">{e.titulo}</span>
+        <span className="lado"><span className="etiqueta alerta">{e.status === 'COMPROVANTE' ? 'Comprovante enviado' : 'Pré-reserva'}</span></span>
+        <span className="legenda">{e.detalhe}</span>
+        <span className="legenda lado">{periodo}</span>
+      </a>
+    );
+  }
   return (
     <Link to={`/painel/trabalhos/${e.id}`} className="linha-item">
       <span className="principal">{e.titulo}</span>
-      <span className="lado">{e.status && <span className="etiqueta">{NOMES_STATUS[e.status]}</span>}</span>
+      <span className="lado">{e.status && e.status in NOMES_STATUS && <span className="etiqueta">{NOMES_STATUS[e.status as keyof typeof NOMES_STATUS]}</span>}</span>
       <span className="legenda">{e.detalhe}</span>
       <span className="legenda lado">{periodo}</span>
     </Link>

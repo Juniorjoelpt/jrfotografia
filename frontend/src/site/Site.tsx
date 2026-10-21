@@ -17,8 +17,8 @@ const irPara = (id: string) => (e: React.MouseEvent) => {
   document.querySelectorAll('[data-revelar]').forEach((el) => el.classList.add('visivel'));
   alvo.scrollIntoView({ behavior: movimentoReduzido() ? 'auto' : 'smooth', block: 'start' });
 };
-import type { Estudio, Pacote, PortfolioFoto } from '../tipos';
-import { linkWhatsapp, moeda, telefone } from '../util';
+import type { AgendaPublica, Estudio, Pacote, PortfolioFoto } from '../tipos';
+import { linkWhatsapp, moeda, telefone, TIPOS_ENSAIO } from '../util';
 import './site.css';
 
 const img = (f: PortfolioFoto, mini = false) => `/api/publico/portfolio/${f.id}/${mini ? 'miniatura' : 'imagem'}`;
@@ -29,13 +29,17 @@ export function Site() {
   const [fotos, setFotos] = useState<PortfolioFoto[]>([]);
   const [aberta, setAberta] = useState<number | null>(null);
   const [pacoteEscolhido, setPacoteEscolhido] = useState<number | ''>('');
+  const [agenda, setAgenda] = useState<AgendaPublica | null>(null);
 
   useEffect(() => {
     // Se o servidor acabou de reiniciar, a primeira chamada pode falhar: tenta de novo antes de desistir.
     publico<Estudio>('/publico/estudio').then(setEstudio).catch(() => {});
     publico<Pacote[]>('/publico/pacotes').then(setPacotes).catch(() => {});
     publico<PortfolioFoto[]>('/publico/portfolio').then(setFotos).catch(() => {});
+    publico<AgendaPublica>('/publico/agenda-online').then(setAgenda).catch(() => {});
   }, []);
+  const agendaOnline = !!agenda?.ativo;
+  const online = new Set(agenda?.pacotes.map((p) => p.id));
 
   useRevelar([fotos.length, pacotes.length, estudio]);
   const destaque = useMemo(() => fotos.find((f) => f.destaque) ?? fotos[0], [fotos]);
@@ -69,8 +73,11 @@ export function Site() {
             <h1 className="display">Olá!</h1>
             <p>Seja bem-vindo. Ensaios femininos, gestante, família, infantil e eventos{estudio?.cidade ? ` em ${estudio.cidade}` : ''}, com edição completa e entrega digital.</p>
             <div className="acoes">
-              <a className="botao principal" href="#orcamento" onClick={irPara('orcamento')}>Pedir orçamento</a>
+              {agendaOnline
+                ? <Link className="botao principal" to="/agendar">Agendar online</Link>
+                : <a className="botao principal" href="#orcamento" onClick={irPara('orcamento')}>Pedir orçamento</a>}
               <a className="botao" href="#pacotes" onClick={irPara('pacotes')}>Ver pacotes</a>
+              {agendaOnline && <a className="botao" href="#orcamento" onClick={irPara('orcamento')}>Pedir orçamento</a>}
             </div>
           </div>
           <div className="foto">
@@ -130,7 +137,10 @@ export function Site() {
                       {p.precoFotoExtra ? ` · FOTO EXTRA ${moeda(p.precoFotoExtra)}` : ''}
                     </span>
                   </div>
-                  <button className="botao" onClick={() => escolherPacote(p.id)}>Quero este pacote</button>
+                  <div className="acoes-pacote">
+                    {online.has(p.id) && <Link className="botao principal" to={`/agendar?pacote=${p.id}`}>Agendar este pacote</Link>}
+                    <button className="botao" onClick={() => escolherPacote(p.id)}>{online.has(p.id) ? 'Pedir orçamento' : 'Quero este pacote'}</button>
+                  </div>
                 </div>
                 {fotos.length
                   ? <div className="foto" style={{ backgroundImage: `url(${img(fotos[(i + 1) % fotos.length], true)})` }} />
@@ -222,7 +232,7 @@ function FormOrcamento({ pacotes, pacoteId, setPacoteId, whatsapp }: {
       <label className="campo"><span>E-mail (opcional)</span><input id="orc-email" name="email" type="email" autoComplete="email" /></label>
       <label className="campo"><span>Tipo de ensaio</span>
         <select id="orc-tipo" name="tipo" defaultValue="Ensaio feminino">
-          {['Ensaio feminino', 'Gestante', 'Família', 'Infantil / smash the cake', 'Newborn', '15 anos', 'Casal', 'Casamento', 'Formatura', 'Corporativo', 'Evento', 'Outro'].map((t) => <option key={t}>{t}</option>)}
+          {TIPOS_ENSAIO.map((t) => <option key={t}>{t}</option>)}
         </select>
       </label>
       <label className="campo"><span>Pacote</span>

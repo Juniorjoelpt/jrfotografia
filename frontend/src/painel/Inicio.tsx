@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { sessaoAtual } from '../api';
-import type { Painel } from '../tipos';
+import type { Painel, Reserva } from '../tipos';
 import { MESES, moeda, primeiroNome } from '../util';
 import { Erro, LinhaTrabalho, Linhas, useDados } from './comum';
 import { Numero } from '../componentes/Movimento';
@@ -9,6 +9,9 @@ export function Inicio() {
   const { dados: p, erro } = useDados<Painel>('/painel');
   const admin = sessaoAtual()?.perfil === 'ADMIN';
   const hoje = new Date();
+  const { dados: reservas } = useDados<Reserva[]>(admin ? '/reservas' : null);
+  const pendentes = (reservas ?? []).filter((r) => r.status === 'PENDENTE');
+  const comComprovante = pendentes.filter((r) => r.comprovante).length;
 
   return (
     <>
@@ -29,6 +32,12 @@ export function Inicio() {
         <p className="aviso" role="status" style={{ margin: 0, borderColor: 'var(--alerta)' }}>
           <span style={{ color: 'var(--alerta)' }}>Você ainda usa a senha de fábrica.</span> Quem souber dela entra no painel. <Link to="/painel/conta">Trocar agora</Link>
         </p>
+      )}
+      {pendentes.length > 0 && (
+        <Link to="/painel/agenda#pre-reservas" className="aviso pr-banner" role="status">
+          <strong>{pendentes.length === 1 ? '1 pré-reserva do site' : `${pendentes.length} pré-reservas do site`}</strong>
+          <span>{comComprovante ? `${comComprovante} com comprovante do Pix para conferir.` : 'Aguardando o Pix do sinal.'} Ver na agenda →</span>
+        </Link>
       )}
       <Erro msg={erro} />
       {p && (

@@ -1,0 +1,26 @@
+/* Agendamento online (site): etapas, pacotes, Pix e comprovante. Usa o cartão de orcamento.css. */
+.ag-etapas { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--espaco-2); counter-reset: etapa; }
+.ag-etapas li { counter-increment: etapa; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--tinta-suave);
+  padding-top: var(--espaco-2); border-top: 2px solid rgba(255,255,255,.14); }
+.ag-etapas li::before { content: counter(etapa) ". "; }
+.ag-etapas li.feita { color: var(--tinta); border-top-color: var(--tinta-suave); }
+.ag-etapas li[aria-current="step"] { color: var(--tinta); border-top-color: var(--acento); font-weight: 600; }
+.ag-pacotes { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--espaco-2); }
+.ag-pacote { display: grid; gap: 4px; text-align: left; padding: var(--espaco-3) var(--espaco-4); font: inherit; color: var(--tinta); cursor: pointer;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14); border-radius: var(--raio-sm); }
+.ag-pacote:hover { border-color: var(--tinta-suave); }
+.ag-pacote[aria-checked="true"] { border-color: var(--acento); box-shadow: inset 0 0 0 1px var(--acento); background: rgba(58,23,23,.45); }
+.ag-pacote .num { font-size: 18px; font-weight: 700; }
+.ag-pacote small { color: var(--tinta-suave); font-size: 12px; line-height: 18px; }
+.ag-escolha { margin: 0; font-size: 17px; font-weight: 600; }
+.ag-escolha::first-letter { text-transform: uppercase; }
+.ag-resumo { display: grid; gap: var(--espaco-2); padding: var(--espaco-4); border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.18); }
+.ag-resumo > div { display: flex; justify-content: space-between; gap: var(--espaco-3); }
+.ag-pix { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espaco-2) var(--espaco-3); padding: var(--espaco-3) var(--espaco-4);
+  border: 1px dashed var(--tinta-suave); }
+.ag-pix code { font-size: 16px; word-break: break-all; flex: 1 1 200px; }
+.ag-enviar { cursor: pointer; justify-self: start; min-height: 52px; }
+.ag-enviar.desativado { opacity: .6; pointer-events: none; }
+.ag-selo { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; margin-left: 6px; border: 1px solid rgba(255,255,255,.25); color: var(--tinta-suave); }
+.ag-selo.pago { border-color: var(--sucesso, #6fbf8a); color: var(--sucesso, #6fbf8a); }
+@media (max-width: 640px) { .ag-enviar { justify-self: stretch; } .ag-etapas li { font-size: 11px; } }

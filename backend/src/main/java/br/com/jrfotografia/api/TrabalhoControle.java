@@ -183,6 +183,7 @@ public class TrabalhoControle {
                 t.getDuracaoMin(),
                 t.getOrcamentoId(),
                 t.getStatus() == StatusTrabalho.AGENDADO
-                        ? agenda.conflitos(t.getEstudioId(), t.getDataTrabalho(), t.getDuracaoMin(), t.getId()) : List.of());
+                        ? agenda.conflitos(t.getEstudioId(), t.getDataTrabalho(), t.getDuracaoMin(), t.getId()) : List.of(),
+                servico.garantirTokenCliente(t), t.getRemarcacoes(), t.getCanceladoEm(), t.getCanceladoPor(), t.getMotivoCancelamento());
     }
 }

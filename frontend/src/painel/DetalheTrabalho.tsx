@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, ErroApi, imagemPainel, sessaoAtual, urlPainel } from '../api';
 import type { Estudio, Foto, MeioPagamento, Parcela, StatusTrabalho, TrabalhoDetalhe } from '../tipos';
-import { data, dataHora, DURACOES, duracaoTexto, ETAPAS, linkWhatsapp, moeda, NOMES_MEIO, NOMES_PARCELA, primeiroNome, telefone, urlGaleria } from '../util';
+import { data, dataHora, DURACOES, duracaoTexto, ETAPAS, linkWhatsapp, moeda, NOMES_MEIO, NOMES_PARCELA, primeiroNome, telefone, urlAreaCliente, urlGaleria } from '../util';
 import { Erro, Status, useDados } from './comum';
 import { Imagem } from '../componentes/Movimento';
 
@@ -117,6 +117,12 @@ export function DetalheTrabalho() {
         {(r.status === 'AGENDADO' || r.status === 'FOTOGRAFADO') && (
           <button className="botao pequeno" aria-expanded={remarcando} onClick={() => setRemarcando((v) => !v)}>{r.dataTrabalho ? 'Remarcar' : 'Marcar data'}</button>
         )}
+        {t.areaCliente && t.cliente.telefone && r.status !== 'CANCELADO' && (
+          <a className="botao pequeno" target="_blank" rel="noreferrer" href={linkWhatsapp(t.cliente.telefone,
+            `Olá, ${nome}! Pelo link abaixo você acompanha seu ensaio, vê os pagamentos e, se precisar, remarca ou cancela dentro das regras do contrato:\n${urlAreaCliente(t.areaCliente)}`)}>
+            Enviar área da cliente
+          </a>
+        )}
         {admin && <a className="botao pequeno" href={urlPainel(`/trabalhos/${id}/contrato.pdf`)} target="_blank" rel="noreferrer">Contrato (PDF)</a>}
         {admin && t.orcamentoId && <Link className="botao pequeno" to={`/painel/orcamentos/${t.orcamentoId}`}>Orçamento</Link>}
       </div>
@@ -162,7 +168,12 @@ export function DetalheTrabalho() {
           <p style={{ margin: 0 }}>Entregue em {data(t.entregueEm)}. Galeria disponível até {data(t.galeriaExpiraEm)}.
             {' '}{t.downloadLiberado ? 'Download liberado.' : t.motivoDownload}</p>
         )}
-        {r.status === 'CANCELADO' && <p className="suave" style={{ margin: 0 }}>Trabalho cancelado.</p>}
+        {r.status === 'CANCELADO' && (
+          <p className="suave" style={{ margin: 0 }}>
+            Trabalho cancelado{t.canceladoEm ? ` em ${dataHora(t.canceladoEm)}` : ''}{t.canceladoPor === 'CLIENTE' ? ' pela cliente, pela área da cliente' : ''}.
+            {t.motivoCancelamento ? ` Motivo: ${t.motivoCancelamento}` : ''}
+          </p>
+        )}
       </section>
 
       {/* Galeria do cliente */}
