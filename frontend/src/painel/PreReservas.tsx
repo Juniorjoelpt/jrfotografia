@@ -72,7 +72,7 @@ function CartaoReserva({ r, aoMudar }: { r: Reserva; aoMudar: () => void }) {
       </div>
       <p className="pr-quando">{diaPorExtenso(r.inicio)} · {hora(r.inicio)}–{hora(r.fim)}</p>
       <p className="legenda" style={{ margin: 0 }}>
-        {r.pacote.toUpperCase()} · {moeda(r.valorTotal)} · SINAL {moeda(r.valorSinal)}
+        {r.campanha ? 'MINI-SESSÃO · ' : ''}{r.pacote.replace(/^Mini-sessão · /, '').toUpperCase()} · {moeda(r.valorTotal)}{r.cupomCodigo ? ` (CÓDIGO ${r.cupomCodigo}, −${moeda(r.desconto)})` : ''} · SINAL {moeda(r.valorSinal)}
         {pendente && !r.comprovante ? ` · SEGURA ATÉ ${dataHora(r.expiraEm).toUpperCase()}` : ''}
       </p>
       {r.mensagem && <p className="suave" style={{ margin: 0, whiteSpace: 'pre-line' }}>“{r.mensagem}”</p>}

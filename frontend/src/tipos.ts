@@ -127,13 +127,13 @@ export interface DiaVago { data: string; horarios: string[] }
 export interface ReservaPublica {
   token: string; nome: string; pacote: string; inicio: string; fim: string; valorTotal: number; valorSinal: number; status: StatusReserva;
   expiraEm: string; comprovanteEnviado: boolean; chavePix?: string; estudioNome: string; estudioWhatsapp?: string;
-  motivoRecusa?: string; areaCliente?: string;
+  motivoRecusa?: string; areaCliente?: string; cupomCodigo?: string | null; desconto?: number | null; campanhaSlug?: string | null;
 }
 export interface Reserva {
   id: number; token: string; nome: string; telefone: string; email?: string; pacoteId: number; pacote: string; tipo?: string;
   mensagem?: string; origem?: string; inicio: string; fim: string; valorTotal: number; valorSinal: number; status: StatusReserva;
   expiraEm: string; comprovante: boolean; comprovanteEm?: string; comprovanteTipo?: string; motivoRecusa?: string;
-  trabalhoId?: number; criadoEm: string;
+  trabalhoId?: number; criadoEm: string; cupomCodigo?: string | null; desconto?: number | null; campanha: boolean;
 }
 export interface RegrasCliente {
   podeRemarcar: boolean; motivoRemarcar?: string; podeCancelar: boolean; reembolsaSinal: boolean; textoCancelamento?: string; sinalPago: number;
@@ -144,6 +144,7 @@ export interface AreaCliente {
   parcelas: { descricao: string; valor: number; vencimento?: string; paga: boolean }[];
   galeriaToken?: string; galeriaAberta: boolean; estudioNome: string; estudioWhatsapp?: string; chavePix?: string;
   remarcacaoHoras: number; reembolsoDias: number; contratoToken?: string; contratoStatus?: StatusAssinatura;
+  indicacao?: { codigo: string; descontoAmiga: number; recompensa: number; indicacoes: number } | null;
 }
 export interface HorarioAtendimento { diaSemana: number; inicio: string; fim: string }
 export interface ConfigAgenda {
@@ -227,3 +228,28 @@ export interface MovimentoMaterial {
   id: number; materialId: number; material: string; unidade: string; tipo: TipoMovimento; quantidade: number; saldo: number;
   motivo?: string | null; pedidoId?: number | null; usuario?: string | null; criadoEm: string;
 }
+
+// ---------- Fase 3 · bloco 5: marketing
+export interface DiaCampanhaForm { data: string; inicio: string; fim: string; local?: string | null }
+export interface Campanha {
+  id: number; slug: string; titulo: string; descricao?: string | null; preco: number; sinalPercentual: number; duracaoMin: number;
+  intervaloMin: number; qtdFotos?: number | null; precoFotoExtra?: number | null; prazoEntregaDias: number; capa: boolean; ativa: boolean;
+  dias: DiaCampanhaForm[]; reservas: number; confirmadas: number; faturamento: number;
+}
+export interface CampanhaPublica {
+  slug: string; titulo: string; descricao?: string | null; preco: number; sinal: number; sinalPercentual: number; duracaoMin: number;
+  qtdFotos?: number | null; precoFotoExtra?: number | null; prazoEntregaDias: number; capa: boolean; estudioNome: string;
+  estudioWhatsapp?: string; reservaHoras: number; dias: { data: string; local?: string | null; horarios: string[] }[]; esgotada: boolean;
+}
+export interface CampanhaResumo { slug: string; titulo: string; preco: number; capa: boolean; primeiroDia: string }
+export type TipoCupom = 'PERCENTUAL' | 'VALOR';
+export interface Cupom {
+  id: number; codigo: string; descricao?: string | null; tipo: TipoCupom; valor: number; validade?: string | null; usosMax?: number | null;
+  usos: number; campanhaId?: number | null; ativo: boolean; vencido: boolean;
+}
+export interface Indicacao {
+  id: number; indicadorId: number; indicador: string; indicadorTelefone?: string; indicado: string; trabalhoId?: number | null;
+  recompensa: number; status: 'CONFIRMADA' | 'RECOMPENSADA' | 'CANCELADA'; criadoEm: string; recompensadaEm?: string | null;
+}
+export interface ConfigIndicacao { ativa: boolean; desconto: number; recompensa: number }
+export interface Desconto { valido: boolean; mensagem: string; origem?: 'CUPOM' | 'INDICACAO'; codigo?: string; desconto: number; valorFinal?: number }

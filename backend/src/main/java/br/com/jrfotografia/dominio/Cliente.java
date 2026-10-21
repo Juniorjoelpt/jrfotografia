@@ -30,5 +30,7 @@ public class Cliente {
 
     private String observacoes;
     private LocalDateTime ultimoContato;
+    /** Código que a cliente passa para amigas (programa de indicação). */
+    private String codigoIndicacao;
     private LocalDateTime criadoEm = LocalDateTime.now();
 }

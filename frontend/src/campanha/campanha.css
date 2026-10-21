@@ -1,0 +1,13 @@
+/* Página pública da campanha (mini-sessão) */
+.cp-cartao { padding-top: 0; overflow: hidden; }
+.cp-capa { max-width: none; display: block; width: calc(100% + 2 * var(--espaco-8)); margin: 0 calc(-1 * var(--espaco-8)); aspect-ratio: 16 / 9; object-fit: cover; }
+.cp-cartao .oc-topo { padding-top: var(--espaco-6); }
+.cp-cartao:not(:has(.cp-capa)) .oc-topo { padding-top: 0; }
+.cp-titulo { margin: 0; font-size: 30px; line-height: 36px; font-weight: 700; }
+.cp-descricao { margin: 0; font-size: 16px; line-height: 26px; white-space: pre-line; color: rgba(244,243,239,.9); }
+.cp-dia { display: grid; gap: var(--espaco-2); }
+.cp-dia-nome::first-letter { text-transform: uppercase; }
+@media (max-width: 640px) {
+  .cp-capa { width: calc(100% + 2 * var(--espaco-4)); margin: 0 calc(-1 * var(--espaco-4)); }
+  .cp-titulo { font-size: 24px; line-height: 30px; }
+}

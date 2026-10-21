@@ -17,7 +17,7 @@ const irPara = (id: string) => (e: React.MouseEvent) => {
   document.querySelectorAll('[data-revelar]').forEach((el) => el.classList.add('visivel'));
   alvo.scrollIntoView({ behavior: movimentoReduzido() ? 'auto' : 'smooth', block: 'start' });
 };
-import type { AgendaPublica, Estudio, Pacote, PortfolioFoto } from '../tipos';
+import type { AgendaPublica, CampanhaResumo, Estudio, Pacote, PortfolioFoto } from '../tipos';
 import { linkWhatsapp, moeda, telefone, TIPOS_ENSAIO } from '../util';
 import './site.css';
 
@@ -30,6 +30,7 @@ export function Site() {
   const [aberta, setAberta] = useState<number | null>(null);
   const [pacoteEscolhido, setPacoteEscolhido] = useState<number | ''>('');
   const [agenda, setAgenda] = useState<AgendaPublica | null>(null);
+  const [campanhas, setCampanhas] = useState<CampanhaResumo[]>([]);
 
   useEffect(() => {
     // Se o servidor acabou de reiniciar, a primeira chamada pode falhar: tenta de novo antes de desistir.
@@ -37,6 +38,7 @@ export function Site() {
     publico<Pacote[]>('/publico/pacotes').then(setPacotes).catch(() => {});
     publico<PortfolioFoto[]>('/publico/portfolio').then(setFotos).catch(() => {});
     publico<AgendaPublica>('/publico/agenda-online').then(setAgenda).catch(() => {});
+    publico<CampanhaResumo[]>('/publico/campanhas').then(setCampanhas).catch(() => {});
   }, []);
   const agendaOnline = !!agenda?.ativo;
   const online = new Set(agenda?.pacotes.map((p) => p.id));
@@ -113,6 +115,19 @@ export function Site() {
             </div>
           )}
         </section>
+
+        {campanhas.length > 0 && (
+          <section className="dentro site-campanhas" aria-label="Mini-sessões">
+            {campanhas.map((c) => (
+              <Link key={c.slug} to={`/c/${c.slug}`} className="site-campanha">
+                {c.capa && <img src={`/api/publico/campanhas/${c.slug}/capa`} alt="" loading="lazy" />}
+                <span className="legenda">MINI-SESSÃO · {c.primeiroDia.slice(8, 10)}/{c.primeiroDia.slice(5, 7)}</span>
+                <strong>{c.titulo}</strong>
+                <span>{moeda(c.preco)} · Reservar horário →</span>
+              </Link>
+            ))}
+          </section>
+        )}
 
         <section id="pacotes" className="dentro pacotes">
           <div className="cabeca-secao" data-revelar>

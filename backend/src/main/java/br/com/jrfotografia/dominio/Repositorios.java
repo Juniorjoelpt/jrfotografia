@@ -33,6 +33,7 @@ public final class Repositorios {
         Optional<Cliente> findByIdAndEstudioId(Long id, Long estudioId);
         List<Cliente> findByEstudioIdOrderByNome(Long estudioId);
         List<Cliente> findByEstudioIdAndTelefone(Long estudioId, String telefone);
+        Optional<Cliente> findByEstudioIdAndCodigoIndicacao(Long estudioId, String codigo);
 
         @Query("select c from Cliente c where c.estudioId = ?1 and (lower(c.nome) like lower(concat('%', ?2, '%')) or c.telefone like concat('%', ?2, '%')) order by c.nome")
         List<Cliente> buscar(Long estudioId, String termo);
@@ -174,6 +175,29 @@ public final class Repositorios {
         List<Produtos.MovimentoMaterial> findTop50ByEstudioIdOrderByIdDesc(Long estudioId);
         List<Produtos.MovimentoMaterial> findByMaterialIdOrderByIdDesc(Long materialId);
         List<Produtos.MovimentoMaterial> findByPedidoIdOrderByIdAsc(Long pedidoId);
+    }
+
+    public interface CampanhaRepo extends JpaRepository<Marketing.Campanha, Long> {
+        List<Marketing.Campanha> findByEstudioIdOrderByIdDesc(Long estudioId);
+        Optional<Marketing.Campanha> findByIdAndEstudioId(Long id, Long estudioId);
+        Optional<Marketing.Campanha> findBySlug(String slug);
+    }
+
+    public interface CampanhaDiaRepo extends JpaRepository<Marketing.CampanhaDia, Long> {
+        List<Marketing.CampanhaDia> findByCampanhaIdOrderByDataAscInicioAsc(Long campanhaId);
+        void deleteByCampanhaId(Long campanhaId);
+    }
+
+    public interface CupomRepo extends JpaRepository<Marketing.Cupom, Long> {
+        List<Marketing.Cupom> findByEstudioIdOrderByIdDesc(Long estudioId);
+        Optional<Marketing.Cupom> findByIdAndEstudioId(Long id, Long estudioId);
+        Optional<Marketing.Cupom> findByEstudioIdAndCodigo(Long estudioId, String codigo);
+    }
+
+    public interface IndicacaoRepo extends JpaRepository<Marketing.Indicacao, Long> {
+        List<Marketing.Indicacao> findByEstudioIdOrderByIdDesc(Long estudioId);
+        List<Marketing.Indicacao> findByIndicadorClienteIdOrderByIdDesc(Long clienteId);
+        Optional<Marketing.Indicacao> findByIdAndEstudioId(Long id, Long estudioId);
     }
 
     public interface ReservaRepo extends JpaRepository<Agendamento.Reserva, Long> {

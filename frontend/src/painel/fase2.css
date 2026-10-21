@@ -150,3 +150,17 @@ a.ev-cartao:hover { background: rgba(211,47,47,.24); }
 .tf-cartao a.legenda { text-decoration: none; }
 @media (max-width: 900px) { .tf-quadro { grid-template-columns: 1fr; } }
 .lembretes { display: grid; gap: var(--espaco-2); }
+
+/* Marketing */
+.mk-campanhas { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--espaco-3); }
+.mk-campanha { display: grid; gap: 0; padding: 0; overflow: hidden; align-content: start; }
+.mk-campanha img { width: 100%; aspect-ratio: 16 / 7; object-fit: cover; display: block; }
+.mk-campanha-corpo { display: grid; gap: var(--espaco-2); padding: var(--espaco-4); }
+.mk-campanha.encerrada { opacity: .7; }
+.mk-link { font-size: 12px; word-break: break-all; padding: 6px 8px; background: rgba(255,255,255,.06); }
+.mk-dias { display: grid; gap: var(--espaco-2); }
+.mk-dia { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espaco-2); }
+.mk-dia input { min-height: 40px; }
+.mk-dia input[aria-label="Local"] { flex: 1 1 160px; }
+.mk-dia .botao-link { font-size: 20px; padding: 4px 8px; }
+.ag-indique { padding: var(--espaco-4); border: 1px dashed var(--acento); }

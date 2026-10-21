@@ -42,5 +42,9 @@ public class Estudio {
     private int remarcacaoHoras = 48;
     private int remarcacoesMax = 1;
     private int reembolsoDias = 7;
+    /** Programa de indicação: desconto (%) para quem é indicada e recompensa (R$) para quem indicou. */
+    private boolean indicacaoAtiva;
+    private int indicacaoDesconto = 10;
+    private java.math.BigDecimal indicacaoRecompensa = java.math.BigDecimal.valueOf(50);
     private LocalDateTime criadoEm;
 }

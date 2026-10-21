@@ -43,13 +43,16 @@ public class AgendaOnlineServico {
     private final AgendaServico agenda;
     private final TrabalhoServico trabalhoServico;
     private final Armazenamento armazenamento;
+    private final MarketingServico marketing;
 
     /** Uma trava por estúdio: duas clientes não pegam o mesmo horário ao mesmo tempo. */
     private final Map<Long, Object> travas = new ConcurrentHashMap<>();
 
     public AgendaOnlineServico(EstudioRepo estudios, PacoteRepo pacotes, HorarioRepo horarios, ReservaRepo reservas,
                                ClienteRepo clientes, TrabalhoRepo trabalhos, ParcelaRepo parcelas, DespesaRepo despesas,
-                               AgendaServico agenda, TrabalhoServico trabalhoServico, Armazenamento armazenamento) {
+                               AgendaServico agenda, TrabalhoServico trabalhoServico, Armazenamento armazenamento,
+                               MarketingServico marketing) {
+        this.marketing = marketing;
         this.estudios = estudios;
         this.pacotes = pacotes;
         this.horarios = horarios;
@@ -114,7 +117,7 @@ public class AgendaOnlineServico {
     // ================================================================ pré-reserva (site)
 
     public record NovaReserva(Long pacoteId, LocalDateTime inicio, String nome, String telefone, String email,
-                              String tipo, String mensagem, String origem) {}
+                              String tipo, String mensagem, String origem, String codigo) {}
 
     @Transactional
     public Reserva reservar(Estudio e, NovaReserva d) {
@@ -142,8 +145,78 @@ public class AgendaOnlineServico {
             r.setTipo(vazioNulo(d.tipo()));
             r.setMensagem(vazioNulo(d.mensagem()));
             r.setOrigem(d.origem() != null ? d.origem() : Origem.SITE.name());
-            r.setValorTotal(p.getPreco());
-            r.setValorSinal(sinal(e, p.getPreco()));
+            aplicarPreco(r, e, p.getPreco(), e.getSinalPercentual(), d.codigo(), null);
+            r.setExpiraEm(LocalDateTime.now().plusHours(e.getReservaHoras()));
+            return reservas.saveAndFlush(r);
+        }
+    }
+
+    /** Preço com o desconto do cupom ou da indicação (se o código valer) e o sinal sobre o valor final. */
+    private void aplicarPreco(Reserva r, Estudio e, BigDecimal preco, int sinalPercentual, String codigo, Long campanhaId) {
+        BigDecimal total = preco;
+        if (codigo != null && !codigo.isBlank()) {
+            MarketingServico.Desconto d = marketing.avaliar(e, codigo, preco, campanhaId, r.getTelefone());
+            if (!d.valido()) throw new RegraNegocio(d.mensagem());
+            total = d.valorFinal();
+            r.setCupomCodigo(d.codigo());
+            r.setDesconto(d.desconto());
+            r.setIndicadorClienteId(d.indicadorClienteId());
+            if (d.origem() == MarketingServico.Origem.INDICACAO) r.setOrigem(Origem.INDICACAO.name());
+        }
+        r.setValorTotal(total);
+        r.setValorSinal(total.multiply(BigDecimal.valueOf(sinalPercentual)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+    }
+
+    // ================================================================ campanhas (mini-sessões)
+
+    /** Horários livres da campanha: dias e janelas próprios, sessões de duração fixa com intervalo entre elas. */
+    public List<Dia> vagasCampanha(Estudio e, br.com.jrfotografia.dominio.Marketing.Campanha c) {
+        LocalDateTime minimo = LocalDateTime.now().plusHours(Math.min(e.getAntecedenciaHoras(), 2));
+        var lista = marketing.dias(c);
+        if (lista.isEmpty()) return List.of();
+        LocalDate primeiro = lista.get(0).getData(), ultimo = lista.get(lista.size() - 1).getData();
+        List<AgendaServico.Evento> ocupado = agenda.eventos(e.getId(), primeiro.atStartOfDay(), ultimo.plusDays(1).atStartOfDay());
+        Map<LocalDate, List<LocalTime>> porData = new java.util.TreeMap<>();
+        for (var d : lista) {
+            int passo = c.getDuracaoMin() + c.getIntervaloMin();
+            for (LocalTime t = d.getInicio(); !t.plusMinutes(c.getDuracaoMin()).isAfter(d.getFim()); t = t.plusMinutes(passo)) {
+                LocalDateTime ini = d.getData().atTime(t), fim = ini.plusMinutes(c.getDuracaoMin());
+                if (ini.isBefore(minimo)) continue;
+                boolean choca = ocupado.stream().anyMatch(ev -> ev.inicio().isBefore(fim) && ev.fim().isAfter(ini));
+                if (!choca) porData.computeIfAbsent(d.getData(), k -> new ArrayList<>()).add(t);
+                if (t.plusMinutes(passo).isBefore(t)) break;
+            }
+        }
+        List<Dia> r = new ArrayList<>();
+        porData.forEach((d, hs) -> { hs.sort(Comparator.naturalOrder()); r.add(new Dia(d, hs)); });
+        return r;
+    }
+
+    @Transactional
+    public Reserva reservarCampanha(Estudio e, br.com.jrfotografia.dominio.Marketing.Campanha c, NovaReserva d) {
+        String fone = digitos(d.telefone());
+        if (fone == null || fone.length() < 10) throw new RegraNegocio("Informe um WhatsApp com DDD.");
+        if (d.nome() == null || d.nome().isBlank()) throw new RegraNegocio("Informe seu nome.");
+        if (d.inicio() == null) throw new RegraNegocio("Escolha um horário.");
+        Pacote p = marketing.pacote(c);
+        synchronized (travas.computeIfAbsent(e.getId(), k -> new Object())) {
+            boolean livre = vagasCampanha(e, c).stream()
+                    .anyMatch(x -> x.data().equals(d.inicio().toLocalDate()) && x.horarios().contains(d.inicio().toLocalTime()));
+            if (!livre) throw new RegraNegocio("Este horário acabou de ser ocupado. Escolha outro, por favor.");
+            Reserva r = new Reserva();
+            r.setEstudioId(e.getId());
+            r.setToken(TrabalhoServico.novoTokenGaleria());
+            r.setPacote(p);
+            r.setCampanhaId(c.getId());
+            r.setInicio(d.inicio());
+            r.setFim(d.inicio().plusMinutes(c.getDuracaoMin()));
+            r.setNome(d.nome().trim());
+            r.setTelefone(fone);
+            r.setEmail(vazioNulo(d.email()));
+            r.setTipo(c.getTitulo());
+            r.setMensagem(vazioNulo(d.mensagem()));
+            r.setOrigem(d.origem() != null ? d.origem() : Origem.SITE.name());
+            aplicarPreco(r, e, c.getPreco(), c.getSinalPercentual(), d.codigo(), c.getId());
             r.setExpiraEm(LocalDateTime.now().plusHours(e.getReservaHoras()));
             return reservas.saveAndFlush(r);
         }
@@ -221,7 +294,9 @@ public class AgendaOnlineServico {
                 c.getId(), r.getPacote().getId(), null, r.getTipo(), r.getInicio(), null, r.getValorTotal(),
                 temSinal ? FormaPagamento.PARCELADO : FormaPagamento.AVISTA, temSinal ? r.getValorSinal() : null,
                 temSinal ? 1 : null, r.getInicio().toLocalDate(),
-                "Agendado pelo site." + (r.getMensagem() != null ? "\n" + r.getMensagem() : "")));
+                (r.getCampanhaId() != null ? "Mini-sessão agendada pelo site." : "Agendado pelo site.")
+                        + (r.getCupomCodigo() != null ? "\nCódigo " + r.getCupomCodigo() + ": desconto de R$ " + r.getDesconto() : "")
+                        + (r.getMensagem() != null ? "\n" + r.getMensagem() : "")));
         t.setDuracaoMin(r.getPacote().getDuracaoMin());
         // O sinal já foi pago (comprovante conferido pelo fotógrafo)
         for (Parcela p : parcelas.findByTrabalhoIdOrderByVencimentoAscIdAsc(t.getId())) {
@@ -234,6 +309,7 @@ public class AgendaOnlineServico {
         r.setStatus(StatusReserva.CONFIRMADA);
         r.setClienteId(c.getId());
         r.setTrabalhoId(t.getId());
+        marketing.aoConfirmar(r, t.getId());
         return r;
     }
 

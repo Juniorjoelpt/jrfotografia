@@ -54,6 +54,11 @@ public final class Agendamento {
         private String origem;
         private BigDecimal valorTotal;
         private BigDecimal valorSinal;
+        /** Mini-sessão de campanha (null = agenda normal). */
+        private Long campanhaId;
+        private String cupomCodigo;
+        private BigDecimal desconto;
+        private Long indicadorClienteId;
 
         @Enumerated(EnumType.STRING)
         private StatusReserva status = StatusReserva.PENDENTE;

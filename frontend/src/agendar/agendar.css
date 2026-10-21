@@ -24,3 +24,8 @@
 .ag-selo { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; margin-left: 6px; border: 1px solid rgba(255,255,255,.25); color: var(--tinta-suave); }
 .ag-selo.pago { border-color: var(--sucesso, #6fbf8a); color: var(--sucesso, #6fbf8a); }
 @media (max-width: 640px) { .ag-enviar { justify-self: stretch; } .ag-etapas li { font-size: 11px; } }
+.cod-linha { display: flex; gap: var(--espaco-2); }
+.cod-linha input { flex: 1; min-width: 0; text-transform: uppercase; letter-spacing: .06em; }
+.cod-ok { color: var(--sucesso); font-size: 13px; font-weight: 600; }
+.cod-erro { color: var(--erro); font-size: 13px; }
+.ag-resumo .desconto b { color: var(--sucesso); }

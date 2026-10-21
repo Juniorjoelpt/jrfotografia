@@ -108,3 +108,11 @@
 #inicio, #portfolio, #sobre, #pacotes, #orcamento { scroll-margin-top: 72px; }
 
 .acoes-pacote { display: flex; flex-wrap: wrap; gap: var(--espaco-2); }
+
+/* Mini-sessões em destaque (campanhas ativas) */
+.site-campanhas { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--espaco-4); }
+.site-campanha { display: grid; gap: 6px; padding: var(--espaco-4); border: 1px solid var(--acento); background: rgba(58,23,23,.4); color: var(--tinta);
+  text-decoration: none; border-radius: var(--raio-sm); overflow: hidden; }
+.site-campanha img { max-width: none; width: calc(100% + 2 * var(--espaco-4)); margin: calc(-1 * var(--espaco-4)) calc(-1 * var(--espaco-4)) var(--espaco-2); aspect-ratio: 16 / 7; object-fit: cover; }
+.site-campanha strong { font-size: 20px; }
+.site-campanha:hover { background: rgba(58,23,23,.6); }

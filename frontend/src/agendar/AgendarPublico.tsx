@@ -4,7 +4,8 @@ import { api, ErroApi, publico } from '../api';
 import { Logo } from '../componentes/Logo';
 import { Ambiente } from '../componentes/Movimento';
 import { SeletorHorario } from '../componentes/SeletorHorario';
-import type { AgendaPublica, AreaCliente, PacoteOnline, PortfolioFoto, ReservaPublica } from '../tipos';
+import type { AgendaPublica, AreaCliente, Desconto, PacoteOnline, PortfolioFoto, ReservaPublica } from '../tipos';
+import { CampoCodigo } from './CampoCodigo';
 import { data, diaPorExtenso, duracaoTexto, hora, linkWhatsapp, moeda, primeiroNome, TIPOS_ENSAIO } from '../util';
 import '../orcamento/orcamento.css';
 import './agendar.css';
@@ -51,6 +52,8 @@ export function Agendar() {
   const [pacote, setPacote] = useState<PacoteOnline | null>(null);
   const [inicio, setInicio] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [desconto, setDesconto] = useState<Desconto | null>(null);
+  const [fone, setFone] = useState('');
 
   useEffect(() => {
     document.title = 'Agendar ensaio';
@@ -76,6 +79,7 @@ export function Agendar() {
         corpo: {
           pacoteId: pacote.id, inicio, nome: f.get('nome'), telefone: f.get('telefone'), email: f.get('email') || null,
           tipo: f.get('tipo'), mensagem: f.get('mensagem') || null, origem: f.get('origem'), consentimento: f.get('consentimento') === 'on',
+          codigo: desconto?.codigo ?? null,
         },
       });
       navegar(`/reserva/${r.token}`);
@@ -136,7 +140,7 @@ export function Agendar() {
         <form className="oc-bloco grade-form duas" onSubmit={enviar}>
           <h2 className="chamada inteira">3. Seus dados</h2>
           <label className="campo inteira"><span>Seu nome</span><input name="nome" required maxLength={120} autoComplete="name" /></label>
-          <label className="campo"><span>WhatsApp com DDD</span><input name="telefone" required inputMode="tel" autoComplete="tel" placeholder="(98) 9 0000-0000" /></label>
+          <label className="campo"><span>WhatsApp com DDD</span><input name="telefone" required inputMode="tel" autoComplete="tel" placeholder="(98) 9 0000-0000" value={fone} onChange={(e) => setFone(e.target.value)} /></label>
           <label className="campo"><span>E-mail (opcional)</span><input name="email" type="email" autoComplete="email" /></label>
           <label className="campo"><span>Tipo de ensaio</span>
             <select name="tipo" defaultValue="Ensaio feminino">{TIPOS_ENSAIO.map((t) => <option key={t}>{t}</option>)}</select>
@@ -148,9 +152,11 @@ export function Agendar() {
             </select>
           </label>
           <label className="campo inteira"><span>Mensagem (opcional)</span><textarea name="mensagem" maxLength={2000} placeholder="Ideia de ensaio, local, quantas pessoas..." /></label>
+          <CampoCodigo key={pacote.id} pacoteId={pacote.id} telefone={fone} inicial={busca.get('codigo')} aoMudar={setDesconto} />
           <div className="ag-resumo inteira">
             <div><span>{pacote.nome}</span><b className="num">{moeda(pacote.preco)}</b></div>
-            <div><span>Sinal para garantir a data ({agenda.sinalPercentual}%)</span><b className="num">{moeda(pacote.sinal)}</b></div>
+            {desconto && <div className="desconto"><span>Desconto ({desconto.codigo})</span><b className="num">−{moeda(desconto.desconto)}</b></div>}
+            <div><span>Sinal para garantir a data ({agenda.sinalPercentual}%)</span><b className="num">{moeda(desconto?.valorFinal != null ? Math.round(desconto.valorFinal * agenda.sinalPercentual) / 100 : pacote.sinal)}</b></div>
             <p className="legenda" style={{ margin: 0 }}>
               O HORÁRIO FICA SEGURO POR {agenda.reservaHoras}H ENQUANTO VOCÊ ENVIA O COMPROVANTE DO PIX DO SINAL.
               REMARCAÇÃO ATÉ {agenda.remarcacaoHoras}H ANTES. CANCELAMENTO COM DEVOLUÇÃO DO SINAL ATÉ {agenda.reembolsoDias} DIAS ANTES.
@@ -256,7 +262,8 @@ export function ReservaCliente() {
         <p className="oc-saudacao">Olá, {primeiroNome(r.nome)}! Seu ensaio <b>{r.pacote}</b>:</p>
         <p className="ag-escolha" style={{ margin: 0 }}>{quando(r.inicio, r.fim)}</p>
         <dl className="oc-itens">
-          <div><dt>Valor do pacote</dt><dd className="num">{moeda(r.valorTotal)}</dd></div>
+          {r.desconto ? <div><dt>Desconto ({r.cupomCodigo})</dt><dd className="num">−{moeda(r.desconto)}</dd></div> : null}
+          <div><dt>{r.desconto ? 'Valor com desconto' : 'Valor do pacote'}</dt><dd className="num">{moeda(r.valorTotal)}</dd></div>
           <div><dt>Sinal para garantir a data</dt><dd className="num">{moeda(r.valorSinal)}</dd></div>
           <div><dt>Restante, no dia do ensaio</dt><dd className="num">{moeda(r.valorTotal - r.valorSinal)}</dd></div>
         </dl>
@@ -285,7 +292,7 @@ export function ReservaCliente() {
 
       <footer className="oc-rodape">
         {r.status === 'CONFIRMADA' && r.areaCliente && <Link className="botao principal" to={`/meu/${r.areaCliente}`}>Abrir minha área</Link>}
-        {(r.status === 'EXPIRADA' || r.status === 'RECUSADA' || r.status === 'CANCELADA') && <Link className="botao principal" to="/agendar">Escolher outro horário</Link>}
+        {(r.status === 'EXPIRADA' || r.status === 'RECUSADA' || r.status === 'CANCELADA') && <Link className="botao principal" to={r.campanhaSlug ? `/c/${r.campanhaSlug}` : '/agendar'}>Escolher outro horário</Link>}
         {r.estudioWhatsapp && (
           <a className="botao" href={zap(`Olá! Sou ${r.nome}, fiz uma reserva para ${diaPorExtenso(r.inicio)} às ${hora(r.inicio)}.`)} target="_blank" rel="noreferrer">Falar no WhatsApp</a>
         )}
@@ -379,6 +386,23 @@ export function AreaClientePagina() {
               <div className="oc-acoes"><Link className="botao principal" to={`/assinar/${a.contratoToken}`}>Ler e assinar o contrato</Link></div>
             </>
           )}
+        </section>
+      )}
+
+      {a.indicacao && !cancelado && (
+        <section className="oc-bloco ag-indique">
+          <h2 className="chamada">Indique uma amiga</h2>
+          <p className="suave" style={{ margin: 0 }}>
+            Sua amiga ganha <b>{a.indicacao.descontoAmiga}% de desconto</b> no ensaio e você ganha <b>{moeda(a.indicacao.recompensa)}</b> quando ela fechar.
+          </p>
+          <div className="ag-pix"><span className="rotulo">Seu código</span><code>{a.indicacao.codigo}</code></div>
+          <div className="oc-acoes">
+            <a className="botao principal" target="_blank" rel="noreferrer" href={linkWhatsapp(null,
+              `Fiz meu ensaio com a ${a.estudioNome} e amei! Usa meu código ${a.indicacao.codigo} e ganha ${a.indicacao.descontoAmiga}% de desconto: ${window.location.origin}/agendar?codigo=${a.indicacao.codigo}`)}>
+              Mandar para uma amiga
+            </a>
+          </div>
+          {a.indicacao.indicacoes > 0 && <p className="legenda" style={{ margin: 0 }}>VOCÊ JÁ INDICOU {a.indicacao.indicacoes} {a.indicacao.indicacoes === 1 ? 'AMIGA' : 'AMIGAS'}. OBRIGADO!</p>}
         </section>
       )}
 

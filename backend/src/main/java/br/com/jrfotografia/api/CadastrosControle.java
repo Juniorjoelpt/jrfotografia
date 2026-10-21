@@ -26,9 +26,11 @@ public class CadastrosControle {
     private final PedidoRepo pedidos;
     private final EstudioRepo estudios;
     private final TrabalhoRepo trabalhos;
+    private final CampanhaRepo campanhas;
 
     public CadastrosControle(ClienteRepo clientes, PacoteRepo pacotes, PedidoRepo pedidos,
-                             EstudioRepo estudios, TrabalhoRepo trabalhos) {
+                             EstudioRepo estudios, TrabalhoRepo trabalhos, CampanhaRepo campanhas) {
+        this.campanhas = campanhas;
         this.clientes = clientes;
         this.pacotes = pacotes;
         this.pedidos = pedidos;
@@ -91,7 +93,10 @@ public class CadastrosControle {
     // ---------- pacotes ----------
     @GetMapping("/pacotes")
     public List<PacoteDto> listarPacotes() {
-        return pacotes.findByEstudioIdOrderByOrdem(UsuarioLogado.estudio()).stream().map(PacoteDto::de).toList();
+        // Pacotes internos das mini-sessões ficam fora da lista (são editados pela campanha).
+        Long est = UsuarioLogado.estudio();
+        var internos = campanhas.findByEstudioIdOrderByIdDesc(est).stream().map(c -> c.getPacoteId()).collect(java.util.stream.Collectors.toSet());
+        return pacotes.findByEstudioIdOrderByOrdem(est).stream().filter(p -> !internos.contains(p.getId())).map(PacoteDto::de).toList();
     }
 
     @PostMapping("/pacotes")

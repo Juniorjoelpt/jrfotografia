@@ -32,6 +32,8 @@ export function telefone(t?: string | null) {
 /** Link do WhatsApp com a mensagem pronta. Números brasileiros ganham o 55 na frente. */
 export function linkWhatsapp(numero: string | null | undefined, mensagem: string) {
   const d = (numero ?? '').replace(/\D/g, '');
+  // Sem número: o WhatsApp abre para a pessoa escolher o contato (compartilhar).
+  if (!d) return `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
   const completo = d.length <= 11 ? `55${d}` : d;
   return `https://wa.me/${completo}?text=${encodeURIComponent(mensagem)}`;
 }
@@ -154,3 +156,5 @@ export const NOMES_PEDIDO_PRODUTO: Record<string, string> = {
 };
 /** Quantidade sem zeros sobrando: 6, 2,5. */
 export const qtd = (n: number) => String(Number(n.toFixed(2))).replace('.', ',');
+
+export const urlCampanha = (slug: string) => `${window.location.origin}/c/${slug}`;
