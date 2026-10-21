@@ -22,6 +22,7 @@ Já nasce preparado para atender outros estúdios no futuro: toda tabela de neg�
 - **Etapas:** Agendado → Fotografado → Seleção → Edição → Entregue. Pacotes sem limite de fotos (Eventos) pulam a seleção.
 - **Fotos extras:** ao concluir a seleção, cada foto além do pacote vira uma cobrança de R$ 35,00 (configurável por pacote).
 - **Download:** à vista, só depois de quitar tudo (inclusive extras); parcelado, depois do sinal e da 1ª parcela.
+- **Marca d'água e originais:** o cliente nunca baixa a original, só a versão editada. Na seleção e até o download ser liberado, tudo na galeria tem a marca d'água JR; liberado o download, a galeria passa a mostrar as editadas sem marca. Só dá para entregar quando todas as fotos escolhidas têm a editada. No pacote sem seleção (Eventos), as fotos enviadas já contam como editadas.
 - **Prazo de entrega:** calculado em dias úteis a partir da data do ensaio (5, 10 ou 15, conforme o pacote).
 - **Arquivos:** guarda só os JPEGs exportados e as versões editadas, nunca os brutos.
 - **Acesso:** depois de 5 senhas erradas seguidas (no login ou na galeria), aquele aparelho espera 15 minutos; a galeria também trava depois de 30 erros em 1 hora, somando todos os aparelhos. Enquanto a senha for a de fábrica, o painel pede para trocar (Minha conta).

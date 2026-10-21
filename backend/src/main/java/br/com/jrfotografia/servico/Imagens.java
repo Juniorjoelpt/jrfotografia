@@ -39,6 +39,13 @@ public class Imagens {
 
     public record Simples(byte[] imagem, int largura, int altura) {}
 
+    /** Para a foto editada já paga: prévia e miniatura sem marca d'água. */
+    public Gerado processarSemMarca(byte[] editada) {
+        BufferedImage img = ler(editada);
+        return new Gerado(jpeg(reduzir(img, LADO_PREVIA), 0.85f), jpeg(reduzir(img, LADO_MINIATURA), 0.8f),
+                img.getWidth(), img.getHeight());
+    }
+
     /** Para fotos de clientes: prévia e miniatura com marca d'água. */
     public Gerado processarComMarca(byte[] original) {
         BufferedImage img = ler(original);

@@ -99,14 +99,14 @@ public class GaleriaControle {
     public ResponseEntity<Resource> miniatura(@PathVariable String token, @PathVariable Long fotoId,
                                               @RequestParam("t") String t) {
         Trabalho trabalho = galeria.autorizar(token, t);
-        return Respostas.imagem(armazenamento.caminho(galeria.foto(trabalho, fotoId).getMiniatura()), false);
+        return Respostas.imagem(armazenamento.caminho(galeria.imagemParaCliente(trabalho, fotoId, false)), false);
     }
 
     @GetMapping("/fotos/{fotoId}/previa")
     public ResponseEntity<Resource> previa(@PathVariable String token, @PathVariable Long fotoId,
                                            @RequestParam("t") String t) {
         Trabalho trabalho = galeria.autorizar(token, t);
-        return Respostas.imagem(armazenamento.caminho(galeria.foto(trabalho, fotoId).getPrevia()), false);
+        return Respostas.imagem(armazenamento.caminho(galeria.imagemParaCliente(trabalho, fotoId, true)), false);
     }
 
     @GetMapping("/fotos/{fotoId}/download")
@@ -115,6 +115,7 @@ public class GaleriaControle {
         Trabalho trabalho = galeria.autorizar(token, t);
         exigirDownload(trabalho);
         Foto f = galeria.foto(trabalho, fotoId);
+        if (f.arquivoParaEntrega() == null) throw new Proibido("Esta foto ainda não tem a versão editada.");
         return Respostas.download(armazenamento.caminho(f.arquivoParaEntrega()), f.getNomeOriginal());
     }
 
@@ -122,7 +123,8 @@ public class GaleriaControle {
     public ResponseEntity<StreamingResponseBody> baixarTudo(@PathVariable String token, @RequestParam("t") String t) {
         Trabalho trabalho = galeria.autorizar(token, t);
         exigirDownload(trabalho);
-        List<Foto> fotos = galeria.fotosVisiveis(trabalho);
+        // Só as editadas entram no ZIP: a original nunca sai.
+        List<Foto> fotos = galeria.fotosVisiveis(trabalho).stream().filter(f -> f.arquivoParaEntrega() != null).toList();
         StreamingResponseBody corpo = out -> {
             try (ZipOutputStream zip = new ZipOutputStream(out)) {
                 zip.setLevel(Deflater.NO_COMPRESSION);

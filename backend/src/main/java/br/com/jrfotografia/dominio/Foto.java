@@ -39,7 +39,15 @@ public class Foto {
     private String comentario;
     private LocalDateTime criadoEm = LocalDateTime.now();
 
+    /** Prévia e miniatura sem marca d'água, da foto editada (só para depois do download liberado). */
+    private String previaLimpa;
+    private String miniaturaLimpa;
+
+    /**
+     * Arquivo que o cliente pode baixar: sempre a versão editada.
+     * A original nunca é entregue; sem editada, não há o que baixar.
+     */
     public String arquivoParaEntrega() {
-        return arquivoFinal != null ? arquivoFinal : arquivo;
+        return arquivoFinal;
     }
 }

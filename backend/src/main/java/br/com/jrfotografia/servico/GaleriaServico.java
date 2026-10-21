@@ -34,9 +34,13 @@ public class GaleriaServico {
     private final ParcelaRepo parcelas;
     private final PasswordEncoder senhas;
     private final JwtService jwt;
+    private final Armazenamento armazenamento;
+    private final Imagens imagens;
 
     public GaleriaServico(TrabalhoRepo trabalhos, FotoRepo fotos, ParcelaRepo parcelas,
-                          PasswordEncoder senhas, JwtService jwt) {
+                          PasswordEncoder senhas, JwtService jwt, Armazenamento armazenamento, Imagens imagens) {
+        this.armazenamento = armazenamento;
+        this.imagens = imagens;
         this.trabalhos = trabalhos;
         this.fotos = fotos;
         this.parcelas = parcelas;
@@ -144,5 +148,33 @@ public class GaleriaServico {
     public Foto foto(Trabalho t, Long fotoId) {
         return fotosVisiveis(t).stream().filter(f -> f.getId().equals(fotoId)).findFirst()
                 .orElseThrow(() -> new NaoEncontrado("Foto não encontrada"));
+    }
+
+    /**
+     * Imagem que o cliente vê na galeria. Com marca d'água sempre, exceto depois que o download
+     * for liberado: aí mostra a foto editada sem marca (gerada na hora se ainda não existir).
+     */
+    @Transactional
+    public String imagemParaCliente(Trabalho t, Long fotoId, boolean previa) {
+        Foto f = foto(t, fotoId);
+        boolean semMarca = f.getArquivoFinal() != null && download(t).liberado();
+        if (!semMarca) return previa ? f.getPrevia() : f.getMiniatura();
+        if (f.getPreviaLimpa() == null || f.getMiniaturaLimpa() == null) {
+            Foto gravavel = fotos.findById(f.getId()).orElseThrow();
+            byte[] bytes;
+            try {
+                bytes = java.nio.file.Files.readAllBytes(armazenamento.caminho(gravavel.getArquivoFinal()));
+            } catch (java.io.IOException e) {
+                return previa ? f.getPrevia() : f.getMiniatura();
+            }
+            Imagens.Gerado limpo = imagens.processarSemMarca(bytes);
+            String base = gravavel.getArquivoFinal().replaceAll("(_final)?\\.[A-Za-z0-9]+$", "");
+            gravavel.setPreviaLimpa(base + "_previa_limpa.jpg");
+            gravavel.setMiniaturaLimpa(base + "_mini_limpa.jpg");
+            armazenamento.gravar(gravavel.getPreviaLimpa(), limpo.previa());
+            armazenamento.gravar(gravavel.getMiniaturaLimpa(), limpo.miniatura());
+            f = gravavel;
+        }
+        return previa ? f.getPreviaLimpa() : f.getMiniaturaLimpa();
     }
 }

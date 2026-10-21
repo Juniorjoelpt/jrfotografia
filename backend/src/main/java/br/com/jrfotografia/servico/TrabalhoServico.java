@@ -154,6 +154,13 @@ public class TrabalhoServico {
             if (t.exigeSelecao() && t.getSelecaoFechadaEm() == null) {
                 throw new RegraNegocio("O cliente ainda não fechou a seleção.");
             }
+            // O cliente só recebe fotos editadas: nenhuma original sai do estúdio.
+            long semEditada = fotos.findByTrabalhoIdOrderByOrdemAscIdAsc(t.getId()).stream()
+                    .filter(f -> !t.exigeSelecao() || f.isSelecionada())
+                    .filter(f -> f.getArquivoFinal() == null).count();
+            if (semEditada > 0) {
+                throw new RegraNegocio("Falta enviar a versão editada de " + semEditada + (semEditada == 1 ? " foto" : " fotos") + " antes de entregar.");
+            }
             t.setEntregueEm(LocalDateTime.now());
             t.setGaleriaExpiraEm(LocalDateTime.now().plusDays(props.galeria().validadeDias()));
         }
@@ -211,6 +218,11 @@ public class TrabalhoServico {
             armazenamento.gravar(f.getArquivo(), bytes);
             armazenamento.gravar(f.getPrevia(), g.previa());
             armazenamento.gravar(f.getMiniatura(), g.miniatura());
+            // Pacote sem seleção (Eventos): o que sobe já é a foto editada, pronta para entregar.
+            if (!t.exigeSelecao()) {
+                f.setArquivoFinal(f.getArquivo());
+                gravarSemMarca(f, base, bytes);
+            }
             novas.add(fotos.save(f));
         }
         if (t.getStatus() == StatusTrabalho.AGENDADO) t.setStatus(StatusTrabalho.FOTOGRAFADO);
@@ -236,7 +248,7 @@ public class TrabalhoServico {
             byte[] bytes = ler(arq);
             // A galeria passa a mostrar a versão editada (prévia e miniatura refeitas, ainda com a marca d'água).
             Imagens.Gerado g = imagens.processarComMarca(bytes);
-            armazenamento.apagar(f.getArquivoFinal());
+            if (f.getArquivoFinal() != null && !f.getArquivoFinal().equals(f.getArquivo())) armazenamento.apagar(f.getArquivoFinal());
             String base = estudioId + "/trabalhos/" + t.getId() + "/" + UUID.randomUUID();
             String chave = base + "_final" + extensao(nome);
             armazenamento.gravar(chave, bytes);
@@ -249,6 +261,7 @@ public class TrabalhoServico {
             f.setLargura(g.largura());
             f.setAltura(g.altura());
             f.setArquivoFinal(chave);
+            gravarSemMarca(f, base, bytes);
         }
         return semPar;
     }
@@ -262,6 +275,8 @@ public class TrabalhoServico {
         armazenamento.apagar(f.getArquivoFinal());
         armazenamento.apagar(f.getPrevia());
         armazenamento.apagar(f.getMiniatura());
+        armazenamento.apagar(f.getPreviaLimpa());
+        armazenamento.apagar(f.getMiniaturaLimpa());
         fotos.delete(f);
     }
 
@@ -300,5 +315,16 @@ public class TrabalhoServico {
         byte[] b = new byte[16];
         ALEATORIO.nextBytes(b);
         return HexFormat.of().formatHex(b);
+    }
+
+    /** Prévia e miniatura sem marca d'água da foto editada, para quando o download for liberado. */
+    void gravarSemMarca(Foto f, String base, byte[] editada) {
+        Imagens.Gerado limpo = imagens.processarSemMarca(editada);
+        armazenamento.apagar(f.getPreviaLimpa());
+        armazenamento.apagar(f.getMiniaturaLimpa());
+        f.setPreviaLimpa(base + "_previa_limpa.jpg");
+        f.setMiniaturaLimpa(base + "_mini_limpa.jpg");
+        armazenamento.gravar(f.getPreviaLimpa(), limpo.previa());
+        armazenamento.gravar(f.getMiniaturaLimpa(), limpo.miniatura());
     }
 }
