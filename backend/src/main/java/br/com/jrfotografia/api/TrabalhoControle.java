@@ -106,6 +106,7 @@ public class TrabalhoControle {
 
     @PatchMapping("/{id}/status")
     public TrabalhoDetalhe mudarStatus(@PathVariable Long id, @Valid @RequestBody StatusTrabalhoForm f) {
+        br.com.jrfotografia.servico.AuditoriaServico.detalhe("Para " + f.status().name().toLowerCase().replace("selecao", "seleção").replace("edicao", "edição"));
         return detalheDe(servico.mudarStatus(UsuarioLogado.estudio(), id, f.status()));
     }
 

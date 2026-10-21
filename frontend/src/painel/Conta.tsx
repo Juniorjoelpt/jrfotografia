@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { api, ErroApi, salvarSessao, sessaoAtual } from '../api';
 import type { Perfil, UsuarioConta } from '../tipos';
 import { Erro, useDados } from './comum';
+import { DuasEtapas } from './DuasEtapas';
 
 /** Minha conta: trocar a senha. Para o administrador, também quem tem acesso ao painel. */
 export function Conta() {
@@ -16,6 +17,7 @@ export function Conta() {
         </p>
       )}
       <MinhaSenha />
+      <DuasEtapas />
       {admin && <Pessoas />}
     </>
   );
@@ -110,6 +112,16 @@ function Pessoas() {
           </label>
           {!u?.voce && <label className="marcar inteira"><input id="us-ativo" type="checkbox" name="ativo" defaultChecked={u?.ativo ?? true} /> Pode entrar no painel</label>}
           {u?.voce && <input type="hidden" name="ativo" value="on" />}
+          {u && !u.voce && u.doisFatores && (
+            <p className="legenda inteira" style={{ margin: 0 }}>
+              DUAS ETAPAS LIGADA.{' '}
+              <button type="button" className="botao-link legenda" onClick={async () => {
+                await api(`/usuarios/${u.id}/2fa/remover`, { metodo: 'POST' });
+                setEditando(null);
+                recarregar();
+              }}>Remover (perdeu o celular)</button>
+            </p>
+          )}
           <Erro msg={falha} />
           <div className="acoes-linha inteira">
             <button className="botao principal">Salvar</button>
@@ -123,7 +135,7 @@ function Pessoas() {
             <button key={x.id} className="linha-item" style={{ border: 0, textAlign: 'left', cursor: 'pointer', borderTop: '1px solid var(--linha)' }} onClick={() => setEditando(x)}>
               <span className="principal">{x.nome}{x.voce && <span className="legenda"> · VOCÊ</span>}</span>
               <span className="lado"><span className={`etiqueta${x.ativo ? '' : ' erro'}`}>{x.ativo ? NOMES_PERFIL[x.perfil] : 'Sem acesso'}</span></span>
-              <span className="legenda" style={{ gridColumn: '1 / -1' }}>{x.email}</span>
+              <span className="legenda" style={{ gridColumn: '1 / -1' }}>{x.email}{x.doisFatores ? ' · DUAS ETAPAS LIGADA' : ''}</span>
             </button>
           ))}
         </div>

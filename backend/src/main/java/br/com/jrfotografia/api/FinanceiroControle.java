@@ -44,13 +44,16 @@ public class FinanceiroControle {
     public ParcelaDto pagar(@PathVariable Long id, @RequestBody(required = false) PagamentoForm f) {
         var p = servico.registrarPagamento(UsuarioLogado.estudio(), id,
                 f == null ? null : f.data(), f == null ? null : f.forma());
+        br.com.jrfotografia.servico.AuditoriaServico.detalhe(p.getDescricao() + " · R$ " + p.getValor());
         return ParcelaDto.de(p);
     }
 
     @DeleteMapping("/parcelas/{id}/pagamento")
     @PreAuthorize("hasRole('ADMIN')")
     public ParcelaDto desfazer(@PathVariable Long id) {
-        return ParcelaDto.de(servico.desfazerPagamento(UsuarioLogado.estudio(), id));
+        var p = servico.desfazerPagamento(UsuarioLogado.estudio(), id);
+        br.com.jrfotografia.servico.AuditoriaServico.detalhe(p.getDescricao() + " · R$ " + p.getValor());
+        return ParcelaDto.de(p);
     }
 
     @GetMapping("/financeiro/a-receber")

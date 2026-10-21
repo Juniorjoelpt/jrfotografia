@@ -29,7 +29,7 @@ public class SegurancaConfig {
                 .cors(c -> {})
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
-                        .requestMatchers("/api/auth/login", "/api/publico/**", "/api/galeria/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/2fa", "/api/publico/**", "/api/galeria/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))

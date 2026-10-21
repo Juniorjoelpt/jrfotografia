@@ -8,8 +8,8 @@ export type TipoParcela = 'AVISTA' | 'SINAL' | 'PARCELA' | 'EXTRA' | 'PRODUTO';
 export type MeioPagamento = 'PIX' | 'DINHEIRO' | 'TRANSFERENCIA' | 'BOLETO';
 
 export type Perfil = 'ADMIN' | 'COLABORADOR';
-export interface Sessao { token: string; nome: string; perfil: Perfil; estudio: string; senhaPadrao?: boolean }
-export interface UsuarioConta { id: number; nome: string; email: string; perfil: Perfil; ativo: boolean; voce: boolean }
+export interface Sessao { token: string; nome: string; perfil: Perfil; estudio: string; senhaPadrao?: boolean; precisa2fa?: boolean; desafio?: string | null; doisFatores?: boolean }
+export interface UsuarioConta { id: number; nome: string; email: string; perfil: Perfil; ativo: boolean; voce: boolean; doisFatores: boolean }
 
 export interface Estudio {
   nome: string; slug: string; cidade?: string; whatsapp?: string; instagram?: string; email?: string;
@@ -253,3 +253,10 @@ export interface Indicacao {
 }
 export interface ConfigIndicacao { ativa: boolean; desconto: number; recompensa: number }
 export interface Desconto { valido: boolean; mensagem: string; origem?: 'CUPOM' | 'INDICACAO'; codigo?: string; desconto: number; valorFinal?: number }
+
+// ---------- Fase 3 · bloco 6: segurança
+export interface Situacao2fa { ativo: boolean; codigosRestantes: number; configurando: boolean }
+export interface Atividade {
+  id: number; usuarioId?: number | null; usuario?: string | null; acao: string; detalhe?: string | null; entidade?: string | null;
+  entidadeId?: number | null; ip?: string | null; criadoEm: string;
+}

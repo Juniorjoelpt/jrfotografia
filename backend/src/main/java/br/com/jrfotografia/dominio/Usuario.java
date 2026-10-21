@@ -26,5 +26,12 @@ public class Usuario {
     private Perfil perfil;
 
     private boolean ativo = true;
+
+    /** Verificação em duas etapas (app autenticador). */
+    private boolean totpAtivo;
+    private String totpSegredo;
+    private String totpPendente;
+    private Long totpUltimoPasso;
+    private String codigosRecuperacao;
     private LocalDateTime criadoEm = LocalDateTime.now();
 }

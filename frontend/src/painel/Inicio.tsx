@@ -36,6 +36,11 @@ export function Inicio() {
         </div>
         {admin && <Link to="/painel/trabalhos/novo" className="botao principal">Novo trabalho</Link>}
       </div>
+      {admin && !sessaoAtual()?.senhaPadrao && !sessaoAtual()?.doisFatores && (
+        <p className="aviso" role="status" style={{ margin: 0 }}>
+          Proteja o painel: ligue a <Link to="/painel/conta">verificação em duas etapas</Link> (código do celular além da senha).
+        </p>
+      )}
       {sessaoAtual()?.senhaPadrao && (
         <p className="aviso" role="status" style={{ margin: 0, borderColor: 'var(--alerta)' }}>
           <span style={{ color: 'var(--alerta)' }}>Você ainda usa a senha de fábrica.</span> Quem souber dela entra no painel. <Link to="/painel/conta">Trocar agora</Link>

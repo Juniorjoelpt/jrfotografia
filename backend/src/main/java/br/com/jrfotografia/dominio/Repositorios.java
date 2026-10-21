@@ -200,6 +200,12 @@ public final class Repositorios {
         Optional<Marketing.Indicacao> findByIdAndEstudioId(Long id, Long estudioId);
     }
 
+    public interface AuditoriaRepo extends JpaRepository<Auditoria, Long> {
+        List<Auditoria> findTop300ByEstudioIdOrderByIdDesc(Long estudioId);
+        List<Auditoria> findTop300ByEstudioIdAndUsuarioIdOrderByIdDesc(Long estudioId, Long usuarioId);
+        List<Auditoria> findTop300ByEstudioIdAndCriadoEmBetweenOrderByIdDesc(Long estudioId, LocalDateTime de, LocalDateTime ate);
+    }
+
     public interface ReservaRepo extends JpaRepository<Agendamento.Reserva, Long> {
         Optional<Agendamento.Reserva> findByToken(String token);
         Optional<Agendamento.Reserva> findByIdAndEstudioId(Long id, Long estudioId);

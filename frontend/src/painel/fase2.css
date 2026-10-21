@@ -164,3 +164,14 @@ a.ev-cartao:hover { background: rgba(211,47,47,.24); }
 .mk-dia input[aria-label="Local"] { flex: 1 1 160px; }
 .mk-dia .botao-link { font-size: 20px; padding: 4px 8px; }
 .ag-indique { padding: var(--espaco-4); border: 1px dashed var(--acento); }
+
+/* Verificação em duas etapas */
+.de-config { display: grid; gap: var(--espaco-3); }
+.de-passos { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.de-qr { display: flex; flex-wrap: wrap; gap: var(--espaco-4); align-items: center; }
+.de-qr img { border-radius: var(--raio-sm); background: #f4f3ef; }
+.de-chave { font-size: 15px; letter-spacing: .08em; word-break: break-all; padding: 6px 8px; background: rgba(255,255,255,.06); max-width: 320px; }
+.de-codigos { display: grid; gap: var(--espaco-2); padding: var(--espaco-4); border: 1px solid var(--alerta); }
+.de-codigos ol { margin: 0; padding-left: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 4px var(--espaco-4); }
+.de-codigos code { font-size: 15px; letter-spacing: .08em; }
+@media (min-width: 640px) { .grade-form.tres { grid-template-columns: 2fr 1fr 1fr; } }

@@ -21,6 +21,8 @@ public class Tentativas {
 
     public static final Regra LOGIN_APARELHO = new Regra("login", 5, Duration.ofMinutes(15));
     public static final Regra LOGIN_EMAIL = new Regra("login-email", 20, Duration.ofHours(1));
+    /** Código do app autenticador errado, por usuário: 5 a cada 15 minutos. */
+    public static final Regra LOGIN_2FA = new Regra("login-2fa", 5, Duration.ofMinutes(15));
     public static final Regra GALERIA_APARELHO = new Regra("galeria", 5, Duration.ofMinutes(15));
     public static final Regra GALERIA_TOTAL = new Regra("galeria-total", 30, Duration.ofHours(1));
     /** Pré-reservas do site por aparelho: evita alguém lotar a agenda com reservas falsas. */

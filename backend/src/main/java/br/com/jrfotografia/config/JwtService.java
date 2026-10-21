@@ -23,6 +23,8 @@ public class JwtService {
 
     public static final String TIPO_PAINEL = "painel";
     public static final String TIPO_GALERIA = "galeria";
+    /** Senha certa, falta o código do app: só serve para o segundo passo do login (5 minutos). */
+    public static final String TIPO_DESAFIO = "2fa";
 
     private final SecretKey chave;
     private final AppProps props;
@@ -40,6 +42,10 @@ public class JwtService {
         return emitir(String.valueOf(usuarioId),
                 Map.of("tipo", TIPO_PAINEL, "estudio", estudioId, "perfil", perfil),
                 Duration.ofHours(props.jwt().horasPainel()));
+    }
+
+    public String tokenDesafio(Long usuarioId) {
+        return emitir(String.valueOf(usuarioId), Map.of("tipo", TIPO_DESAFIO), Duration.ofMinutes(5));
     }
 
     public String tokenGaleria(Long trabalhoId, String galeriaToken) {

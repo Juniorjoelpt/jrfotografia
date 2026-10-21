@@ -17,7 +17,11 @@ public final class Dtos {
     // ---------- autenticação ----------
     public record Login(@NotBlank @Email String email, @NotBlank String senha) {}
 
-    public record Sessao(String token, String nome, String perfil, String estudio, boolean senhaPadrao) {}
+    /** Com a verificação em duas etapas ligada, o login devolve só o {@code desafio}; a sessão vem depois do código. */
+    public record Sessao(String token, String nome, String perfil, String estudio, boolean senhaPadrao, boolean precisa2fa,
+                         String desafio, boolean doisFatores) {}
+
+    public record SegundoPasso(@NotBlank String desafio, @NotBlank @Size(max = 20) String codigo) {}
 
     // ---------- estúdio ----------
     public record EstudioDto(String nome, String slug, String cidade, String whatsapp, String instagram,
@@ -183,5 +187,5 @@ public final class Dtos {
                               @Size(min = 8, max = 72, message = "use de 8 a 72 caracteres") String senha,
                               Enums.Perfil perfil, Boolean ativo) {}
 
-    public record UsuarioDto(Long id, String nome, String email, Enums.Perfil perfil, boolean ativo, boolean voce) {}
+    public record UsuarioDto(Long id, String nome, String email, Enums.Perfil perfil, boolean ativo, boolean voce, boolean doisFatores) {}
 }
