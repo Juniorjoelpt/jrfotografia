@@ -109,6 +109,12 @@ public class TrabalhoControle {
         return detalheDe(servico.mudarStatus(UsuarioLogado.estudio(), id, f.status()));
     }
 
+    /** Reabre a seleção para o cliente escolher mais fotos. */
+    @PostMapping("/{id}/reabrir-selecao")
+    public TrabalhoDetalhe reabrirSelecao(@PathVariable Long id) {
+        return detalheDe(servico.reabrirSelecao(UsuarioLogado.estudio(), id));
+    }
+
     /** Gera uma nova senha para a galeria; ela aparece só nesta resposta, para enviar ao cliente. */
     @PostMapping("/{id}/senha-galeria")
     public SenhaGaleria novaSenha(@PathVariable Long id) {

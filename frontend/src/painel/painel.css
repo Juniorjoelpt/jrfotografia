@@ -144,3 +144,12 @@ a.numero:hover { transform: translateY(-2px); }
   .mais-fundo { position: absolute; }
   .mais-menu { position: absolute; }
 }
+
+/* Miniaturas com o nome do arquivo embaixo (para achar no Lightroom) */
+.miniaturas.com-nome { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+.miniaturas.com-nome figure { aspect-ratio: auto; display: grid; gap: 4px; padding: 4px 4px 6px; }
+.miniaturas.com-nome .mini-foto { position: relative; aspect-ratio: 1; }
+.miniaturas.com-nome .mini-foto .marca { left: 4px; bottom: 4px; }
+.miniaturas.com-nome .mini-foto .apagar { right: 4px; top: 4px; }
+.miniaturas.com-nome figcaption { color: #171716; font-size: 11.5px; line-height: 15px; font-weight: 600; text-align: center;
+  font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; user-select: all; }

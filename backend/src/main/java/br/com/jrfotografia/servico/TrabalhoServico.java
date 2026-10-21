@@ -150,6 +150,7 @@ public class TrabalhoServico {
         if (novo == StatusTrabalho.SELECAO && fotos.countByTrabalhoId(t.getId()) == 0) {
             throw new RegraNegocio("Envie as fotos antes de abrir a seleção.");
         }
+        if (novo == StatusTrabalho.SELECAO && t.getSelecaoFechadaEm() != null) return reabrirSelecao(estudioId, id);
         if (novo == StatusTrabalho.ENTREGUE) {
             if (fotos.countByTrabalhoId(t.getId()) == 0) throw new RegraNegocio("Envie as fotos antes de entregar.");
             if (t.exigeSelecao() && t.getSelecaoFechadaEm() == null) {
@@ -170,6 +171,26 @@ public class TrabalhoServico {
             t.setCanceladoPor("ESTUDIO");
         }
         t.setStatus(novo);
+        return t;
+    }
+
+    /**
+     * Reabre a seleção (depois que o cliente concluiu, ou mesmo depois da entrega) para ele escolher mais fotos.
+     * As fotos já escolhidas continuam marcadas; ao concluir de novo, as extras são recalculadas.
+     */
+    @Transactional
+    public Trabalho reabrirSelecao(Long estudioId, Long id) {
+        Trabalho t = buscar(estudioId, id);
+        if (!t.exigeSelecao()) throw new RegraNegocio("Este pacote entrega todas as fotos, sem seleção.");
+        if (t.getStatus() == StatusTrabalho.SELECAO && t.getSelecaoFechadaEm() == null) throw new RegraNegocio("A seleção já está aberta.");
+        if (t.getStatus() != StatusTrabalho.EDICAO && t.getStatus() != StatusTrabalho.ENTREGUE) {
+            throw new RegraNegocio("Só dá para reabrir a seleção depois que o cliente concluiu a escolha.");
+        }
+        t.setSelecaoFechadaEm(null);
+        t.setEntregueEm(null);
+        // Galeria volta a ficar disponível enquanto o cliente escolhe; a validade recomeça na nova entrega.
+        t.setGaleriaExpiraEm(null);
+        t.setStatus(StatusTrabalho.SELECAO);
         return t;
     }
 

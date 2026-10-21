@@ -122,19 +122,34 @@ public class GaleriaServico {
         if (escolhidas == 0) throw new RegraNegocio("Escolha pelo menos uma foto.");
 
         long extras = Math.max(0, escolhidas - t.getPacote().getQtdFotos());
-        BigDecimal valor = BigDecimal.ZERO;
         BigDecimal preco = t.getPacote().getPrecoFotoExtra();
+        // Seleção reaberta: a cobrança de extras ainda não paga é refeita; a já paga fica e só a diferença é cobrada.
+        BigDecimal jaPago = BigDecimal.ZERO;
+        for (Parcela antiga : parcelas.findByTrabalhoIdOrderByVencimentoAscIdAsc(t.getId())) {
+            if (antiga.getTipo() != TipoParcela.EXTRA) continue;
+            if (antiga.paga()) {
+                jaPago = jaPago.add(antiga.getValor());
+            } else {
+                t.setValorTotal(t.getValorTotal().subtract(antiga.getValor()));
+                parcelas.delete(antiga);
+            }
+        }
+        BigDecimal valor = BigDecimal.ZERO;
         if (extras > 0 && preco != null && preco.signum() > 0) {
-            valor = preco.multiply(BigDecimal.valueOf(extras));
-            Parcela p = new Parcela();
-            p.setEstudioId(t.getEstudioId());
-            p.setTrabalhoId(t.getId());
-            p.setTipo(TipoParcela.EXTRA);
-            p.setDescricao(extras + (extras == 1 ? " foto extra" : " fotos extras"));
-            p.setValor(valor);
-            p.setVencimento(LocalDate.now());
-            parcelas.save(p);
-            t.setValorTotal(t.getValorTotal().add(valor));
+            BigDecimal falta = preco.multiply(BigDecimal.valueOf(extras)).subtract(jaPago);
+            if (falta.signum() > 0) {
+                long novas = falta.divide(preco, 0, java.math.RoundingMode.CEILING).longValue();
+                valor = falta;
+                Parcela p = new Parcela();
+                p.setEstudioId(t.getEstudioId());
+                p.setTrabalhoId(t.getId());
+                p.setTipo(TipoParcela.EXTRA);
+                p.setDescricao(novas + (novas == 1 ? " foto extra" : " fotos extras"));
+                p.setValor(valor);
+                p.setVencimento(LocalDate.now());
+                parcelas.save(p);
+                t.setValorTotal(t.getValorTotal().add(valor));
+            }
         }
         t.setSelecaoFechadaEm(LocalDateTime.now());
         t.setStatus(StatusTrabalho.EDICAO);

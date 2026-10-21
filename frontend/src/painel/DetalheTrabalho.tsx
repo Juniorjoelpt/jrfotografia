@@ -20,6 +20,9 @@ export function DetalheTrabalho() {
   const [confirmarCancelar, setConfirmarCancelar] = useState(false);
 
   const [remarcando, setRemarcando] = useState(false);
+  const [soEscolhidas, setSoEscolhidas] = useState(true);
+  const [copiado, setCopiado] = useState(false);
+  const [confirmarReabrir, setConfirmarReabrir] = useState(false);
   if (!t) return <Erro msg={erroCarga} />;
   const r = t.resumo;
   const nome = primeiroNome(t.cliente.nome);
@@ -58,6 +61,13 @@ export function DetalheTrabalho() {
       await Promise.all([recarregar(), recarregarFotos()]);
     });
   };
+
+  const reabrir = () => executar('reabrir', async () => {
+    setDados(await api<TrabalhoDetalhe>(`/trabalhos/${id}/reabrir-selecao`, { metodo: 'POST' }));
+    setConfirmarReabrir(false);
+    setAviso('Seleção reaberta. As fotos já escolhidas continuam marcadas; avise o cliente para escolher as novas.');
+    await recarregarFotos();
+  });
 
   const gerarSenha = () => executar('senha', async () => {
     const s = await api<{ senha: string }>(`/trabalhos/${id}/senha-galeria`, { corpo: {} });
@@ -169,6 +179,21 @@ export function DetalheTrabalho() {
           <p style={{ margin: 0 }}>Entregue em {data(t.entregueEm)}. Galeria disponível até {data(t.galeriaExpiraEm)}.
             {' '}{t.downloadLiberado ? 'Download liberado.' : t.motivoDownload}</p>
         )}
+        {exigeSelecao && (r.status === 'EDICAO' || r.status === 'ENTREGUE') && (confirmarReabrir ? (
+          <div className="aviso anima-entrada" role="alertdialog" style={{ margin: 0, display: 'grid', gap: 'var(--espaco-2)', borderColor: 'var(--alerta)' }}>
+            <span>
+              Reabrir a seleção? O cliente volta a escolher na galeria, com as fotos já escolhidas marcadas.
+              {r.status === 'ENTREGUE' ? ' A entrega é desfeita até ele concluir de novo e você reenviar as editadas.' : ''}
+              {' '}Ao concluir, as fotos extras são recalculadas (o que já foi pago não é cobrado de novo).
+            </span>
+            <div className="acoes-linha">
+              <button className="botao principal pequeno" disabled={!!ocupado} onClick={reabrir}>{ocupado === 'reabrir' ? 'Reabrindo…' : 'Sim, reabrir seleção'}</button>
+              <button className="botao pequeno" onClick={() => setConfirmarReabrir(false)}>Voltar</button>
+            </div>
+          </div>
+        ) : (
+          <div><button className="botao pequeno" onClick={() => setConfirmarReabrir(true)}>Reabrir seleção</button></div>
+        ))}
         {r.status === 'CANCELADO' && (
           <p className="suave" style={{ margin: 0 }}>
             Trabalho cancelado{t.canceladoEm ? ` em ${dataHora(t.canceladoEm)}` : ''}{t.canceladoPor === 'CLIENTE' ? ' pela cliente, pela área da cliente' : ''}.
@@ -200,27 +225,62 @@ export function DetalheTrabalho() {
       )}
 
       {/* Fotos */}
-      {fotos && fotos.length > 0 && (
-        <section className="secao">
-          <h2 className="chamada">Fotos ({fotos.length}{exigeSelecao ? ` · ${t.selecionadas} escolhidas` : ''})</h2>
-          <div className="miniaturas escalonado">
-            {fotos.map((f) => (
-              <figure key={f.id} className={f.selecionada ? 'escolhida' : ''} title={f.nomeOriginal}>
-                <Imagem src={imagemPainel(t.resumo.id, f.id, 'miniatura', f.editada)} alt={f.nomeOriginal} loading="lazy" />
-                {(f.editada || f.comentario) && <span className="marca">{f.editada ? 'editada' : ''}{f.comentario ? ' 💬' : ''}</span>}
-                {(r.status === 'AGENDADO' || r.status === 'FOTOGRAFADO') && (
-                  <button className="apagar" aria-label={`Apagar ${f.nomeOriginal}`} disabled={!!ocupado} onClick={() => apagarFoto(f)}>×</button>
+      {fotos && fotos.length > 0 && (() => {
+        const escolhidas = fotos.filter((f) => f.selecionada);
+        const filtrar = exigeSelecao && escolhidas.length > 0 && soEscolhidas;
+        const lista = filtrar ? escolhidas : fotos;
+        // Nome sem extensão: casa com o RAW e com o JPEG no filtro do Lightroom.
+        const semExtensao = (n: string) => n.replace(/\.[^.]+$/, '');
+        const copiarNomes = async () => {
+          const texto = lista.map((f) => semExtensao(f.nomeOriginal)).join(', ');
+          try { await navigator.clipboard.writeText(texto); } catch {
+            const ta = document.createElement('textarea'); ta.value = texto; document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); } catch { /* sem área de transferência */ } ta.remove();
+          }
+          setCopiado(true);
+          setTimeout(() => setCopiado(false), 2500);
+        };
+        return (
+          <section className="secao">
+            <div className="cabeca-pagina">
+              <h2 className="chamada" style={{ margin: 0 }}>Fotos ({fotos.length}{exigeSelecao ? ` · ${escolhidas.length} escolhidas` : ''})</h2>
+              <div className="acoes-linha">
+                {exigeSelecao && escolhidas.length > 0 && (
+                  <div className="abas" role="group" aria-label="Mostrar">
+                    <button className="botao pequeno" aria-pressed={soEscolhidas} onClick={() => { setSoEscolhidas(true); setCopiado(false); }}>Escolhidas</button>
+                    <button className="botao pequeno" aria-pressed={!soEscolhidas} onClick={() => { setSoEscolhidas(false); setCopiado(false); }}>Todas</button>
+                  </div>
                 )}
-              </figure>
-            ))}
-          </div>
-          {fotos.some((f) => f.comentario) && (
-            <ul className="lista-simples legenda" style={{ display: 'grid', gap: 4 }}>
-              {fotos.filter((f) => f.comentario).map((f) => <li key={f.id}>{f.nomeOriginal}: {f.comentario}</li>)}
-            </ul>
-          )}
-        </section>
-      )}
+                <button className="botao pequeno principal" onClick={copiarNomes}>
+                  {copiado ? `${lista.length} nomes copiados!` : `Copiar nomes ${filtrar ? 'das escolhidas' : ''} p/ Lightroom`}
+                </button>
+              </div>
+            </div>
+            <p className="legenda" style={{ margin: 0 }}>
+              NO LIGHTROOM: BIBLIOTECA › FILTRO DE BIBLIOTECA › TEXTO › NOME DO ARQUIVO › CONTÉM, E COLE OS NOMES. DEPOIS SELECIONE TUDO (CTRL+A).
+            </p>
+            <div className="miniaturas com-nome escalonado">
+              {lista.map((f) => (
+                <figure key={f.id} className={f.selecionada && exigeSelecao ? 'escolhida' : ''} title={f.nomeOriginal}>
+                  <div className="mini-foto">
+                    <Imagem src={imagemPainel(t.resumo.id, f.id, 'miniatura', f.editada)} alt={f.nomeOriginal} loading="lazy" />
+                    {(f.editada || f.comentario) && <span className="marca">{f.editada ? 'editada' : ''}{f.comentario ? ' 💬' : ''}</span>}
+                    {(r.status === 'AGENDADO' || r.status === 'FOTOGRAFADO') && (
+                      <button className="apagar" aria-label={`Apagar ${f.nomeOriginal}`} disabled={!!ocupado} onClick={() => apagarFoto(f)}>×</button>
+                    )}
+                  </div>
+                  <figcaption>{f.nomeOriginal}</figcaption>
+                </figure>
+              ))}
+            </div>
+            {lista.some((f) => f.comentario) && (
+              <ul className="lista-simples legenda" style={{ display: 'grid', gap: 4 }}>
+                {lista.filter((f) => f.comentario).map((f) => <li key={f.id}>{f.nomeOriginal}: {f.comentario}</li>)}
+              </ul>
+            )}
+          </section>
+        );
+      })()}
 
       {/* Pagamentos */}
       {admin && (
