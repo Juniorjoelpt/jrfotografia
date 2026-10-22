@@ -235,4 +235,9 @@ public final class Repositorios {
         @Query("select r from Reserva r where r.estudioId = ?1 and r.status = br.com.jrfotografia.dominio.Enums.StatusReserva.PENDENTE and r.inicio < ?3 and r.fim > ?2")
         List<Agendamento.Reserva> pendentesNoPeriodo(Long estudioId, LocalDateTime de, LocalDateTime ate);
     }
+
+    public interface IdeiaConteudoRepo extends JpaRepository<IdeiaConteudo, Long> {
+        List<IdeiaConteudo> findTop30ByEstudioIdOrderByIdDesc(Long estudioId);
+        Optional<IdeiaConteudo> findByIdAndEstudioId(Long id, Long estudioId);
+    }
 }

@@ -3,24 +3,27 @@ import { api, ErroApi, urlPainel } from '../api';
 import type { Campanha, ConfigIndicacao, Cupom, DiaCampanhaForm, Indicacao, TipoCupom } from '../tipos';
 import { copiar as copiarTexto, data, linkWhatsapp, moeda, numeroBr, primeiroNome, urlCampanha } from '../util';
 import { Erro, useDados } from './comum';
+import { ConteudoIA } from './ConteudoIA';
 
-type Aba = 'campanhas' | 'cupons' | 'indicacao';
+type Aba = 'campanhas' | 'cupons' | 'indicacao' | 'conteudo';
 
 /** Marketing: campanhas e mini-sessões, cupons de desconto e programa de indicação. */
 export function Marketing() {
-  const [aba, setAba] = useState<Aba>(() => (['campanhas', 'cupons', 'indicacao'].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) as Aba : 'campanhas'));
+  const [aba, setAba] = useState<Aba>(() => (['campanhas', 'cupons', 'indicacao', 'conteudo'].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) as Aba : 'campanhas'));
   const trocar = (a: Aba) => { setAba(a); history.replaceState(null, '', `#${a}`); };
   return (
     <>
-      <div className="cabeca-pagina"><div><span className="rotulo">Marketing</span><h1 className="titulo">{aba === 'campanhas' ? 'Campanhas' : aba === 'cupons' ? 'Cupons' : 'Indicação'}</h1></div></div>
+      <div className="cabeca-pagina"><div><span className="rotulo">Marketing</span><h1 className="titulo">{aba === 'campanhas' ? 'Campanhas' : aba === 'cupons' ? 'Cupons' : aba === 'conteudo' ? 'Conteúdo para as redes' : 'Indicação'}</h1></div></div>
       <div className="abas" role="group" aria-label="Seções">
         <button className="botao pequeno" aria-pressed={aba === 'campanhas'} onClick={() => trocar('campanhas')}>Mini-sessões</button>
         <button className="botao pequeno" aria-pressed={aba === 'cupons'} onClick={() => trocar('cupons')}>Cupons</button>
         <button className="botao pequeno" aria-pressed={aba === 'indicacao'} onClick={() => trocar('indicacao')}>Indicação</button>
+        <button className="botao pequeno" aria-pressed={aba === 'conteudo'} onClick={() => trocar('conteudo')}>Conteúdo</button>
       </div>
       {aba === 'campanhas' && <Campanhas />}
       {aba === 'cupons' && <Cupons />}
       {aba === 'indicacao' && <Indicacoes />}
+      {aba === 'conteudo' && <ConteudoIA />}
     </>
   );
 }

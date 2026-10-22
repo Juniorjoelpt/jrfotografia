@@ -273,3 +273,14 @@ export interface Atividade {
   id: number; usuarioId?: number | null; usuario?: string | null; acao: string; detalhe?: string | null; entidade?: string | null;
   entidadeId?: number | null; ip?: string | null; criadoEm: string;
 }
+
+// ---------- assistente de conteúdo ----------
+export interface ConfigIa { ativo: boolean; url?: string | null; modelo?: string | null; temChave: boolean }
+export type TipoIdeia = 'SEMANA' | 'TRABALHO' | 'CAMPANHA' | 'DEPOIMENTO' | 'LIVRE';
+export interface IdeiaPost { dia: string; formato: string; titulo: string; roteiro: string; legenda: string; hashtags: string[] }
+export interface ResultadoIdeias {
+  id: number; tipo: TipoIdeia; titulo: string; pedido?: string | null; modelo?: string | null; criadoEm: string;
+  ideias: IdeiaPost[]; usado: string[];
+}
+export interface OpcaoConteudo { id: number; rotulo: string; detalhe?: string | null }
+export interface OpcoesConteudo { trabalhos: OpcaoConteudo[]; campanhas: OpcaoConteudo[]; depoimentos: OpcaoConteudo[] }

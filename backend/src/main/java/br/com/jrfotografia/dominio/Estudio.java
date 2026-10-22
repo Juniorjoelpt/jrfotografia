@@ -60,6 +60,11 @@ public class Estudio {
     private boolean pagbankAtivo;
     private String pagbankToken;
     private boolean pagbankSandbox;
+    /** Assistente de conteúdo (API no formato OpenAI); a chave fica cifrada. */
+    private boolean iaAtivo;
+    private String iaUrl;
+    private String iaModelo;
+    private String iaChave;
     private int indicacaoDesconto = 10;
     private java.math.BigDecimal indicacaoRecompensa = java.math.BigDecimal.valueOf(50);
     private LocalDateTime criadoEm;

@@ -8,12 +8,13 @@ import { AssinaturaDoEstudio } from './AssinaturaPainel';
 import { Atividades } from './Atividades';
 import { AjustesEmail } from './AjustesEmail';
 import { AjustesPagamentos } from './AjustesPagamentos';
+import { AjustesIA } from './AjustesIA';
 import { Erro, useDados } from './comum';
 
 export function Ajustes() {
-  type Aba = 'estudio' | 'portfolio' | 'pacotes' | 'itens' | 'contrato' | 'agenda' | 'pagamentos' | 'email' | 'atividades';
+  type Aba = 'estudio' | 'portfolio' | 'pacotes' | 'itens' | 'contrato' | 'agenda' | 'pagamentos' | 'email' | 'assistente' | 'atividades';
   const { hash } = useLocation();
-  const daAncora = (): Aba => (['atividades', 'email', 'pagamentos'] as const).find((x) => x === hash.slice(1)) ?? 'estudio';
+  const daAncora = (): Aba => (['atividades', 'email', 'pagamentos', 'assistente'] as const).find((x) => x === hash.slice(1)) ?? 'estudio';
   const [aba, setAba] = useState<Aba>(daAncora);
   // Links para Ajustes#email, #pagamentos… trocam a aba mesmo com a página já aberta
   useEffect(() => { if (hash) setAba(daAncora()); }, [hash]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -29,6 +30,7 @@ export function Ajustes() {
         <button className="botao pequeno" aria-pressed={aba === 'agenda'} onClick={() => setAba('agenda')}>Agenda online</button>
         <button className="botao pequeno" aria-pressed={aba === 'pagamentos'} onClick={() => setAba('pagamentos')}>Pagamentos</button>
         <button className="botao pequeno" aria-pressed={aba === 'email'} onClick={() => setAba('email')}>E-mail</button>
+        <button className="botao pequeno" aria-pressed={aba === 'assistente'} onClick={() => setAba('assistente')}>Assistente</button>
         <button className="botao pequeno" aria-pressed={aba === 'atividades'} onClick={() => setAba('atividades')}>Atividades</button>
       </div>
       {aba === 'estudio' && <DadosEstudio />}
@@ -38,6 +40,7 @@ export function Ajustes() {
       {aba === 'contrato' && <><ModeloContrato /><AssinaturaDoEstudio /></>}
       {aba === 'agenda' && <AgendaOnlineAjustes />}
       {aba === 'pagamentos' && <AjustesPagamentos />}
+      {aba === 'assistente' && <AjustesIA />}
       {aba === 'email' && <AjustesEmail />}
       {aba === 'atividades' && <Atividades />}
     </>
