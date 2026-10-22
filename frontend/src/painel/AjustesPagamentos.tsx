@@ -8,6 +8,7 @@ const STATUS: Record<CobrancaPainel['status'], { nome: string; classe: string }>
   AGUARDANDO: { nome: 'Aguardando', classe: '' },
   PAGA: { nome: 'Pago', classe: ' sucesso' },
   EXPIRADA: { nome: 'Venceu', classe: '' },
+  CANCELADA: { nome: 'Baixa manual', classe: '' },
 };
 
 /** Ajustes › Pagamentos: Pix com QR Code e confirmação automática pelo PagBank. */
@@ -40,7 +41,7 @@ export function AjustesPagamentos() {
     setSalvando(true);
     try {
       setDados(await api<ConfigPagBank>('/estudio/pagbank', {
-        metodo: 'PUT', corpo: { ativo: f.get('ativo') === 'on', token: f.get('token') || null, sandbox: f.get('ambiente') === 'sandbox' },
+        metodo: 'PUT', corpo: { ativo: f.get('ativo') === 'on', token: f.get('token') || null, sandbox: f.get('ambiente') === 'sandbox', chavePix: String(f.get('chavePix') ?? '') },
       }));
       setSalvo(true);
       form.querySelector<HTMLInputElement>('input[name=token]')!.value = '';
@@ -68,6 +69,11 @@ export function AjustesPagamentos() {
   return (
     <section className="secao">
       <form className="painel-caixa grade-form duas" onSubmit={salvar} onChange={() => setSalvo(false)}>
+        <label className="campo inteira"><span>Chave Pix (aleatória ou e-mail)</span>
+          <input id="pg-pix" name="chavePix" maxLength={120} defaultValue={dados.chavePix ?? ''} /></label>
+        <p className="legenda inteira" style={{ margin: 0 }}>
+          SEM O PIX AUTOMÁTICO, A CHAVE VAI NAS COBRANÇAS E A CLIENTE MANDA O COMPROVANTE. PREFIRA UMA CHAVE ALEATÓRIA OU DE E-MAIL: NÃO EXPÕE O SEU CPF.
+        </p>
         <label className="marcar inteira"><input id="pg-ativo" type="checkbox" name="ativo" defaultChecked={dados.ativo} /> <strong>Pix automático pelo PagBank</strong></label>
         <p className="suave inteira" style={{ margin: 0 }}>
           A cliente paga o sinal (e as parcelas, na área dela) por um QR Code com o valor exato. Quando o banco confirma,

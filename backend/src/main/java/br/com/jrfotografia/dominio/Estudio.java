@@ -54,6 +54,8 @@ public class Estudio {
     private String emailRemetente;
     private boolean emailAvisos = true;
     private boolean emailLembretes = true;
+    /** Nome do fotógrafo no site e nas mensagens (ex.: "Joel Júnior"). */
+    private String fotografo;
     /** Pix com confirmação automática pelo PagBank (o token fica cifrado). */
     private boolean pagbankAtivo;
     private String pagbankToken;

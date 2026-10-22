@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ErroApi, urlPainel } from '../api';
-import type { Cliente, FormaPagamento, ItemAvulso, Orcamento, Pacote, Pedido } from '../tipos';
+import type { Cliente, Estudio, FormaPagamento, ItemAvulso, Orcamento, Pacote, Pedido } from '../tipos';
 import {
+  apresentacaoEstudio, copiar as copiarParaArea,
   CLASSE_ORCAMENTO, data, dataHora, isoDia, linkWhatsapp, moeda, NOMES_ORCAMENTO, numeroBr, primeiroNome, telefone, urlOrcamento,
 } from '../util';
 import { BotaoEmail } from './BotaoEmail';
+import { AvisoConflitos, CamposPagamento, restoDepoisDoSinal, useConflitosAgenda } from './CamposPagamento';
 import { Erro, useDados } from './comum';
 
 type Linha = { chave: number; descricao: string; quantidade: string; valorUnit: string };
@@ -39,7 +41,6 @@ export function EditorOrcamento() {
   const [parcelas, setParcelas] = useState('2');
   const [validade, setValidade] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 7); return isoDia(d); });
   const [obs, setObs] = useState('');
-  const [conflitos, setConflitos] = useState<string[]>([]);
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
 
@@ -77,22 +78,15 @@ export function EditorOrcamento() {
     }).catch(() => setPronto(true));
   }, [id, params]);
 
-  // Aviso de conflito na agenda para a data prevista.
-  useEffect(() => {
-    if (!quando) { setConflitos([]); return; }
-    const t = setTimeout(() => {
-      api<{ avisos: string[] }>(`/agenda/conflitos?inicio=${encodeURIComponent(`${quando}:00`)}&duracaoMin=240`)
-        .then((r) => setConflitos(r.avisos)).catch(() => setConflitos([]));
-    }, 350);
-    return () => clearTimeout(t);
-  }, [quando]);
+  // Aviso de conflito na agenda para a data prevista (duração do pacote, ou 4 h se não houver).
+  const conflitos = useConflitosAgenda(quando, pacotes?.find((p) => String(p.id) === pacoteId)?.duracaoMin ?? 240);
 
   const pacote = useMemo(() => pacotes?.find((p) => String(p.id) === pacoteId), [pacotes, pacoteId]);
   const cliente = clientes?.find((c) => String(c.id) === clienteId);
   const subtotal = (pacote?.preco ?? 0) + itens.reduce((s, i) => s + (numeroBr(i.quantidade) ?? 0) * (numeroBr(i.valorUnit) ?? 0), 0);
   const total = Math.max(0, subtotal - (numeroBr(desconto) ?? 0));
   const n = Math.max(1, Number(parcelas) || 1);
-  const resto = Math.max(0, total - (forma === 'PARCELADO' ? numeroBr(sinal) ?? 0 : 0));
+  const resto = restoDepoisDoSinal(total, forma, sinal);
 
   const mudarItem = (chave: number, campo: keyof Linha, valor: string) =>
     setItens((l) => l.map((i) => (i.chave === chave ? { ...i, [campo]: valor } : i)));
@@ -168,7 +162,7 @@ export function EditorOrcamento() {
             <label className="campo"><span>Tipo de ensaio</span><input id="or-tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} placeholder="Ensaio feminino" /></label>
             <label className="campo"><span>Data prevista</span><input id="or-data" type="datetime-local" value={quando} onChange={(e) => setQuando(e.target.value)} /></label>
             <label className="campo"><span>Local</span><input id="or-local" value={local} onChange={(e) => setLocal(e.target.value)} placeholder="Estúdio, praça, endereço" /></label>
-            {conflitos.length > 0 && <div className="aviso inteira" role="status" style={{ margin: 0, borderColor: 'var(--alerta)' }}>{conflitos.map((c) => <div key={c}>{c}</div>)}</div>}
+            <AvisoConflitos avisos={conflitos} />
           </fieldset>
 
           <fieldset className="painel-caixa grade-form">
@@ -196,21 +190,7 @@ export function EditorOrcamento() {
           <fieldset className="painel-caixa grade-form duas">
             <legend className="chamada">Pagamento</legend>
             <label className="campo"><span>Desconto (R$)</span><input id="or-desconto" inputMode="decimal" value={desconto} onChange={(e) => setDesconto(e.target.value)} /></label>
-            <label className="campo"><span>Forma</span>
-              <select id="or-forma" value={forma} onChange={(e) => setForma(e.target.value as FormaPagamento)}>
-                <option value="AVISTA">À vista</option><option value="PARCELADO">Parcelado</option>
-              </select>
-            </label>
-            {forma === 'PARCELADO' && (
-              <>
-                <label className="campo"><span>Sinal (R$)</span><input id="or-sinal" inputMode="decimal" value={sinal} onChange={(e) => setSinal(e.target.value)} /></label>
-                <label className="campo"><span>Parcelas depois do sinal</span>
-                  <select id="or-parcelas" value={parcelas} onChange={(e) => setParcelas(e.target.value)}>
-                    {[1, 2, 3, 4, 5, 6].map((i) => <option key={i} value={i}>{i}x de {moeda(resto / i)}</option>)}
-                  </select>
-                </label>
-              </>
-            )}
+            <CamposPagamento prefixo="or" rotuloForma="Forma" total={total} forma={forma} setForma={setForma} sinal={sinal} setSinal={setSinal} parcelas={parcelas} setParcelas={setParcelas} />
             <label className="campo"><span>Válido até</span><input id="or-validade" type="date" required value={validade} onChange={(e) => setValidade(e.target.value)} /></label>
             <label className="campo inteira"><span>Observações para o cliente</span><textarea id="or-obs" value={obs} onChange={(e) => setObs(e.target.value)} rows={3} /></label>
           </fieldset>
@@ -245,16 +225,17 @@ export function DetalheOrcamento() {
   const { id } = useParams();
   const navegar = useNavigate();
   const { dados: o, setDados, erro } = useDados<Orcamento>(`/orcamentos/${id}`);
+  const { dados: estudio } = useDados<Estudio>('/estudio');
   const [copiado, setCopiado] = useState(false);
   const [manual, setManual] = useState(false);
   const [apagando, setApagando] = useState(false);
   if (!o) return <>{erro ? <Erro msg={erro} /> : <div className="esqueleto" style={{ height: 320 }} />}</>;
 
   const link = urlOrcamento(o.token);
-  const mensagem = `Olá, ${primeiroNome(o.nomeCliente)}! Aqui é o Joel, da JR Fotografia. Segue o seu orçamento${o.tipo ? ` de ${o.tipo.toLowerCase()}` : ''}: ${moeda(o.valorTotal)}.\n\nVeja os detalhes e confirme por aqui:\n${link}\n\nO orçamento vale até ${data(o.validade)}. Qualquer dúvida, é só me chamar.`;
+  const mensagem = `Olá, ${primeiroNome(o.nomeCliente)}! ${apresentacaoEstudio(estudio)} Segue o seu orçamento${o.tipo ? ` de ${o.tipo.toLowerCase()}` : ''}: ${moeda(o.valorTotal)}.\n\nVeja os detalhes e confirme por aqui:\n${link}\n\nO orçamento vale até ${data(o.validade)}. Qualquer dúvida, é só me chamar.`;
   const marcarEnviado = () => { api<Orcamento>(`/orcamentos/${o.id}/enviado`, { corpo: {} }).then(setDados).catch(() => {}); };
   const copiar = async () => {
-    if (await copiarTexto(link)) {
+    if (await copiarParaArea(link)) {
       setCopiado(true); setManual(false); setTimeout(() => setCopiado(false), 2000); marcarEnviado();
     } else {
       setManual(true); // sem HTTPS o navegador bloqueia a cópia: mostra o link para copiar à mão
@@ -324,19 +305,3 @@ export function DetalheOrcamento() {
   );
 }
 
-/** Copia texto. Usa a área de transferência quando o navegador deixa (HTTPS) e um campo escondido quando não. */
-async function copiarTexto(texto: string) {
-  try {
-    if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(texto); return true; }
-  } catch { /* tenta o plano B */ }
-  try {
-    const t = document.createElement('textarea');
-    t.value = texto; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
-    document.body.appendChild(t); t.select(); t.setSelectionRange(0, texto.length);
-    const ok = document.execCommand('copy');
-    document.body.removeChild(t);
-    return ok;
-  } catch {
-    return false;
-  }
-}

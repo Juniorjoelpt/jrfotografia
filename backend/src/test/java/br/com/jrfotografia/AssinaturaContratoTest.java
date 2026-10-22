@@ -45,7 +45,9 @@ class AssinaturaContratoTest {
     @Test
     void clienteAssinaPdfFicaRegistradoEVerificavel() throws Exception {
         long id = trabalho("Ana Assinatura");
-        mvc.perform(get("/api/trabalhos/" + id + "/assinatura").header("Authorization", "Bearer " + painel)).andExpect(status().isNoContent());
+        // O trabalho já nasce com o contrato para assinar (boas-vindas, igual em todas as portas)
+        assertThat(ler(mvc.perform(get("/api/trabalhos/" + id + "/assinatura").header("Authorization", "Bearer " + painel))
+                .andExpect(status().isOk()).andReturn()).get("status").asText()).isEqualTo("PENDENTE");
 
         // Assinatura do fotógrafo (vai no PDF final)
         mvc.perform(put("/api/estudio/assinatura").header("Authorization", "Bearer " + painel).contentType(MediaType.APPLICATION_JSON)

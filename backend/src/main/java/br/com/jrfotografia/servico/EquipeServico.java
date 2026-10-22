@@ -1,5 +1,7 @@
 package br.com.jrfotografia.servico;
 
+import static br.com.jrfotografia.servico.Textos.vazio;
+
 import br.com.jrfotografia.config.Erros.NaoEncontrado;
 import br.com.jrfotografia.config.Erros.RegraNegocio;
 import br.com.jrfotografia.dominio.Cliente;
@@ -435,9 +437,5 @@ public class EquipeServico {
 
     private Trabalho trabalho(Long estudioId, Long id) {
         return trabalhos.findByIdAndEstudioId(id, estudioId).orElseThrow(() -> new NaoEncontrado("Trabalho não encontrado."));
-    }
-
-    private static boolean vazio(String s) {
-        return s == null || s.isBlank();
     }
 }

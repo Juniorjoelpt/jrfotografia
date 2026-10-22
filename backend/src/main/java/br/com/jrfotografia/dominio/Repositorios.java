@@ -212,7 +212,9 @@ public final class Repositorios {
         Optional<CobrancaPix> findFirstByParcelaIdOrderByIdDesc(Long parcelaId);
         Optional<CobrancaPix> findByIdAndEstudioId(Long id, Long estudioId);
         List<CobrancaPix> findTop100ByEstudioIdOrderByIdDesc(Long estudioId);
-        List<CobrancaPix> findByStatusAndCriadoEmAfter(String status, LocalDateTime depois);
+        List<CobrancaPix> findByStatusInAndCriadoEmAfter(Collection<String> status, LocalDateTime depois);
+        List<CobrancaPix> findByParcelaIdAndStatus(Long parcelaId, String status);
+        List<CobrancaPix> findByParcelaIdInAndStatusAndExpiraEmAfter(Collection<Long> parcelas, String status, LocalDateTime depois);
 
         /** Marca como paga uma vez só (webhook e consulta podem chegar juntos). */
         @org.springframework.data.jpa.repository.Modifying

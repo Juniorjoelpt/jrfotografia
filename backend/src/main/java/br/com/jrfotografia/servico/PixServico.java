@@ -56,7 +56,7 @@ public class PixServico {
     private final Cifra cifra;
     private final PagBankCliente pagbank;
     private final AgendaOnlineServico agendaOnline;
-    private final AssinaturaServico assinaturas;
+    private final BoasVindasServico boasVindas;
     private final EmailAvisos avisos;
     private final AppProps props;
     private final ObjectMapper json;
@@ -65,7 +65,7 @@ public class PixServico {
 
     public PixServico(EstudioRepo estudios, ReservaRepo reservas, ParcelaRepo parcelas, TrabalhoRepo trabalhos, ClienteRepo clientes,
                       CobrancaPixRepo cobrancas, Cifra cifra, PagBankCliente pagbank, AgendaOnlineServico agendaOnline,
-                      AssinaturaServico assinaturas, EmailAvisos avisos, AppProps props, ObjectMapper json,
+                      BoasVindasServico boasVindas, EmailAvisos avisos, AppProps props, ObjectMapper json,
                       PlatformTransactionManager transacoes) {
         this.estudios = estudios;
         this.reservas = reservas;
@@ -76,7 +76,7 @@ public class PixServico {
         this.cifra = cifra;
         this.pagbank = pagbank;
         this.agendaOnline = agendaOnline;
-        this.assinaturas = assinaturas;
+        this.boasVindas = boasVindas;
         this.avisos = avisos;
         this.props = props;
         this.json = json;
@@ -87,8 +87,9 @@ public class PixServico {
     public record PixDto(Long id, String texto, BigDecimal valor, LocalDateTime expiraEm, String status, boolean sandbox) {
         public static PixDto de(CobrancaPix c) {
             if (c == null) return null;
+            String status = vencida(c) || CobrancaPix.CANCELADA.equals(c.getStatus()) ? CobrancaPix.EXPIRADA : c.getStatus();
             return new PixDto(c.getId(), CobrancaPix.AGUARDANDO.equals(c.getStatus()) ? c.getTexto() : null, c.getValor(), c.getExpiraEm(),
-                    vencida(c) ? CobrancaPix.EXPIRADA : c.getStatus(), c.isSandbox());
+                    status, c.isSandbox());
         }
     }
 
@@ -218,7 +219,7 @@ public class PixServico {
 
     /** Pergunta ao PagBank (no máximo uma vez a cada {@code intervalo}) e, se pago, dá baixa. */
     public CobrancaPix verificar(CobrancaPix c, Duration intervalo) {
-        if (!CobrancaPix.AGUARDANDO.equals(c.getStatus())) return c;
+        if (!CobrancaPix.AGUARDANDO.equals(c.getStatus()) && !CobrancaPix.CANCELADA.equals(c.getStatus())) return c;
         if (c.getVerificadoEm() != null && c.getVerificadoEm().plus(intervalo).isAfter(LocalDateTime.now())) return c;
         Estudio e = estudios.findById(c.getEstudioId()).orElseThrow();
         if (e.getPagbankToken() == null) return c;
@@ -276,13 +277,24 @@ public class PixServico {
     @Scheduled(fixedDelay = 120_000, initialDelay = 90_000)
     public void verificarPendentes() {
         if (props.pagbank() != null && Boolean.FALSE.equals(props.pagbank().verificarAuto())) return;
-        for (CobrancaPix c : cobrancas.findByStatusAndCriadoEmAfter(CobrancaPix.AGUARDANDO, LocalDateTime.now().minusDays(4))) {
+        for (CobrancaPix c : cobrancas.findByStatusInAndCriadoEmAfter(List.of(CobrancaPix.AGUARDANDO, CobrancaPix.CANCELADA), LocalDateTime.now().minusDays(4))) {
             try {
                 verificar(c, Duration.ofSeconds(100));
             } catch (Exception ex) {
                 log.debug("Verificação do Pix {} falhou: {}", c.getId(), ex.getMessage());
             }
         }
+    }
+
+    /**
+     * O fotógrafo deu baixa à mão: o Pix aberto daquela parcela sai da área da cliente. Continua sendo consultado
+     * até vencer; se ela tiver pago mesmo assim, o aviso de "pago duas vezes" chega ao fotógrafo.
+     */
+    public void encerrarDaParcela(Long parcelaId) {
+        tx.executeWithoutResult(s -> cobrancas.findByParcelaIdAndStatus(parcelaId, CobrancaPix.AGUARDANDO).forEach(c -> {
+            c.setStatus(CobrancaPix.CANCELADA);
+            c.setErro("Parcela marcada como paga à mão no painel; o QR Code saiu da área da cliente.");
+        }));
     }
 
     // ================================================================ deu baixa
@@ -332,10 +344,8 @@ public class PixServico {
         tx.executeWithoutResult(s -> trabalhos.findById(trabalhoId).ifPresent(t -> t.setObservacoes(
                 (t.getObservacoes() == null || t.getObservacoes().isBlank() ? "" : t.getObservacoes() + "\n")
                         + "Sinal pago pelo Pix (PagBank, pedido " + c.getPedidoId() + ") e confirmado automaticamente.")));
-        assinaturas.gerarSePossivel(c.getEstudioId(), trabalhoId);
-        ContratoAssinatura contrato = assinaturas.atual(trabalhoId);
-        avisos.reservaConfirmada(r, agendaOnline.trabalhoDaClienteOuNulo(trabalhoId),
-                contrato != null && contrato.getStatus() == ContratoAssinatura.Status.PENDENTE ? contrato.getToken() : null);
+        var links = boasVindas.preparar(c.getEstudioId(), trabalhoId);
+        avisos.reservaConfirmada(r, links.area(), links.contrato());
         return null;
     }
 

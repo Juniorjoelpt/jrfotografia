@@ -32,11 +32,14 @@ public class OrcamentoControle {
     private final PdfServico pdf;
     private final br.com.jrfotografia.servico.AssinaturaServico assinaturas;
     private final br.com.jrfotografia.servico.AgendaOnlineServico agendaOnline;
+    private final br.com.jrfotografia.servico.BoasVindasServico boasVindas;
 
     public OrcamentoControle(OrcamentoServico servico, OrcamentoRepo orcamentos, EstudioRepo estudios,
                              TrabalhoRepo trabalhos, ParcelaRepo parcelas, PdfServico pdf, EmailAvisos avisos,
                              br.com.jrfotografia.servico.AssinaturaServico assinaturas,
-                             br.com.jrfotografia.servico.AgendaOnlineServico agendaOnline) {
+                             br.com.jrfotografia.servico.AgendaOnlineServico agendaOnline,
+                             br.com.jrfotografia.servico.BoasVindasServico boasVindas) {
+        this.boasVindas = boasVindas;
         this.assinaturas = assinaturas;
         this.agendaOnline = agendaOnline;
         this.avisos = avisos;
@@ -110,10 +113,8 @@ public class OrcamentoControle {
         avisos.orcamentoRespondido(o, true);
         // Como na agenda online: contrato pronto para assinar e a área da cliente (onde ela paga o sinal no Pix).
         if (o.getTrabalhoId() != null) {
-            assinaturas.gerarSePossivel(o.getEstudioId(), o.getTrabalhoId());
-            br.com.jrfotografia.dominio.ContratoAssinatura c = assinaturas.atual(o.getTrabalhoId());
-            avisos.orcamentoAceitoCliente(o, agendaOnline.trabalhoDaClienteOuNulo(o.getTrabalhoId()),
-                    c != null && c.getStatus() == br.com.jrfotografia.dominio.ContratoAssinatura.Status.PENDENTE ? c.getToken() : null);
+            var links = boasVindas.preparar(o.getEstudioId(), o.getTrabalhoId());
+            avisos.orcamentoAceitoCliente(o, links.area(), links.contrato());
         }
         return publicoDe(o);
     }

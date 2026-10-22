@@ -149,18 +149,51 @@ public class EmailAvisos {
                 new Botao("Conferir e confirmar", url(e, "/painel/agenda#pre-reservas")), "AVISO_COMPROVANTE", "reserva:" + r.getId() + ":" + r.getComprovanteEm());
     }
 
-    public void reservaConfirmada(Reserva r, String tokenArea, String tokenContrato) {
-        Estudio e = estudio(r.getEstudioId());
-        List<String> p = new ArrayList<>(List.of("Olá, " + esc(primeiro(r.getNome())) + "! Recebi o sinal e seu ensaio está <b>confirmado</b>. 📸",
-                "Na sua área você acompanha os pagamentos e, se precisar, remarca ou cancela dentro das regras do contrato."));
+    /**
+     * Próximos passos depois que o trabalho nasce (reserva confirmada, orçamento aceito, trabalho criado):
+     * onde pagar (Pix na área, se automático) e o contrato para assinar. Um texto só para os três e-mails.
+     */
+    private List<String> proximosPassos(Estudio e, String tokenArea, String tokenContrato, String falta) {
+        List<String> p = new ArrayList<>();
+        if (tokenArea != null) {
+            p.add(falta != null && e.pixAutomatico()
+                    ? "Para garantir a data, pague " + falta + " pelo Pix na sua área: o QR Code já vem com o valor certinho e a baixa é automática."
+                    : "Na sua área você acompanha os pagamentos e, se precisar, remarca ou cancela dentro das regras do contrato.");
+        }
         if (tokenContrato != null) {
             p.add("Seu contrato já está pronto para assinar pelo celular: <a href=\"" + esc(url(e, "/assinar/" + tokenContrato))
                     + "\" style=\"color:#c62828\">ler e assinar o contrato</a>.");
         }
+        return p;
+    }
+
+    private Botao botaoArea(Estudio e, String tokenArea, boolean pagar) {
+        return tokenArea == null ? null : new Botao(pagar && e.pixAutomatico() ? "Pagar no Pix" : "Abrir minha área", url(e, "/meu/" + tokenArea));
+    }
+
+    public void reservaConfirmada(Reserva r, String tokenArea, String tokenContrato) {
+        Estudio e = estudio(r.getEstudioId());
+        List<String> p = new ArrayList<>(List.of("Olá, " + esc(primeiro(r.getNome())) + "! Recebi o sinal e seu ensaio está <b>confirmado</b>. 📸"));
+        p.addAll(proximosPassos(e, tokenArea, tokenContrato, null));
         paraCliente(e, r.getEmail(), "Ensaio confirmado · " + quando(r.getInicio()), "Ensaio confirmado!", p,
                 List.of(new Linha("Quando", quando(r.getInicio())), new Linha("Sinal pago", moeda(r.getValorSinal())),
                         new Linha("Restante", moeda(r.getValorTotal().subtract(r.getValorSinal())))),
-                tokenArea != null ? new Botao("Abrir minha área", url(e, "/meu/" + tokenArea)) : null, "RESERVA_CONFIRMADA", "reserva:" + r.getId(), null);
+                botaoArea(e, tokenArea, false), "RESERVA_CONFIRMADA", "reserva:" + r.getId(), null);
+    }
+
+    /** Trabalho criado à mão (Novo trabalho ou pedido fechado): boas-vindas com a área, o que pagar e o contrato. */
+    public void trabalhoCriado(Trabalho t, String tokenArea, String tokenContrato) {
+        Estudio e = estudio(t.getEstudioId());
+        java.math.BigDecimal aberto = t.getValorTotal() == null ? BigDecimal.ZERO : t.getValorTotal();
+        List<String> p = new ArrayList<>(List.of("Olá, " + esc(primeiro(t.getCliente().getNome())) + "! Seu ensaio está marcado comigo. 📸"));
+        p.addAll(proximosPassos(e, tokenArea, tokenContrato, aberto.signum() > 0 ? "o primeiro pagamento" : null));
+        List<Linha> resumo = new ArrayList<>(List.of(new Linha("Ensaio", t.getTitulo())));
+        if (t.getDataTrabalho() != null) resumo.add(new Linha("Quando", quando(t.getDataTrabalho())));
+        if (t.getLocalTrabalho() != null) resumo.add(new Linha("Local", t.getLocalTrabalho()));
+        if (aberto.signum() > 0) resumo.add(new Linha("Valor", moeda(aberto)));
+        if (!e.pixAutomatico() && e.getChavePix() != null && aberto.signum() > 0) resumo.add(new Linha("Chave Pix", e.getChavePix()));
+        paraCliente(e, t.getCliente().getEmail(), "Seu ensaio está marcado · " + e.getNome(), "Ensaio marcado!", p, resumo,
+                botaoArea(e, tokenArea, aberto.signum() > 0), "TRABALHO_CRIADO", "trabalho:" + t.getId(), null);
     }
 
     public void reservaRecusada(Reserva r) {
@@ -319,21 +352,13 @@ public class EmailAvisos {
         List<String> p = new ArrayList<>();
         p.add("Olá, " + esc(primeiro(o.getNomeCliente())) + "! Recebi o aceite do orçamento nº " + o.getNumero() + ". Obrigado pela confiança! 📸");
         boolean temSinal = o.getValorSinal() != null && o.getValorSinal().signum() > 0;
-        if (tokenArea != null) {
-            p.add(e.pixAutomatico()
-                    ? "Para garantir a data, pague " + (temSinal ? "o sinal" : "o valor combinado") + " pelo Pix na sua área: o QR Code já vem com o valor certinho e a baixa é automática."
-                    : "Na sua área você acompanha os pagamentos e as datas.");
-        }
-        if (tokenContrato != null) {
-            p.add("O contrato já está pronto para assinar pelo celular: <a href=\"" + esc(url(e, "/assinar/" + tokenContrato))
-                    + "\" style=\"color:#c62828\">ler e assinar o contrato</a>.");
-        }
+        p.addAll(proximosPassos(e, tokenArea, tokenContrato, temSinal ? "o sinal" : "o valor combinado"));
         List<Linha> resumo = new ArrayList<>(List.of(new Linha("Total", moeda(o.getValorTotal()))));
         if (temSinal) resumo.add(new Linha("Sinal", moeda(o.getValorSinal())));
         if (o.getDataPrevista() != null) resumo.add(new Linha("Quando", quando(o.getDataPrevista())));
         if (!e.pixAutomatico() && e.getChavePix() != null) resumo.add(new Linha("Chave Pix", e.getChavePix()));
         paraCliente(e, o.getEmail(), "Orçamento aceito · próximos passos · " + e.getNome(), "Orçamento aceito!", p, resumo,
-                tokenArea != null ? new Botao(e.pixAutomatico() ? "Pagar o sinal no Pix" : "Abrir minha área", url(e, "/meu/" + tokenArea)) : null,
+                botaoArea(e, tokenArea, true),
                 "ORCAMENTO_ACEITO", "orcamento:" + o.getId(), null);
     }
 

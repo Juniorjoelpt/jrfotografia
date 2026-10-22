@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
-import type { Inativa, PesquisaPainel, ProximaData, ResumoPesquisas } from '../tipos';
+import type { Estudio, Inativa, PesquisaPainel, ProximaData, ResumoPesquisas } from '../tipos';
 import { data, linkWhatsapp, moeda, primeiroNome, telefone } from '../util';
 import { Erro, useDados } from './comum';
 
@@ -32,11 +32,11 @@ function quandoTexto(d: ProximaData) {
   return `EM ${d.diasFaltando} DIAS · ${data(d.data).slice(0, 5)}`;
 }
 
-function mensagemData(d: ProximaData) {
+function mensagemData(d: ProximaData, estudio?: Estudio | null) {
   const nome = primeiroNome(d.nome);
   if (d.tipo === 'ANIVERSARIO') {
     return d.diasFaltando === 0
-      ? `Feliz aniversário, ${nome}! 🎉 Que seu novo ano seja lindo. Um abraço da JR Fotografia!`
+      ? `Feliz aniversário, ${nome}! 🎉 Que seu novo ano seja lindo. Um abraço${estudio ? ` da ${estudio.nome}` : ''}!`
       : `Oi, ${nome}! Seu aniversário está chegando 🎉 Que tal registrar esse momento com um ensaio especial? Tenho horários livres.`;
   }
   return `Oi, ${nome}! Lembrei que ${d.descricao.toLowerCase()} está chegando${d.anos ? ` (${d.anos} anos!)` : ''}. Que tal eternizar essa data com um ensaio?`;
@@ -45,6 +45,7 @@ function mensagemData(d: ProximaData) {
 function Datas() {
   const [dias, setDias] = useState(30);
   const { dados, erro } = useDados<ProximaData[]>(`/relacionamento/datas?dias=${dias}`);
+  const { dados: estudio } = useDados<Estudio>('/estudio');
   return (
     <section className="secao">
       <div className="acoes-linha">
@@ -63,7 +64,7 @@ function Datas() {
                 <span className="lado"><span className={`etiqueta${d.diasFaltando === 0 ? ' alerta' : ''}`}>{quandoTexto(d)}</span></span>
                 <span className="legenda">{d.descricao.toUpperCase()}{d.anos ? ` · ${d.anos} ANOS` : ''}{d.telefone ? ` · ${telefone(d.telefone)}` : ''}</span>
                 <span className="lado">
-                  {d.telefone && <a className="botao pequeno principal" href={linkWhatsapp(d.telefone, mensagemData(d))} target="_blank" rel="noreferrer">Mandar mensagem</a>}
+                  {d.telefone && <a className="botao pequeno principal" href={linkWhatsapp(d.telefone, mensagemData(d, estudio))} target="_blank" rel="noreferrer">Mandar mensagem</a>}
                 </span>
               </div>
             ))}

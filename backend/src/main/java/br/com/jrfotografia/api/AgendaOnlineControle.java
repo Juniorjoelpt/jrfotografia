@@ -67,11 +67,17 @@ public class AgendaOnlineControle {
     private final MarketingServico marketing;
     private final CampanhaRepo campanhaRepo;
     private final PixServico pix;
+    private final br.com.jrfotografia.servico.BoasVindasServico boasVindas;
+    private final br.com.jrfotografia.servico.GaleriaServico galeria;
 
     public AgendaOnlineControle(AgendaOnlineServico servico, EstudioDoSite site, EstudioRepo estudios, PacoteRepo pacotes,
                                 HorarioRepo horarios, ReservaRepo reservas, ParcelaRepo parcelas, Armazenamento armazenamento,
                                 Tentativas tentativas, AssinaturaServico assinaturas, MarketingServico marketing,
-                                CampanhaRepo campanhaRepo, EmailAvisos avisos, PixServico pix) {
+                                CampanhaRepo campanhaRepo, EmailAvisos avisos, PixServico pix,
+                                br.com.jrfotografia.servico.BoasVindasServico boasVindas,
+                                br.com.jrfotografia.servico.GaleriaServico galeria) {
+        this.galeria = galeria;
+        this.boasVindas = boasVindas;
         this.pix = pix;
         this.avisos = avisos;
         this.marketing = marketing;
@@ -365,6 +371,13 @@ public class AgendaOnlineControle {
         return PixDto.de(pix.verificarSemFalhar(c));
     }
 
+    /** "Ver minhas fotos" na área: abre a galeria sem pedir a senha de novo (o link da área já é pessoal). */
+    @PostMapping("/api/publico/cliente/{token}/galeria")
+    public Map<String, String> galeriaPelaArea(@PathVariable String token) {
+        Trabalho t = servico.trabalhoDaCliente(token);
+        return Map.of("galeria", t.getGaleriaToken(), "acesso", galeria.entrarPelaArea(t));
+    }
+
     @GetMapping("/api/publico/cliente/{token}/vagas")
     public List<Dia> vagasRemarcar(@PathVariable String token, @RequestParam LocalDate de, @RequestParam LocalDate ate) {
         Trabalho t = servico.trabalhoDaCliente(token);
@@ -417,10 +430,8 @@ public class AgendaOnlineControle {
     @PreAuthorize("hasRole('ADMIN')")
     public ReservaDto confirmar(@PathVariable Long id) {
         Reserva r = servico.confirmar(UsuarioLogado.estudio(), id);
-        assinaturas.gerarSePossivel(UsuarioLogado.estudio(), r.getTrabalhoId());
-        ContratoAssinatura contrato = assinaturas.atual(r.getTrabalhoId());
-        avisos.reservaConfirmada(r, servico.trabalhoDaClienteOuNulo(r.getTrabalhoId()),
-                contrato != null && contrato.getStatus() == ContratoAssinatura.Status.PENDENTE ? contrato.getToken() : null);
+        var links = boasVindas.preparar(UsuarioLogado.estudio(), r.getTrabalhoId());
+        avisos.reservaConfirmada(r, links.area(), links.contrato());
         return ReservaDto.de(r);
     }
 

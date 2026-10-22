@@ -219,6 +219,49 @@ class PixTest {
         assertThat(pagas).isEqualTo(2);
     }
 
+    @Test
+    void baixaManualTiraOPixDaAreaMasContinuaVigiando() throws Exception {
+        mvc.perform(auth(put("/api/estudio/pagbank")).content("{\"ativo\":true,\"token\":\"" + TOKEN + "\",\"sandbox\":true}")).andExpect(status().isOk());
+        mvc.perform(auth(put("/api/estudio/email")).content("""
+                {"ativo":true,"host":"smtp.teste.local","porta":587,"usuario":"jr@teste.local","senha":"x","seguranca":"STARTTLS","avisos":true,"lembretes":true}"""))
+                .andExpect(status().isOk());
+        JsonNode est = ler(mvc.perform(auth(get("/api/estudio"))).andReturn());
+        ((com.fasterxml.jackson.databind.node.ObjectNode) est).put("email", "estudio@teste.local");
+        mvc.perform(auth(put("/api/estudio")).content(est.toString())).andExpect(status().isOk());
+        long cliente = ler(mvc.perform(auth(post("/api/clientes")).content("{\"nome\":\"Rita Manual\",\"telefone\":\"98977771111\",\"cpf\":\"529.982.247-25\"}"))
+                .andReturn()).get("id").asLong();
+        JsonNode t = ler(mvc.perform(auth(post("/api/trabalhos")).content("""
+                {"clienteId":%d,"tipo":"Ensaio","valorTotal":200,"formaPagamento":"AVISTA","primeiroVencimento":"%s"}"""
+                .formatted(cliente, LocalDate.now()))).andExpect(status().isCreated()).andReturn());
+        long tid = t.get("resumo").get("id").asLong();
+        long parcela = t.get("parcelas").get(0).get("id").asLong();
+        String area = t.get("areaCliente").asText();
+
+        // A cliente gera o Pix na área; o painel mostra que há Pix aberto
+        JsonNode pix = ler(mvc.perform(publico(post("/api/publico/cliente/" + area + "/parcelas/" + parcela + "/pix")).content("{}"))
+                .andExpect(status().isOk()).andReturn());
+        String pedido = PEDIDOS.keySet().stream().filter(k -> pix.get("texto").asText().contains(k)).findFirst().orElseThrow();
+        assertThat(ler(mvc.perform(auth(get("/api/trabalhos/" + tid))).andReturn()).get("parcelasComPixAberto").toString()).contains(String.valueOf(parcela));
+
+        // O fotógrafo recebe por fora e dá baixa: o QR some da área
+        mvc.perform(auth(post("/api/parcelas/" + parcela + "/pagamento")).content("{\"forma\":\"PIX\"}")).andExpect(status().isOk());
+        JsonNode depois = ler(mvc.perform(get("/api/publico/cliente/" + area + "/parcelas/" + parcela + "/pix")).andReturn());
+        assertThat(depois.get("status").asText()).isEqualTo("EXPIRADA");
+        assertThat(depois.get("texto").isNull()).isTrue();
+        assertThat(ler(mvc.perform(auth(get("/api/trabalhos/" + tid))).andReturn()).get("parcelasComPixAberto")).isEmpty();
+        long cobranca = 0;
+        for (JsonNode c : ler(mvc.perform(auth(get("/api/estudio/pagbank/cobrancas"))).andReturn())) {
+            if (c.get("pedidoId").asText().equals(pedido)) { cobranca = c.get("id").asLong(); assertThat(c.get("status").asText()).isEqualTo("CANCELADA"); }
+        }
+
+        // Se ela pagou mesmo assim, o sistema percebe e avisa o pagamento em dobro
+        PEDIDOS.get(pedido)[1] = 1;
+        JsonNode verif = ler(mvc.perform(auth(post("/api/estudio/pagbank/cobrancas/" + cobranca + "/verificacao")).content("{}")).andReturn());
+        assertThat(verif.get("status").asText()).isEqualTo("PAGA");
+        assertThat(verif.get("erro").asText()).contains("duas vezes");
+        assertThat(email.caixa().stream().filter(m -> m.tipo().equals("AVISO_PIX")).map(EmailServico.Mensagem::html).toList().toString()).contains("Atenção");
+    }
+
     static String sha(String s) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(s.getBytes(StandardCharsets.UTF_8)));
     }

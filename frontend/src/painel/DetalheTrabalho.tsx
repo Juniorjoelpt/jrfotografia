@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, ErroApi, imagemPainel, sessaoAtual, urlPainel } from '../api';
 import type { Estudio, Foto, MeioPagamento, Parcela, StatusTrabalho, TrabalhoDetalhe } from '../tipos';
-import { data, dataHora, DURACOES, duracaoTexto, ETAPAS, linkWhatsapp, moeda, NOMES_MEIO, NOMES_PARCELA, primeiroNome, telefone, urlAreaCliente, urlGaleria } from '../util';
+import { copiar, data, dataHora, DURACOES, duracaoTexto, ETAPAS, linkWhatsapp, moeda, NOMES_MEIO, NOMES_PARCELA, primeiroNome, telefone, urlAreaCliente, urlGaleria } from '../util';
 import { ContratoTrabalho } from './AssinaturaPainel';
 import { BotaoEmail } from './BotaoEmail';
+import { AcoesParcela } from './AcoesParcela';
+import { AvisoConflitos, useConflitosAgenda } from './CamposPagamento';
 import { PesquisaTrabalho, TrabalhoEquipe } from './TrabalhoEquipe';
 import { ProdutosDoTrabalho } from './Produtos';
 import { Erro, Status, useDados } from './comum';
@@ -137,7 +139,6 @@ export function DetalheTrabalho() {
             Enviar área da cliente
           </a>
         )}
-        {admin && <a className="botao pequeno" href={urlPainel(`/trabalhos/${id}/contrato.pdf`)} target="_blank" rel="noreferrer">Contrato (PDF)</a>}
         {admin && t.orcamentoId && <Link className="botao pequeno" to={`/painel/orcamentos/${t.orcamentoId}`}>Orçamento</Link>}
       </div>
       {t.conflitos.length > 0 && (
@@ -237,10 +238,7 @@ export function DetalheTrabalho() {
         const semExtensao = (n: string) => n.replace(/\.[^.]+$/, '');
         const copiarNomes = async () => {
           const texto = lista.map((f) => semExtensao(f.nomeOriginal)).join(', ');
-          try { await navigator.clipboard.writeText(texto); } catch {
-            const ta = document.createElement('textarea'); ta.value = texto; document.body.appendChild(ta); ta.select();
-            try { document.execCommand('copy'); } catch { /* sem área de transferência */ } ta.remove();
-          }
+          await copiar(texto);
           setCopiado(true);
           setTimeout(() => setCopiado(false), 2500);
         };
@@ -311,12 +309,8 @@ export function DetalheTrabalho() {
                       <button className="botao-link legenda" disabled={!!ocupado} onClick={() => desfazer(p)}>Desfazer</button>
                     </>
                     : <>
-                      {t.cliente.telefone && (
-                        <a className="botao pequeno" target="_blank" rel="noreferrer" href={linkWhatsapp(t.cliente.telefone,
-                          `Olá, ${nome}! ${p.descricao} de ${moeda(p.valor)}${p.vencimento ? `, com vencimento em ${data(p.vencimento)}` : ''}.${estudio?.chavePix ? `\n\nChave Pix: ${estudio.chavePix}` : ''}\n\nAssim que pagar, me mande o comprovante por aqui.`)}>Cobrar</a>
-                      )}
-                      <button className="botao pequeno" disabled={!!ocupado} onClick={() => pagar(p, 'PIX')}>Pago no Pix</button>
-                      <button className="botao pequeno" disabled={!!ocupado} onClick={() => pagar(p, 'DINHEIRO')}>Dinheiro</button>
+                      <AcoesParcela parcela={p} clienteNome={t.cliente.nome} telefone={t.cliente.telefone} areaToken={t.areaCliente}
+                        estudio={estudio} pixAberto={t.parcelasComPixAberto?.includes(p.id)} ocupado={!!ocupado} aoPagar={(forma) => pagar(p, forma)} />
                     </>}
                 </span>
               </div>
@@ -359,17 +353,8 @@ function Remarcar({ t, aoSalvar }: { t: TrabalhoDetalhe; aoSalvar: (t: TrabalhoD
   const [quando, setQuando] = useState(r.dataTrabalho?.slice(0, 16) ?? '');
   const [duracao, setDuracao] = useState(String(t.duracaoMin));
   const [local, setLocal] = useState(r.localTrabalho ?? '');
-  const [avisos, setAvisos] = useState<string[]>([]);
+  const avisos = useConflitosAgenda(quando, duracao, r.id);
   const [erro, setErro] = useState('');
-
-  useEffect(() => {
-    if (!quando) { setAvisos([]); return; }
-    const h = setTimeout(() => {
-      api<{ avisos: string[] }>(`/agenda/conflitos?inicio=${encodeURIComponent(`${quando}:00`)}&duracaoMin=${duracao}&ignorar=${r.id}`)
-        .then((x) => setAvisos(x.avisos)).catch(() => setAvisos([]));
-    }, 300);
-    return () => clearTimeout(h);
-  }, [quando, duracao, r.id]);
 
   async function salvar(ev: FormEvent) {
     ev.preventDefault();
@@ -393,7 +378,7 @@ function Remarcar({ t, aoSalvar }: { t: TrabalhoDetalhe; aoSalvar: (t: TrabalhoD
         </select>
       </label>
       <label className="campo inteira"><span>Local</span><input id="rm-local" value={local} onChange={(e) => setLocal(e.target.value)} /></label>
-      {avisos.length > 0 && <div className="aviso inteira" role="status" style={{ margin: 0, borderColor: 'var(--alerta)' }}>{avisos.map((a) => <div key={a}>{a}</div>)}</div>}
+      <AvisoConflitos avisos={avisos} />
       <Erro msg={erro} />
       <button className="botao principal inteira">Salvar</button>
     </form>

@@ -1,5 +1,7 @@
 package br.com.jrfotografia.servico;
 
+import static br.com.jrfotografia.servico.Textos.vazioNulo;
+
 import br.com.jrfotografia.config.Erros.NaoEncontrado;
 import br.com.jrfotografia.config.Erros.RegraNegocio;
 import br.com.jrfotografia.dominio.*;
@@ -423,10 +425,6 @@ public class AgendaOnlineServico {
         String d = s.replaceAll("\\D", "");
         if (d.length() > 11 && d.startsWith("55")) d = d.substring(2);
         return d.isEmpty() ? null : d;
-    }
-
-    private static String vazioNulo(String s) {
-        return s == null || s.isBlank() ? null : s.trim();
     }
 
     private static LocalDate max(LocalDate a, LocalDate b) { return a.isAfter(b) ? a : b; }

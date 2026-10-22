@@ -184,8 +184,9 @@ public class CadastrosControle {
         e.setWhatsapp(soDigitos(f.whatsapp()));
         e.setInstagram(f.instagram() == null ? null : f.instagram().replace("@", "").trim());
         e.setEmail(f.email());
-        e.setChavePix(f.chavePix());
+        if (f.chavePix() != null) e.setChavePix(f.chavePix().isBlank() ? null : f.chavePix().trim());
         e.setApresentacao(f.apresentacao());
+        if (f.fotografo() != null) e.setFotografo(f.fotografo().isBlank() ? null : f.fotografo().trim());
         return EstudioDto.de(e, true);
     }
 

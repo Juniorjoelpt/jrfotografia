@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { api, salvarSessao, sessaoAtual } from '../api';
 import { Monograma } from '../componentes/Logo';
 import { Ambiente, Numero, useCasca } from '../componentes/Movimento';
@@ -82,10 +82,11 @@ export function LayoutPainel() {
           </div>
           {resumo && (
             <dl>
-              <div><dt>Pedidos novos</dt><dd style={resumo.pedidosNovos ? { color: 'var(--acento-texto)' } : undefined}><Numero valor={resumo.pedidosNovos} /></dd></div>
-              <div><dt>Em seleção</dt><dd><Numero valor={resumo.aguardandoSelecao} /></dd></div>
-              <div><dt>Em edição</dt><dd><Numero valor={resumo.emEdicao} /></dd></div>
-              {resumo.atrasados.length > 0 && <div><dt>Atrasados</dt><dd style={{ color: 'var(--erro)' }}>{resumo.atrasados.length}</dd></div>}
+              {/* No computador estes contadores ficam só aqui (o Início não repete); cada um leva à lista. */}
+              <div><dt><Link to="/painel/vendas">Pedidos novos</Link></dt><dd style={resumo.pedidosNovos ? { color: 'var(--acento-texto)' } : undefined}><Numero valor={resumo.pedidosNovos} /></dd></div>
+              <div><dt><Link to="/painel/trabalhos?status=SELECAO">Em seleção</Link></dt><dd><Numero valor={resumo.aguardandoSelecao} /></dd></div>
+              <div><dt><Link to="/painel/trabalhos?status=EDICAO">Em edição</Link></dt><dd><Numero valor={resumo.emEdicao} /></dd></div>
+              {resumo.atrasados.length > 0 && <div><dt><Link to="/painel/trabalhos">Atrasados</Link></dt><dd style={{ color: 'var(--erro)' }}>{resumo.atrasados.length}</dd></div>}
             </dl>
           )}
           <div>

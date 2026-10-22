@@ -136,7 +136,9 @@ export function OrcamentoCliente() {
           ))}
 
           <footer className="oc-rodape">
-            {o.contratoDisponivel && <a className="botao" href={`/api/publico/orcamentos/${token}/contrato.pdf`} target="_blank" rel="noreferrer">Baixar contrato</a>}
+            {/* Um contrato só: com o contrato para assinar, ele substitui a cópia sem assinatura. */}
+            {o.contratoDisponivel && !o.contratoToken && <a className="botao" href={`/api/publico/orcamentos/${token}/contrato.pdf`} target="_blank" rel="noreferrer">Baixar contrato</a>}
+            {o.contratoToken && o.contratoStatus === 'ASSINADO' && <a className="botao" href={`/api/publico/assinaturas/${o.contratoToken}/contrato.pdf`} target="_blank" rel="noreferrer">Baixar contrato assinado</a>}
             <a className="botao" href={pdf} target="_blank" rel="noreferrer">Baixar PDF</a>
             {o.status === 'ACEITO' && o.estudioWhatsapp && (
               <a className="botao" href={zap(`Olá! Aceitei o orçamento nº ${o.numero}. Como faço o pagamento?`)} target="_blank" rel="noreferrer">Falar no WhatsApp</a>

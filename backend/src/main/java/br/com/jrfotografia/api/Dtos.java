@@ -25,15 +25,21 @@ public final class Dtos {
 
     // ---------- estúdio ----------
     public record EstudioDto(String nome, String slug, String cidade, String whatsapp, String instagram,
-                             String email, String chavePix, String apresentacao, String dominio) {
+                             String email, String chavePix, String apresentacao, String dominio,
+                             /** Pix pelo PagBank ligado: as cobranças mandam a área da cliente, não a chave. */
+                             boolean pixAutomatico,
+                             /** Nome do fotógrafo no site e nas mensagens (vazio = responsável do contrato). */
+                             String fotografo) {
         static EstudioDto de(Estudio e, boolean comPix) {
             return new EstudioDto(e.getNome(), e.getSlug(), e.getCidade(), e.getWhatsapp(), e.getInstagram(),
-                    e.getEmail(), comPix ? e.getChavePix() : null, e.getApresentacao(), e.getDominio());
+                    e.getEmail(), comPix ? e.getChavePix() : null, e.getApresentacao(), e.getDominio(),
+                    e.pixAutomatico(), e.getFotografo() != null && !e.getFotografo().isBlank() ? e.getFotografo() : e.getResponsavel());
         }
     }
 
+    /** {@code chavePix} null mantém a guardada (ela fica em Ajustes › Pagamentos). */
     public record EstudioForm(@NotBlank String nome, String cidade, String whatsapp, String instagram,
-                              String email, String chavePix, String apresentacao) {}
+                              String email, String chavePix, String apresentacao, @Size(max = 120) String fotografo) {}
 
     // ---------- clientes ----------
     public record ClienteForm(@NotBlank @Size(max = 120) String nome, @Size(max = 20) String telefone,
@@ -87,7 +93,9 @@ public final class Dtos {
                                LocalDateTime dataTrabalho, String localTrabalho, @PositiveOrZero BigDecimal valorTotal,
                                FormaPagamento formaPagamento, @PositiveOrZero BigDecimal valorSinal,
                                @Min(1) @Max(12) Integer numParcelas, LocalDate primeiroVencimento, String observacoes,
-                               @Min(30) @Max(1440) Integer duracaoMin) {}
+                               @Min(30) @Max(1440) Integer duracaoMin,
+                               /** Veio de "Fechou: criar trabalho" em Vendas: o pedido passa a Fechado. */
+                               Long pedidoId) {}
 
     public record TrabalhoEdicao(String titulo, String tipo, LocalDateTime dataTrabalho, String localTrabalho,
                                  LocalDate prazoEntrega, String observacoes, Integer duracaoMin) {}
@@ -121,7 +129,9 @@ public final class Dtos {
                                   String observacoes, long totalFotos, long selecionadas, long editadas,
                                   List<ParcelaDto> parcelas, boolean downloadLiberado, String motivoDownload,
                                   int duracaoMin, Long orcamentoId, List<String> conflitos, String areaCliente, int remarcacoes,
-                                  LocalDateTime canceladoEm, String canceladoPor, String motivoCancelamento) {}
+                                  LocalDateTime canceladoEm, String canceladoPor, String motivoCancelamento,
+                                  /** Parcelas com um Pix do PagBank gerado e ainda válido (a cliente pode pagar a qualquer momento). */
+                                  List<Long> parcelasComPixAberto) {}
 
     public record FotoDto(Long id, String nomeOriginal, Integer largura, Integer altura, int ordem,
                           boolean selecionada, boolean editada, String comentario) {
@@ -147,7 +157,7 @@ public final class Dtos {
     public record PagamentoForm(LocalDate data, MeioPagamento forma) {}
 
     public record ContaReceber(ParcelaDto parcela, String trabalhoTitulo, String clienteNome, String clienteTelefone,
-                               boolean vencida) {}
+                               boolean vencida, String areaCliente, boolean pixAberto) {}
 
     // ---------- portfólio ----------
     public record PortfolioDto(Long id, String categoria, String titulo, Integer largura, Integer altura,

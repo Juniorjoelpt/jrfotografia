@@ -32,7 +32,14 @@ public class FinanceiroControle {
     private final PedidoRepo pedidos;
     private final TrabalhoServico servico;
 
-    public FinanceiroControle(ParcelaRepo parcelas, TrabalhoRepo trabalhos, PedidoRepo pedidos, TrabalhoServico servico) {
+    private final br.com.jrfotografia.dominio.Repositorios.CobrancaPixRepo cobrancas;
+    private final br.com.jrfotografia.servico.PixServico pix;
+
+    public FinanceiroControle(ParcelaRepo parcelas, TrabalhoRepo trabalhos, PedidoRepo pedidos, TrabalhoServico servico,
+                              br.com.jrfotografia.dominio.Repositorios.CobrancaPixRepo cobrancas,
+                              br.com.jrfotografia.servico.PixServico pix) {
+        this.pix = pix;
+        this.cobrancas = cobrancas;
         this.parcelas = parcelas;
         this.trabalhos = trabalhos;
         this.pedidos = pedidos;
@@ -44,6 +51,7 @@ public class FinanceiroControle {
     public ParcelaDto pagar(@PathVariable Long id, @RequestBody(required = false) PagamentoForm f) {
         var p = servico.registrarPagamento(UsuarioLogado.estudio(), id,
                 f == null ? null : f.data(), f == null ? null : f.forma());
+        pix.encerrarDaParcela(p.getId());
         br.com.jrfotografia.servico.AuditoriaServico.detalhe(p.getDescricao() + " · R$ " + p.getValor());
         return ParcelaDto.de(p);
     }
@@ -64,13 +72,17 @@ public class FinanceiroControle {
         Map<Long, Trabalho> porId = trabalhos.findAllById(abertas.stream().map(Parcela::getTrabalhoId).distinct().toList())
                 .stream().collect(Collectors.toMap(Trabalho::getId, Function.identity()));
         LocalDate hoje = LocalDate.now();
+        java.util.Set<Long> comPix = cobrancas.findByParcelaIdInAndStatusAndExpiraEmAfter(abertas.stream().map(Parcela::getId).toList(),
+                        br.com.jrfotografia.dominio.CobrancaPix.AGUARDANDO, java.time.LocalDateTime.now())
+                .stream().map(br.com.jrfotografia.dominio.CobrancaPix::getParcelaId).collect(Collectors.toSet());
         return abertas.stream()
                 .filter(p -> porId.containsKey(p.getTrabalhoId())
                         && porId.get(p.getTrabalhoId()).getStatus() != StatusTrabalho.CANCELADO)
                 .map(p -> {
                     Trabalho t = porId.get(p.getTrabalhoId());
                     return new ContaReceber(ParcelaDto.de(p), t.getTitulo(), t.getCliente().getNome(),
-                            t.getCliente().getTelefone(), p.getVencimento() != null && p.getVencimento().isBefore(hoje));
+                            t.getCliente().getTelefone(), p.getVencimento() != null && p.getVencimento().isBefore(hoje),
+                            t.getTokenCliente(), comPix.contains(p.getId()));
                 }).toList();
     }
 

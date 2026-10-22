@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { api, ErroApi, urlPainel } from '../api';
 import type { Campanha, ConfigIndicacao, Cupom, DiaCampanhaForm, Indicacao, TipoCupom } from '../tipos';
-import { data, linkWhatsapp, moeda, numeroBr, primeiroNome, urlCampanha } from '../util';
+import { copiar as copiarTexto, data, linkWhatsapp, moeda, numeroBr, primeiroNome, urlCampanha } from '../util';
 import { Erro, useDados } from './comum';
 
 type Aba = 'campanhas' | 'cupons' | 'indicacao';
@@ -32,7 +32,7 @@ function Campanhas() {
   const [editando, setEditando] = useState<Campanha | 'nova' | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
   const copiar = async (slug: string) => {
-    try { await navigator.clipboard.writeText(urlCampanha(slug)); setCopiado(slug); setTimeout(() => setCopiado(null), 2000); } catch { /* sem permissão */ }
+    if (await copiarTexto(urlCampanha(slug))) { setCopiado(slug); setTimeout(() => setCopiado(null), 2000); }
   };
   return (
     <section className="secao">

@@ -1,5 +1,7 @@
 package br.com.jrfotografia.api;
 
+import static br.com.jrfotografia.servico.Textos.vazioNulo;
+
 import br.com.jrfotografia.api.Fase2Dtos.*;
 import br.com.jrfotografia.config.Erros.NaoEncontrado;
 import br.com.jrfotografia.config.Erros.RegraNegocio;
@@ -238,9 +240,5 @@ public class GestaoControle {
 
     private Estudio estudio() {
         return estudios.findById(UsuarioLogado.estudio()).orElseThrow();
-    }
-
-    private static String vazioNulo(String s) {
-        return s == null || s.isBlank() ? null : s.trim();
     }
 }

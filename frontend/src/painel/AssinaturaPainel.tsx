@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { api, ErroApi, urlPainel } from '../api';
 import { QuadroAssinatura, type QuadroRef } from '../componentes/QuadroAssinatura';
 import type { Assinatura } from '../tipos';
-import { dataHora, linkWhatsapp, primeiroNome, urlAssinar } from '../util';
+import { copiar, dataHora, linkWhatsapp, primeiroNome, urlAssinar } from '../util';
 import { Erro, useDados } from './comum';
 import { BotaoEmail } from './BotaoEmail';
 import '../contrato/contrato.css';
@@ -92,8 +92,10 @@ export function ContratoTrabalho({ trabalhoId, cliente, telefoneCliente, emailCl
     recarregar();
   }
 
-  async function copiar(link: string) {
-    try { await navigator.clipboard.writeText(link); setCopiado(true); setTimeout(() => setCopiado(false), 2000); } catch { /* sem permissão */ }
+  async function copiarLink(link: string) {
+    await copiar(link);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
   }
 
   if (cancelado && a?.status !== 'ASSINADO') return null;
@@ -126,12 +128,14 @@ export function ContratoTrabalho({ trabalhoId, cliente, telefoneCliente, emailCl
         <Erro msg={erro} />
         <div className="acoes-linha">
           {a === undefined && <button className="botao principal pequeno" disabled={ocupado} onClick={gerar}>{ocupado ? 'Gerando…' : 'Gerar link de assinatura'}</button>}
+          {/* Só há um contrato por vez: a prévia sem assinatura aparece só enquanto não existe um para assinar. */}
+          {a === undefined && <a className="botao pequeno" href={urlPainel(`/trabalhos/${trabalhoId}/contrato.pdf`)} target="_blank" rel="noreferrer">Prévia do contrato (PDF)</a>}
           {a?.status === 'PENDENTE' && a.desatualizado && <button className="botao principal pequeno" disabled={ocupado} onClick={gerar}>Gerar link atualizado</button>}
           {a?.status === 'PENDENTE' && telefoneCliente && (
             <a className={`botao pequeno${a.desatualizado ? '' : ' principal'}`} href={linkWhatsapp(telefoneCliente, msg)} target="_blank" rel="noreferrer">Enviar pelo WhatsApp</a>
           )}
           {a?.status === 'PENDENTE' && emailCliente && !a.desatualizado && <BotaoEmail caminho={`/trabalhos/${trabalhoId}/assinatura/email`} para={emailCliente} />}
-          {a?.status === 'PENDENTE' && <button className="botao pequeno" onClick={() => copiar(link)}>{copiado ? 'Copiado!' : 'Copiar link'}</button>}
+          {a?.status === 'PENDENTE' && <button className="botao pequeno" onClick={() => copiarLink(link)}>{copiado ? 'Copiado!' : 'Copiar link'}</button>}
           {a?.status === 'PENDENTE' && <button className="botao-link" style={{ fontSize: 13 }} onClick={cancelar}>Cancelar link</button>}
           {a?.status === 'ASSINADO' && (
             <a className="botao principal pequeno" href={urlPainel(`/trabalhos/${trabalhoId}/assinatura/contrato.pdf`)} target="_blank" rel="noreferrer">Contrato assinado (PDF)</a>

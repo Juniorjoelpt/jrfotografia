@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import type { PixCobranca } from '../tipos';
-import { moeda } from '../util';
+import { copiar as copiarTexto, moeda } from '../util';
 import './pix.css';
 
 /** CPF com pontos e traço enquanto digita. */
@@ -85,10 +85,7 @@ export function PixPagamento({ pix, valor, pedirCpf, gerar, verificar, rotuloBot
 
   async function copiar() {
     if (!pix?.texto) return;
-    try { await navigator.clipboard.writeText(pix.texto); } catch {
-      const t = document.createElement('textarea'); t.value = pix.texto; document.body.appendChild(t); t.select();
-      try { document.execCommand('copy'); } catch { /* sem área de transferência */ } t.remove();
-    }
+    await copiarTexto(pix.texto);
     setCopiado(true);
     setTimeout(() => setCopiado(false), 2500);
   }

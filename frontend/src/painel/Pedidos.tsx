@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { api, sessaoAtual } from '../api';
-import type { Cliente, Pacote, Pedido, StatusPedido } from '../tipos';
-import { data, dataHora, linkWhatsapp, NOMES_ORIGEM, NOMES_PEDIDO, primeiroNome, telefone } from '../util';
+import type { Cliente, Estudio, Pacote, Pedido, StatusPedido } from '../tipos';
+import { apresentacaoEstudio, data, dataHora, linkWhatsapp, NOMES_ORIGEM, NOMES_PEDIDO, primeiroNome, telefone } from '../util';
 import { Erro, Linhas, useDados } from './comum';
 
 const CLASSE: Record<StatusPedido, string> = { NOVO: 'acento', CONTATADO: 'alerta', FECHADO: 'sucesso', PERDIDO: '' };
@@ -11,6 +11,7 @@ export function Pedidos() {
   const navegar = useNavigate();
   const { dados, erro, recarregar } = useDados<Pedido[]>('/pedidos');
   const { dados: pacotes } = useDados<Pacote[]>('/pacotes');
+  const { dados: estudio } = useDados<Estudio>('/estudio');
   const admin = sessaoAtual()?.perfil === 'ADMIN';
 
   const mudar = async (p: Pedido, status: StatusPedido) => {
@@ -19,7 +20,7 @@ export function Pedidos() {
   };
   const virarTrabalho = async (p: Pedido) => {
     const c = await api<Cliente>(`/pedidos/${p.id}/cliente`, { corpo: {} });
-    navegar(`/painel/trabalhos/novo?cliente=${c.id}`);
+    navegar(`/painel/trabalhos/novo?cliente=${c.id}&pedido=${p.id}`);
   };
 
   return (
@@ -30,7 +31,7 @@ export function Pedidos() {
         <Linhas vazio="Nenhum pedido ainda. Divulgue o link do site no Instagram."
           itens={dados.map((p) => {
             const pacote = pacotes?.find((x) => x.id === p.pacoteId);
-            const msg = `Olá, ${primeiroNome(p.nome)}! Aqui é o Joel, da JR Fotografia. Recebi seu pedido de orçamento${p.tipoTrabalho ? ` para ${p.tipoTrabalho.toLowerCase()}` : ''}${pacote ? ` (${pacote.nome})` : ''}.`;
+            const msg = `Olá, ${primeiroNome(p.nome)}! ${apresentacaoEstudio(estudio)} Recebi seu pedido de orçamento${p.tipoTrabalho ? ` para ${p.tipoTrabalho.toLowerCase()}` : ''}${pacote ? ` (${pacote.nome})` : ''}.`;
             return (
               <div key={p.id} className="linha-item">
                 <span className="principal">{p.nome}</span>

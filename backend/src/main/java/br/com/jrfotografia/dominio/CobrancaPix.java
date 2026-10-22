@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 public class CobrancaPix {
 
     public static final String AGUARDANDO = "AGUARDANDO", PAGA = "PAGA", EXPIRADA = "EXPIRADA";
+    /** Parcela baixada à mão no painel: o QR some da área, mas o PagBank segue sendo consultado até vencer (pagamento em dobro vira aviso). */
+    public static final String CANCELADA = "CANCELADA";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

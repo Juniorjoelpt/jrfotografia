@@ -61,6 +61,16 @@ public class GaleriaServico {
         return jwt.tokenGaleria(t.getId(), t.getGaleriaToken());
     }
 
+    /**
+     * Entrada pela área da cliente (/meu/…): o link dela já é pessoal, então a galeria abre sem pedir a senha de novo.
+     * A senha continua valendo para quem chega pelo link da galeria.
+     */
+    public String entrarPelaArea(Trabalho t) {
+        if (t.getGaleriaToken() == null) throw new NaoEncontrado("Galeria não encontrada.");
+        verificarDisponivel(t);
+        return jwt.tokenGaleria(t.getId(), t.getGaleriaToken());
+    }
+
     /** Confere o token de acesso da galeria e devolve o trabalho correspondente. */
     public Trabalho autorizar(String token, String acesso) {
         if (acesso == null) throw new NaoAutorizado("Informe a senha da galeria.");

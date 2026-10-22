@@ -1,5 +1,7 @@
 package br.com.jrfotografia.api;
 
+import static br.com.jrfotografia.servico.Textos.vazio;
+
 import br.com.jrfotografia.config.Erros.RegraNegocio;
 import br.com.jrfotografia.config.UsuarioLogado;
 import br.com.jrfotografia.dominio.Estudio;
@@ -94,9 +96,5 @@ public class EmailControle {
         return new ConfigEmail(e.isEmailAtivo(), e.getSmtpHost(), e.getSmtpPorta(), e.getSmtpUsuario(), e.getSmtpSenha() != null,
                 e.getSmtpSeguranca() == null ? "STARTTLS" : e.getSmtpSeguranca(), e.getEmailRemetente(), e.isEmailAvisos(), e.isEmailLembretes(),
                 e.getEmail());
-    }
-
-    private static boolean vazio(String s) {
-        return s == null || s.isBlank();
     }
 }

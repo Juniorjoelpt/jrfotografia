@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, ErroApi } from '../api';
 import type { ConfigAgenda, HorarioAtendimento } from '../tipos';
-import { DIAS_SEMANA, urlAgendar } from '../util';
+import { copiar as copiarTexto, DIAS_SEMANA, urlAgendar } from '../util';
 import { Erro, useDados } from './comum';
 
 type Num = Exclude<keyof ConfigAgenda, 'ativo' | 'horarios'>;
@@ -57,7 +57,7 @@ export function AgendaOnlineAjustes() {
   }
 
   async function copiar() {
-    try { await navigator.clipboard.writeText(urlAgendar()); setCopiado(true); setTimeout(() => setCopiado(false), 2000); } catch { /* sem permissão */ }
+    if (await copiarTexto(urlAgendar())) { setCopiado(true); setTimeout(() => setCopiado(false), 2000); }
   }
 
   return (

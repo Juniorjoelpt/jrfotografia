@@ -34,6 +34,8 @@ import java.util.List;
 public class TrabalhoControle {
 
     private final PesquisaRepo pesquisas;
+    private final br.com.jrfotografia.servico.BoasVindasServico boasVindas;
+    private final br.com.jrfotografia.dominio.Repositorios.CobrancaPixRepo cobrancas;
     private final EmailAvisos avisos;
     private final TrabalhoServico servico;
     private final TrabalhoRepo trabalhos;
@@ -46,7 +48,11 @@ public class TrabalhoControle {
 
     public TrabalhoControle(TrabalhoServico servico, TrabalhoRepo trabalhos, FotoRepo fotos,
                             ParcelaRepo parcelas, Armazenamento armazenamento, AgendaServico agenda,
-                            PdfServico pdf, EstudioRepo estudios, EmailAvisos avisos, PesquisaRepo pesquisas) {
+                            PdfServico pdf, EstudioRepo estudios, EmailAvisos avisos, PesquisaRepo pesquisas,
+                            br.com.jrfotografia.dominio.Repositorios.CobrancaPixRepo cobrancas,
+                            br.com.jrfotografia.servico.BoasVindasServico boasVindas) {
+        this.boasVindas = boasVindas;
+        this.cobrancas = cobrancas;
         this.pesquisas = pesquisas;
         this.avisos = avisos;
         this.agenda = agenda;
@@ -82,7 +88,9 @@ public class TrabalhoControle {
                 f.clienteId(), f.pacoteId(), f.titulo(), f.tipo(), f.dataTrabalho(), f.localTrabalho(),
                 f.valorTotal(), f.formaPagamento(), f.valorSinal(), f.numParcelas(), f.primeiroVencimento(),
                 f.observacoes()));
-        if (f.duracaoMin() != null) t.setDuracaoMin(f.duracaoMin());
+        t = servico.depoisDeCriar(UsuarioLogado.estudio(), t.getId(), f.duracaoMin(), f.pedidoId());
+        // Como nas outras portas: contrato pronto, área da cliente e e-mail de boas-vindas.
+        boasVindas.trabalhoCriado(t);
         return detalheDe(t);
     }
 
@@ -217,6 +225,13 @@ public class TrabalhoControle {
                 t.getOrcamentoId(),
                 t.getStatus() == StatusTrabalho.AGENDADO
                         ? agenda.conflitos(t.getEstudioId(), t.getDataTrabalho(), t.getDuracaoMin(), t.getId()) : List.of(),
-                servico.garantirTokenCliente(t), t.getRemarcacoes(), t.getCanceladoEm(), t.getCanceladoPor(), t.getMotivoCancelamento());
+                servico.garantirTokenCliente(t), t.getRemarcacoes(), t.getCanceladoEm(), t.getCanceladoPor(), t.getMotivoCancelamento(),
+                admin ? pixAbertos(lista.stream().filter(p -> !p.paga()).map(br.com.jrfotografia.dominio.Parcela::getId).toList()) : List.of());
+    }
+
+    private List<Long> pixAbertos(List<Long> ids) {
+        if (ids.isEmpty()) return List.of();
+        return cobrancas.findByParcelaIdInAndStatusAndExpiraEmAfter(ids, br.com.jrfotografia.dominio.CobrancaPix.AGUARDANDO, java.time.LocalDateTime.now())
+                .stream().map(br.com.jrfotografia.dominio.CobrancaPix::getParcelaId).distinct().toList();
     }
 }

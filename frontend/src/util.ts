@@ -158,3 +158,44 @@ export const NOMES_PEDIDO_PRODUTO: Record<string, string> = {
 export const qtd = (n: number) => String(Number(n.toFixed(2))).replace('.', ',');
 
 export const urlCampanha = (slug: string) => `${window.location.origin}/c/${slug}`;
+
+/**
+ * Copia para a área de transferência (usada em todas as telas). Usa a API do navegador quando ele deixa (HTTPS)
+ * e um campo escondido quando não. Devolve false se nada funcionou, para a tela mostrar o texto e copiar à mão.
+ */
+export async function copiar(texto: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(texto); return true; }
+  } catch { /* tenta o plano B */ }
+  try {
+    const t = document.createElement('textarea');
+    t.value = texto; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.appendChild(t); t.select(); t.setSelectionRange(0, texto.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(t);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Mensagem de cobrança pelo WhatsApp (Trabalho e Financeiro › A receber).
+ * Com o Pix automático ligado, manda a área da cliente, onde o Pix sai com o valor certo e a baixa é sozinha;
+ * sem ele, manda a chave Pix e pede o comprovante.
+ */
+export function mensagemCobranca(nomeCliente: string, p: { descricao: string; valor: number; vencimento?: string | null },
+  estudio: { chavePix?: string | null; pixAutomatico?: boolean } | null | undefined, areaToken?: string | null) {
+  const inicio = `Olá, ${primeiroNome(nomeCliente)}! ${p.descricao} de ${moeda(p.valor)}${p.vencimento ? `, com vencimento em ${data(p.vencimento)}` : ''}.`;
+  if (estudio?.pixAutomatico && areaToken) {
+    return `${inicio}\n\nVocê paga pelo Pix na sua área, com o valor certinho, e a baixa é automática (não precisa mandar comprovante):\n${urlAreaCliente(areaToken)}`;
+  }
+  return `${inicio}${estudio?.chavePix ? `\n\nChave Pix: ${estudio.chavePix}` : ''}\n\nAssim que pagar, me mande o comprovante por aqui.`;
+}
+
+/** "Olá, Joel!" / "Aqui é o Joel, da JR Fotografia." a partir de Ajustes (nome do fotógrafo e do estúdio). */
+export const primeiroDoFotografo = (e?: { fotografo?: string | null } | null) => (e?.fotografo ? primeiroNome(e.fotografo) : '');
+export function apresentacaoEstudio(e?: { nome: string; fotografo?: string | null } | null) {
+  if (!e) return '';
+  return e.fotografo ? `Aqui é o ${primeiroNome(e.fotografo)}, da ${e.nome}.` : `Aqui é da ${e.nome}.`;
+}

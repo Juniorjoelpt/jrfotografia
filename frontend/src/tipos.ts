@@ -13,7 +13,7 @@ export interface UsuarioConta { id: number; nome: string; email: string; perfil:
 
 export interface Estudio {
   nome: string; slug: string; cidade?: string; whatsapp?: string; instagram?: string; email?: string;
-  chavePix?: string; apresentacao?: string; dominio?: string;
+  chavePix?: string; apresentacao?: string; dominio?: string; pixAutomatico?: boolean; fotografo?: string | null;
 }
 
 export interface Cliente {
@@ -49,6 +49,7 @@ export interface TrabalhoDetalhe {
   observacoes?: string; totalFotos: number; selecionadas: number; editadas: number; parcelas: Parcela[];
   downloadLiberado: boolean; motivoDownload?: string; duracaoMin: number; orcamentoId?: number; conflitos: string[];
   areaCliente: string; remarcacoes: number; canceladoEm?: string; canceladoPor?: 'CLIENTE' | 'ESTUDIO'; motivoCancelamento?: string;
+  parcelasComPixAberto: number[];
 }
 
 export interface Foto {
@@ -64,7 +65,7 @@ export interface Painel {
   aReceber: number | null; vencido: number | null; recebidoNoMes: number | null;
 }
 
-export interface ContaReceber { parcela: Parcela; trabalhoTitulo: string; clienteNome: string; clienteTelefone?: string; vencida: boolean }
+export interface ContaReceber { parcela: Parcela; trabalhoTitulo: string; clienteNome: string; clienteTelefone?: string; vencida: boolean; areaCliente?: string | null; pixAberto: boolean }
 
 export interface FotoGaleria { id: number; largura?: number; altura?: number; selecionada: boolean; comentario?: string; editada?: boolean }
 
@@ -135,9 +136,9 @@ export interface ReservaPublica {
 export interface PixCobranca {
   id: number; texto?: string | null; valor: number; expiraEm: string; status: 'AGUARDANDO' | 'PAGA' | 'EXPIRADA'; sandbox: boolean;
 }
-export interface ConfigPagBank { ativo: boolean; temToken: boolean; sandbox: boolean; urlNotificacao: string; notificacaoPublica: boolean }
+export interface ConfigPagBank { ativo: boolean; temToken: boolean; sandbox: boolean; urlNotificacao: string; notificacaoPublica: boolean; chavePix?: string | null }
 export interface CobrancaPainel {
-  id: number; descricao: string; nome?: string; valor: number; status: 'AGUARDANDO' | 'PAGA' | 'EXPIRADA'; sandbox: boolean; pedidoId: string;
+  id: number; descricao: string; nome?: string; valor: number; status: 'AGUARDANDO' | 'PAGA' | 'EXPIRADA' | 'CANCELADA'; sandbox: boolean; pedidoId: string;
   criadoEm: string; expiraEm: string; pagoEm?: string; erro?: string; reservaId?: number; parcelaId?: number;
 }
 export interface Reserva {

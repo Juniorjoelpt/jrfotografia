@@ -1,13 +1,14 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, type MouseEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ErroApi, publico } from '../api';
 import { Logo } from '../componentes/Logo';
 import { Ambiente } from '../componentes/Movimento';
 import { SeletorHorario } from '../componentes/SeletorHorario';
 import { PixPagamento } from '../componentes/PixPagamento';
+import { gravarAcesso } from '../galeria/GaleriaCliente';
 import type { AgendaPublica, AreaCliente, Desconto, PacoteOnline, PixCobranca, PortfolioFoto, ReservaPublica } from '../tipos';
 import { CampoCodigo } from './CampoCodigo';
-import { data, diaPorExtenso, duracaoTexto, hora, linkWhatsapp, moeda, primeiroNome, TIPOS_ENSAIO } from '../util';
+import { copiar as copiarTexto, data, diaPorExtenso, duracaoTexto, hora, linkWhatsapp, moeda, primeiroNome, TIPOS_ENSAIO } from '../util';
 import '../orcamento/orcamento.css';
 import './agendar.css';
 
@@ -227,10 +228,7 @@ export function ReservaCliente() {
   }
 
   async function copiar(texto: string) {
-    try { await navigator.clipboard.writeText(texto); } catch {
-      const t = document.createElement('textarea'); t.value = texto; document.body.appendChild(t); t.select();
-      try { document.execCommand('copy'); } catch { /* sem área de transferência */ } t.remove();
-    }
+    await copiarTexto(texto);
     setCopiado(true);
     setTimeout(() => setCopiado(false), 2000);
   }
@@ -335,6 +333,7 @@ export function ReservaCliente() {
 
 export function AreaClientePagina() {
   const { token = '' } = useParams();
+  const navegar = useNavigate();
   const [a, setA] = useState<AreaCliente | null>(null);
   const [erro, setErro] = useState('');
   const [modo, setModo] = useState<'remarcar' | 'cancelar' | null>(null);
@@ -368,6 +367,18 @@ export function AreaClientePagina() {
       setErro(e instanceof ErroApi ? e.message : 'Não foi possível concluir. Tente de novo.');
     } finally {
       setEnviando(false);
+    }
+  }
+
+  // A área já é um link pessoal: a galeria abre direto, sem pedir a senha de novo.
+  async function abrirGaleria(ev: MouseEvent<HTMLAnchorElement>) {
+    ev.preventDefault();
+    try {
+      const r = await api<{ galeria: string; acesso: string }>(`/publico/cliente/${token}/galeria`, { token: null, corpo: {} });
+      gravarAcesso(r.galeria, r.acesso);
+      navegar(`/g/${r.galeria}`);
+    } catch {
+      navegar(`/g/${a?.galeriaToken}`);
     }
   }
 
@@ -477,7 +488,7 @@ export function AreaClientePagina() {
       )}
 
       {a.galeriaToken && a.galeriaAberta && (
-        <div className="oc-acoes"><Link className="botao principal" to={`/g/${a.galeriaToken}`}>Ver minhas fotos</Link></div>
+        <div className="oc-acoes"><Link className="botao principal" to={`/g/${a.galeriaToken}`} onClick={abrirGaleria}>Ver minhas fotos</Link></div>
       )}
 
       {!cancelado && (a.regras.podeRemarcar || a.regras.podeCancelar || a.regras.motivoRemarcar) && (

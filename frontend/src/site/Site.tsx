@@ -18,7 +18,7 @@ const irPara = (id: string) => (e: React.MouseEvent) => {
   alvo.scrollIntoView({ behavior: movimentoReduzido() ? 'auto' : 'smooth', block: 'start' });
 };
 import type { AgendaPublica, CampanhaResumo, Estudio, Pacote, PortfolioFoto } from '../tipos';
-import { linkWhatsapp, moeda, telefone, TIPOS_ENSAIO } from '../util';
+import { linkWhatsapp, moeda, primeiroDoFotografo, telefone, TIPOS_ENSAIO } from '../util';
 import './site.css';
 
 const img = (f: PortfolioFoto, mini = false) => `/api/publico/portfolio/${f.id}/${mini ? 'miniatura' : 'imagem'}`;
@@ -57,7 +57,7 @@ export function Site() {
     <>
       <header className="site-topo">
         <div className="dentro">
-          <a href="#inicio" onClick={irPara('inicio')} aria-label="JR Fotografia, início" style={{ color: 'var(--tinta)' }}><Monograma tamanho={40} /></a>
+          <a href="#inicio" onClick={irPara('inicio')} aria-label={`${estudio?.nome ?? 'Estúdio'}, início`} style={{ color: 'var(--tinta)' }}><Monograma tamanho={40} /></a>
           <nav aria-label="Seções">
             <a href="#portfolio" onClick={irPara('portfolio')}>Portfólio</a>
             <a href="#sobre" onClick={irPara('sobre')}>Sobre</a>
@@ -84,7 +84,7 @@ export function Site() {
           </div>
           <div className="foto">
             {destaque
-              ? <Imagem src={img(destaque)} alt="Ensaio feminino da JR Fotografia" className="capa" />
+              ? <Imagem src={img(destaque)} alt={estudio ? `Ensaio da ${estudio.nome}` : 'Foto de destaque do portfólio'} className="capa" />
               : <div className="fantasma"><Monograma tamanho={520} titulo="" /></div>}
           </div>
         </section>
@@ -106,7 +106,7 @@ export function Site() {
         <section id="sobre" className="dentro sobre">
           <div style={{ display: 'grid', gap: 'var(--espaco-4)' }} data-revelar>
             <span className="rotulo">Sobre</span>
-            <h2 className="titulo">Joel Júnior, fotógrafo</h2>
+            {estudio?.fotografo && <h2 className="titulo">{estudio.fotografo}, fotógrafo</h2>}
             <p>{estudio?.apresentacao}</p>
           </div>
           {copias.length > 0 && (
@@ -171,11 +171,11 @@ export function Site() {
             <h2 className="titulo">Vamos marcar o seu ensaio?</h2>
             <p className="suave" style={{ margin: 0 }}>Conte o que você imagina. Eu respondo pelo WhatsApp com datas e condições.</p>
             {estudio?.whatsapp && (
-              <a className="botao" href={linkWhatsapp(estudio.whatsapp, 'Olá, Joel! Vim pelo site e quero saber mais sobre os ensaios.')}
+              <a className="botao" href={linkWhatsapp(estudio.whatsapp, `Olá${primeiroDoFotografo(estudio) ? `, ${primeiroDoFotografo(estudio)}` : ''}! Vim pelo site e quero saber mais sobre os ensaios.`)}
                 target="_blank" rel="noreferrer">Chamar no WhatsApp · {telefone(estudio.whatsapp)}</a>
             )}
           </div>
-          <FormOrcamento pacotes={pacotes} pacoteId={pacoteEscolhido} setPacoteId={setPacoteEscolhido} whatsapp={estudio?.whatsapp} />
+          <FormOrcamento pacotes={pacotes} pacoteId={pacoteEscolhido} setPacoteId={setPacoteEscolhido} whatsapp={estudio?.whatsapp} fotografo={primeiroDoFotografo(estudio)} />
         </section>
       </main>
 
@@ -200,8 +200,8 @@ export function Site() {
   );
 }
 
-function FormOrcamento({ pacotes, pacoteId, setPacoteId, whatsapp }: {
-  pacotes: Pacote[]; pacoteId: number | ''; setPacoteId: (v: number | '') => void; whatsapp?: string;
+function FormOrcamento({ pacotes, pacoteId, setPacoteId, whatsapp, fotografo }: {
+  pacotes: Pacote[]; pacoteId: number | ''; setPacoteId: (v: number | '') => void; whatsapp?: string; fotografo?: string;
 }) {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState('');
@@ -235,7 +235,7 @@ function FormOrcamento({ pacotes, pacoteId, setPacoteId, whatsapp }: {
       <div className="painel-caixa" style={{ display: 'grid', gap: 'var(--espaco-4)', alignContent: 'start' }}>
         <h3 className="subtitulo">Pedido recebido, {enviado.split(' ')[0]}.</h3>
         <p className="suave" style={{ margin: 0 }}>Respondo pelo WhatsApp em breve. Se preferir adiantar a conversa, me chame agora.</p>
-        {whatsapp && <a className="botao principal" href={linkWhatsapp(whatsapp, 'Olá, Joel! Acabei de pedir um orçamento pelo site.')} target="_blank" rel="noreferrer">Abrir WhatsApp</a>}
+        {whatsapp && <a className="botao principal" href={linkWhatsapp(whatsapp, `Olá${fotografo ? `, ${fotografo}` : ''}! Acabei de pedir um orçamento pelo site.`)} target="_blank" rel="noreferrer">Abrir WhatsApp</a>}
       </div>
     );
   }

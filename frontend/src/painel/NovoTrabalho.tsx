@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api, ErroApi } from '../api';
 import type { Cliente, FormaPagamento, Pacote, TrabalhoDetalhe } from '../tipos';
-import { DURACOES, duracaoTexto, moeda } from '../util';
+import { DURACOES, duracaoTexto, moeda, numeroBr } from '../util';
+import { AvisoConflitos, CamposPagamento, useConflitosAgenda } from './CamposPagamento';
 import { Erro, useDados } from './comum';
 
 export function NovoTrabalho() {
@@ -18,24 +19,15 @@ export function NovoTrabalho() {
   const [parcelas, setParcelas] = useState('2');
   const [quando, setQuando] = useState(params.get('data') ? `${params.get('data')}T09:00` : '');
   const [duracao, setDuracao] = useState('240');
-  const [avisos, setAvisos] = useState<string[]>([]);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-  useEffect(() => {
-    if (!quando) { setAvisos([]); return; }
-    const h = setTimeout(() => {
-      api<{ avisos: string[] }>(`/agenda/conflitos?inicio=${encodeURIComponent(`${quando}:00`)}&duracaoMin=${duracao}`)
-        .then((x) => setAvisos(x.avisos)).catch(() => setAvisos([]));
-    }, 300);
-    return () => clearTimeout(h);
-  }, [quando, duracao]);
+  const avisos = useConflitosAgenda(quando, duracao);
 
   const pacote = useMemo(() => pacotes?.find((p) => String(p.id) === pacoteId), [pacotes, pacoteId]);
   useEffect(() => { if (pacote) setValor(String(pacote.preco)); }, [pacote]);
 
-  const total = Number(valor || 0);
-  const resto = Math.max(0, total - Number(sinal || 0));
+  const total = numeroBr(valor) ?? 0;
   const n = Math.max(1, Number(parcelas || 1));
 
   async function salvar(e: FormEvent<HTMLFormElement>) {
@@ -50,9 +42,10 @@ export function NovoTrabalho() {
           tipo: f.get('tipo') || null, titulo: f.get('titulo') || null,
           dataTrabalho: quando ? `${quando}:00` : null, duracaoMin: Number(duracao), localTrabalho: f.get('local') || null,
           valorTotal: total, formaPagamento: forma,
-          valorSinal: forma === 'PARCELADO' && sinal ? Number(sinal) : null,
+          valorSinal: forma === 'PARCELADO' ? numeroBr(sinal) : null,
           numParcelas: forma === 'PARCELADO' ? n : null,
           primeiroVencimento: f.get('vencimento') || null, observacoes: f.get('obs') || null,
+          pedidoId: params.get('pedido') ? Number(params.get('pedido')) : null,
         },
       });
       navegar(`/painel/trabalhos/${t.resumo.id}`, { replace: true });
@@ -87,31 +80,17 @@ export function NovoTrabalho() {
             {DURACOES.map((d) => <option key={d} value={d}>{duracaoTexto(d)}</option>)}
           </select>
         </label>
-        {avisos.length > 0 && <div className="aviso inteira" role="status" style={{ margin: 0, borderColor: 'var(--alerta)' }}>{avisos.map((a) => <div key={a}>{a}</div>)}</div>}
+        <AvisoConflitos avisos={avisos} />
         <label className="campo"><span>Local</span><input id="nt-local" name="local" placeholder="Endereço ou locação" /></label>
         <label className="campo"><span>Valor total (R$)</span>
-          <input id="nt-valor" required inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value.replace(',', '.'))} />
+          <input id="nt-valor" required inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} />
         </label>
-        <label className="campo"><span>Pagamento</span>
-          <select id="nt-forma" value={forma} onChange={(e) => setForma(e.target.value as FormaPagamento)}>
-            <option value="AVISTA">À vista</option><option value="PARCELADO">Parcelado</option>
-          </select>
-        </label>
-        {forma === 'PARCELADO' && (
-          <>
-            <label className="campo"><span>Sinal (R$)</span><input id="nt-sinal" inputMode="decimal" value={sinal} onChange={(e) => setSinal(e.target.value.replace(',', '.'))} /></label>
-            <label className="campo"><span>Parcelas depois do sinal</span>
-              <select id="nt-parcelas" value={parcelas} onChange={(e) => setParcelas(e.target.value)}>
-                {[1, 2, 3, 4, 5, 6].map((i) => <option key={i} value={i}>{i}x de {moeda(resto / i)}</option>)}
-              </select>
-            </label>
-          </>
-        )}
+        <CamposPagamento prefixo="nt" total={total} forma={forma} setForma={setForma} sinal={sinal} setSinal={setSinal} parcelas={parcelas} setParcelas={setParcelas} />
         <label className="campo"><span>{forma === 'AVISTA' ? 'Vencimento' : '1º vencimento'}</span><input id="nt-venc" name="vencimento" type="date" /></label>
         <label className="campo inteira"><span>Observações</span><textarea id="nt-obs" name="obs" /></label>
         <p className="legenda inteira" style={{ margin: 0 }}>
           {forma === 'PARCELADO'
-            ? `O download libera depois que o cliente pagar ${Number(sinal) > 0 ? 'o sinal e ' : ''}a 1ª parcela.`
+            ? `O download libera depois que o cliente pagar ${(numeroBr(sinal) ?? 0) > 0 ? 'o sinal e ' : ''}a 1ª parcela.`
             : 'O download libera depois que o pagamento for registrado.'}
           {pacote?.qtdFotos ? ` O cliente escolhe ${pacote.qtdFotos} fotos; extras a ${moeda(pacote.precoFotoExtra)}.` : pacote ? ' Este pacote entrega todas as fotos, sem seleção.' : ''}
         </p>

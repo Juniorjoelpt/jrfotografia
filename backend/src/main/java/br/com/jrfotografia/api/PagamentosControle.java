@@ -45,10 +45,11 @@ public class PagamentosControle {
     }
 
     /** O token nunca volta: só diz se já existe um guardado. */
-    public record ConfigPagBank(boolean ativo, boolean temToken, boolean sandbox, String urlNotificacao, boolean notificacaoPublica) {}
+    public record ConfigPagBank(boolean ativo, boolean temToken, boolean sandbox, String urlNotificacao, boolean notificacaoPublica, String chavePix) {}
 
     /** {@code token} vazio mantém o guardado. */
-    public record ConfigForm(boolean ativo, @Size(max = 400) String token, boolean sandbox) {}
+    /** {@code chavePix} null mantém a guardada; vazio apaga. */
+    public record ConfigForm(boolean ativo, @Size(max = 400) String token, boolean sandbox, @Size(max = 120) String chavePix) {}
 
     public record Teste(boolean ok, String mensagem) {}
 
@@ -85,6 +86,7 @@ public class PagamentosControle {
             e.setPagbankToken(cifra.cifrar(novo));
         }
         e.setPagbankSandbox(f.sandbox());
+        if (f.chavePix() != null) e.setChavePix(f.chavePix().isBlank() ? null : f.chavePix().trim());
         if (f.ativo() && e.getPagbankToken() == null) throw new RegraNegocio("Para ligar, cole o token do PagBank.");
         e.setPagbankAtivo(f.ativo());
         return dto(e);
@@ -142,6 +144,6 @@ public class PagamentosControle {
 
     private ConfigPagBank dto(Estudio e) {
         String url = pix.urlNotificacao(e);
-        return new ConfigPagBank(e.isPagbankAtivo(), e.getPagbankToken() != null, e.isPagbankSandbox(), url, url.startsWith("https://"));
+        return new ConfigPagBank(e.isPagbankAtivo(), e.getPagbankToken() != null, e.isPagbankSandbox(), url, url.startsWith("https://"), e.getChavePix());
     }
 }

@@ -82,13 +82,13 @@ export function Inicio() {
       {p && (
         <>
           <div className="numeros escalonado">
-            <Link to="/painel/vendas" className={`numero${p.pedidosNovos ? ' atencao' : ''}`}>
+            <Link to="/painel/vendas" className={`numero repete-lateral${p.pedidosNovos ? ' atencao' : ''}`}>
               <span className="legenda">PEDIDOS NOVOS</span><strong><Numero valor={p.pedidosNovos} /></strong>
             </Link>
-            <Link to="/painel/trabalhos?status=SELECAO" className="numero">
+            <Link to="/painel/trabalhos?status=SELECAO" className="numero repete-lateral">
               <span className="legenda">AGUARDANDO SELEÇÃO</span><strong><Numero valor={p.aguardandoSelecao} /></strong>
             </Link>
-            <Link to="/painel/trabalhos?status=EDICAO" className="numero">
+            <Link to="/painel/trabalhos?status=EDICAO" className="numero repete-lateral">
               <span className="legenda">EM EDIÇÃO</span><strong><Numero valor={p.emEdicao} /></strong>
             </Link>
             {admin && (

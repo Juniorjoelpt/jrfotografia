@@ -42,10 +42,13 @@ public class TrabalhoServico {
     private final AppProps props;
 
     private final EquipeServico equipe;
+    private final br.com.jrfotografia.dominio.Repositorios.PedidoRepo pedidos;
 
     public TrabalhoServico(TrabalhoRepo trabalhos, ClienteRepo clientes, PacoteRepo pacotes, ParcelaRepo parcelas,
                            FotoRepo fotos, Imagens imagens, Armazenamento armazenamento,
-                           PasswordEncoder senhas, AppProps props, EquipeServico equipe) {
+                           PasswordEncoder senhas, AppProps props, EquipeServico equipe,
+                           br.com.jrfotografia.dominio.Repositorios.PedidoRepo pedidos) {
+        this.pedidos = pedidos;
         this.equipe = equipe;
         this.trabalhos = trabalhos;
         this.clientes = clientes;
@@ -67,6 +70,23 @@ public class TrabalhoServico {
     public Trabalho buscar(Long estudioId, Long id) {
         return trabalhos.findByIdAndEstudioId(id, estudioId)
                 .orElseThrow(() -> new NaoEncontrado("Trabalho não encontrado"));
+    }
+
+    /**
+     * Acertos logo depois de criar pelo painel: a duração escolhida e, se veio de "Fechou: criar trabalho",
+     * o pedido do site passa a Fechado (conta na conversão dos Relatórios).
+     */
+    @Transactional
+    public Trabalho depoisDeCriar(Long estudioId, Long trabalhoId, Integer duracaoMin, Long pedidoId) {
+        Trabalho t = trabalhos.findByIdAndEstudioId(trabalhoId, estudioId).orElseThrow();
+        if (duracaoMin != null) t.setDuracaoMin(duracaoMin);
+        if (pedidoId != null) {
+            pedidos.findByIdAndEstudioId(pedidoId, estudioId).ifPresent(p -> {
+                p.setStatus(br.com.jrfotografia.dominio.Enums.StatusPedido.FECHADO);
+                p.setClienteId(t.getCliente().getId());
+            });
+        }
+        return t;
     }
 
     @Transactional

@@ -68,9 +68,9 @@ function DadosEstudio() {
       <label className="campo"><span>WhatsApp do estúdio</span><input id="es-zap" name="whatsapp" inputMode="tel" defaultValue={e.whatsapp} placeholder="(98) 9 0000-0000" /></label>
       <label className="campo"><span>Instagram</span><input id="es-insta" name="instagram" defaultValue={e.instagram} placeholder="@jrfotografia" /></label>
       <label className="campo"><span>E-mail</span><input id="es-email" name="email" type="email" defaultValue={e.email} /></label>
-      <label className="campo"><span>Chave Pix (aleatória ou e-mail)</span><input id="es-pix" name="chavePix" defaultValue={e.chavePix} /></label>
+      <label className="campo"><span>Seu nome (no site e nas mensagens)</span><input id="es-fotografo" name="fotografo" maxLength={120} defaultValue={e.fotografo ?? ''} placeholder="Joel Júnior" /></label>
       <label className="campo inteira"><span>Apresentação no site</span><textarea id="es-apres" name="apresentacao" rows={5} defaultValue={e.apresentacao} /></label>
-      <p className="legenda inteira" style={{ margin: 0 }}>PREFIRA UMA CHAVE PIX ALEATÓRIA OU DE E-MAIL: ELA VAI NAS MENSAGENS DE COBRANÇA E NÃO EXPÕE O SEU CPF.</p>
+      <p className="legenda inteira" style={{ margin: 0 }}>O NOME APARECE NO SITE (“SOBRE”) E NAS MENSAGENS (“AQUI É O JOEL, DA JR FOTOGRAFIA”). A CHAVE PIX FICA EM AJUSTES › PAGAMENTOS.</p>
       <Erro msg={erro} />
       {salvo && <p className="aviso sucesso inteira" style={{ margin: 0 }}>Dados salvos.</p>}
       <button className="botao principal inteira">Salvar</button>

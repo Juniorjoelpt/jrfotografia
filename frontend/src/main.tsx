@@ -59,12 +59,10 @@ createRoot(document.getElementById('raiz')!).render(
           <Route path="clientes" element={<Clientes />} />
           <Route path="agenda" element={<Agenda />} />
           <Route path="vendas" element={<Vendas />} />
-          <Route path="pedidos" element={<Navigate to="/painel/vendas" replace />} />
           <Route path="orcamentos/novo" element={<SoAdmin><EditorOrcamento /></SoAdmin>} />
           <Route path="orcamentos/:id" element={<SoAdmin><DetalheOrcamento /></SoAdmin>} />
           <Route path="orcamentos/:id/editar" element={<SoAdmin><EditorOrcamento /></SoAdmin>} />
           <Route path="financeiro" element={<SoAdmin><Financeiro /></SoAdmin>} />
-          <Route path="recebimentos" element={<Navigate to="/painel/financeiro" replace />} />
           <Route path="relatorios" element={<SoAdmin><Relatorios /></SoAdmin>} />
           <Route path="relacionamento" element={<SoAdmin><Relacionamento /></SoAdmin>} />
           <Route path="equipe" element={<Equipe />} />
@@ -73,6 +71,8 @@ createRoot(document.getElementById('raiz')!).render(
           <Route path="produtos/:id" element={<SoAdmin><DetalhePedido /></SoAdmin>} />
           <Route path="conta" element={<Conta />} />
           <Route path="ajustes" element={<SoAdmin><Ajustes /></SoAdmin>} />
+          {/* Endereço antigo ou digitado errado dentro do painel: volta para o Início do painel. */}
+          <Route path="*" element={<Navigate to="/painel" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

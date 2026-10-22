@@ -10,7 +10,8 @@ import './galeria.css';
 
 const chave = (token: string) => `jr.galeria.${token}`;
 function lerAcesso(token: string) { try { return sessionStorage.getItem(chave(token)); } catch { return null; } }
-function gravarAcesso(token: string, v: string | null) {
+/** Guarda o acesso para a galeria abrir já entrada (usado pela área da cliente). */
+export function gravarAcesso(token: string, v: string | null) {
   try { if (v) sessionStorage.setItem(chave(token), v); else sessionStorage.removeItem(chave(token)); } catch { /* sem armazenamento */ }
 }
 function lerVisao(): 'soltas' | 'grade' { try { return localStorage.getItem('jr.galeria.visao') === 'grade' ? 'grade' : 'soltas'; } catch { return 'soltas'; } }
