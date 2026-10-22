@@ -1,4 +1,5 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api, ErroApi } from '../api';
 import type { ContratoModelo, Estudio, ItemAvulso, Pacote, PortfolioFoto } from '../tipos';
 import { DURACOES, duracaoTexto, moeda, numeroBr } from '../util';
@@ -11,10 +12,11 @@ import { Erro, useDados } from './comum';
 
 export function Ajustes() {
   type Aba = 'estudio' | 'portfolio' | 'pacotes' | 'itens' | 'contrato' | 'agenda' | 'pagamentos' | 'email' | 'atividades';
-  const [aba, setAba] = useState<Aba>(() => {
-    const h = window.location.hash.slice(1);
-    return (['atividades', 'email', 'pagamentos'] as const).find((x) => x === h) ?? 'estudio';
-  });
+  const { hash } = useLocation();
+  const daAncora = (): Aba => (['atividades', 'email', 'pagamentos'] as const).find((x) => x === hash.slice(1)) ?? 'estudio';
+  const [aba, setAba] = useState<Aba>(daAncora);
+  // Links para Ajustes#email, #pagamentos… trocam a aba mesmo com a página já aberta
+  useEffect(() => { if (hash) setAba(daAncora()); }, [hash]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <>
       <div className="cabeca-pagina"><div><span className="rotulo">Ajustes</span><h1 className="titulo">Ajustes do estúdio</h1></div></div>
