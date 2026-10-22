@@ -263,8 +263,11 @@ function Situacao({ g, extras, valorExtras }: { g: Galeria; extras: number; valo
     );
   }
   if (g.status === 'ENTREGUE' && !g.downloadLiberado) {
-    return <><p>Suas fotos estão prontas. {g.motivoDownload}</p>
-      <div>{zap(`Olá! Sou ${g.clienteNome}, quero acertar o pagamento para baixar minhas fotos.`)}</div></>;
+    return <><p>Suas fotos estão prontas. {g.motivoDownload}{g.areaCliente && g.pixAutomatico ? ' Pague pelo Pix na sua área: assim que o banco confirmar, o download libera aqui.' : ''}</p>
+      <div className="acoes-linha">
+        {g.areaCliente && <a className="botao principal pequeno" href={`/meu/${g.areaCliente}`}>{g.pixAutomatico ? 'Pagar no Pix' : 'Ver meus pagamentos'}</a>}
+        {zap(`Olá! Sou ${g.clienteNome}, quero acertar o pagamento para baixar minhas fotos.`)}
+      </div></>;
   }
   if (g.status === 'ENTREGUE') return <p>Suas fotos estão prontas. Baixe todas de uma vez ou abra cada uma.</p>;
   return <><p>Seleção recebida. Suas {g.fotos.length} fotos estão em edição e aparecem aqui quando ficarem prontas.</p>

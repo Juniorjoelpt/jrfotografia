@@ -44,8 +44,12 @@ public final class RegraDownload {
         boolean semParcelas = parcelas.stream().noneMatch(p -> p.getTipo() == TipoParcela.PARCELA);
         if (sinalOk && (primeiraParcelaOk || semParcelas)) return new Situacao(true, null);
         boolean temSinal = parcelas.stream().anyMatch(p -> p.getTipo() == TipoParcela.SINAL);
-        String falta = !sinalOk && temSinal && !(primeiraParcelaOk || semParcelas) ? "do sinal e da 1ª parcela"
-                : !sinalOk && temSinal ? "do sinal" : "da 1ª parcela";
+        // Usa o nome que a cliente vê na área (ex.: "Restante (no dia do ensaio)"), não "1ª parcela".
+        String parcela = parcelas.stream().filter(p -> p.getTipo() == TipoParcela.PARCELA && !p.paga()).findFirst()
+                .map(p -> p.getDescricao() == null || p.getDescricao().isBlank() ? "da 1ª parcela" : "de \u201c" + p.getDescricao() + "\u201d")
+                .orElse("da 1ª parcela");
+        String falta = !sinalOk && temSinal && !(primeiraParcelaOk || semParcelas) ? "do sinal e " + parcela
+                : !sinalOk && temSinal ? "do sinal" : parcela;
         return new Situacao(false, "O download é liberado após o pagamento " + falta + ".");
     }
 }

@@ -261,10 +261,16 @@ public class EmailAvisos {
     }
 
     /** Na entrega: aviso de fotos prontas (sem a senha) e convite para a pesquisa. */
-    public void fotosEntregues(Trabalho t, String tokenPesquisa) {
+    public void fotosEntregues(Trabalho t, String tokenPesquisa, RegraDownload.Situacao download) {
         Estudio e = estudio(t.getEstudioId());
         List<String> p = new ArrayList<>(List.of("Olá, " + esc(primeiro(t.getCliente().getNome())) + "! Suas fotos editadas estão prontas na galeria. "
                 + "Use a mesma senha que te enviei (se não tiver mais, é só me pedir)."));
+        if (download != null && !download.liberado()) {
+            String area = t.getTokenCliente() != null ? url(e, "/meu/" + t.getTokenCliente()) : null;
+            p.add("<b>" + esc(download.motivo()) + "</b>" + (area == null ? "" : " " + (e.pixAutomatico()
+                    ? "Pague pelo Pix na <a href=\"" + esc(area) + "\" style=\"color:#c62828\">sua área</a>: assim que o banco confirmar, o download libera na galeria."
+                    : "Os valores estão na <a href=\"" + esc(area) + "\" style=\"color:#c62828\">sua área</a>.")));
+        }
         if (tokenPesquisa != null) {
             p.add("Se puder, me conta em 1 minuto como foi sua experiência: <a href=\"" + esc(url(e, "/pesquisa/" + tokenPesquisa))
                     + "\" style=\"color:#c62828\">responder a pesquisa</a>. Isso me ajuda muito!");
@@ -305,6 +311,30 @@ public class EmailAvisos {
                         : " recusou o orçamento nº " + o.getNumero() + ".")),
                 List.of(new Linha("Total", moeda(o.getValorTotal()))),
                 new Botao("Abrir orçamento", url(e, "/painel/orcamentos/" + o.getId())), "AVISO_ORCAMENTO", "orcamento:" + o.getId() + ":" + aceito);
+    }
+
+    /** A cliente aceitou o orçamento: próximos passos (sinal e contrato), como na confirmação da agenda online. */
+    public void orcamentoAceitoCliente(Orcamento o, String tokenArea, String tokenContrato) {
+        Estudio e = estudio(o.getEstudioId());
+        List<String> p = new ArrayList<>();
+        p.add("Olá, " + esc(primeiro(o.getNomeCliente())) + "! Recebi o aceite do orçamento nº " + o.getNumero() + ". Obrigado pela confiança! 📸");
+        boolean temSinal = o.getValorSinal() != null && o.getValorSinal().signum() > 0;
+        if (tokenArea != null) {
+            p.add(e.pixAutomatico()
+                    ? "Para garantir a data, pague " + (temSinal ? "o sinal" : "o valor combinado") + " pelo Pix na sua área: o QR Code já vem com o valor certinho e a baixa é automática."
+                    : "Na sua área você acompanha os pagamentos e as datas.");
+        }
+        if (tokenContrato != null) {
+            p.add("O contrato já está pronto para assinar pelo celular: <a href=\"" + esc(url(e, "/assinar/" + tokenContrato))
+                    + "\" style=\"color:#c62828\">ler e assinar o contrato</a>.");
+        }
+        List<Linha> resumo = new ArrayList<>(List.of(new Linha("Total", moeda(o.getValorTotal()))));
+        if (temSinal) resumo.add(new Linha("Sinal", moeda(o.getValorSinal())));
+        if (o.getDataPrevista() != null) resumo.add(new Linha("Quando", quando(o.getDataPrevista())));
+        if (!e.pixAutomatico() && e.getChavePix() != null) resumo.add(new Linha("Chave Pix", e.getChavePix()));
+        paraCliente(e, o.getEmail(), "Orçamento aceito · próximos passos · " + e.getNome(), "Orçamento aceito!", p, resumo,
+                tokenArea != null ? new Botao(e.pixAutomatico() ? "Pagar o sinal no Pix" : "Abrir minha área", url(e, "/meu/" + tokenArea)) : null,
+                "ORCAMENTO_ACEITO", "orcamento:" + o.getId(), null);
     }
 
     // ================================================================ produtos

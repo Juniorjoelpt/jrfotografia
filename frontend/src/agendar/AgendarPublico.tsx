@@ -419,7 +419,7 @@ export function AreaClientePagina() {
             {a.parcelas.map((p, i) => (
               <div key={i}>
                 <dt>{p.descricao}{p.vencimento && !p.paga && !cancelado ? <span className="suave"> · vence {data(p.vencimento)}</span> : null}</dt>
-                <dd className="num">{moeda(p.valor)} <span className={`ag-selo${p.paga ? ' pago' : ''}`}>{p.paga ? 'pago' : cancelado ? 'cancelada' : 'a pagar'}</span>
+                <dd className="num ag-parcela-valor">{moeda(p.valor)} <span className={`ag-selo${p.paga ? ' pago' : ''}`}>{p.paga ? 'pago' : cancelado ? 'cancelada' : 'a pagar'}</span>
                   {a.pixAutomatico && !p.paga && !cancelado && pagando !== p.id && (
                     <button type="button" className="botao pequeno pix-parcela" onClick={() => abrirPix(p.id)}>Pagar com Pix</button>
                   )}

@@ -30,9 +30,15 @@ public class OrcamentoControle {
     private final TrabalhoRepo trabalhos;
     private final ParcelaRepo parcelas;
     private final PdfServico pdf;
+    private final br.com.jrfotografia.servico.AssinaturaServico assinaturas;
+    private final br.com.jrfotografia.servico.AgendaOnlineServico agendaOnline;
 
     public OrcamentoControle(OrcamentoServico servico, OrcamentoRepo orcamentos, EstudioRepo estudios,
-                             TrabalhoRepo trabalhos, ParcelaRepo parcelas, PdfServico pdf, EmailAvisos avisos) {
+                             TrabalhoRepo trabalhos, ParcelaRepo parcelas, PdfServico pdf, EmailAvisos avisos,
+                             br.com.jrfotografia.servico.AssinaturaServico assinaturas,
+                             br.com.jrfotografia.servico.AgendaOnlineServico agendaOnline) {
+        this.assinaturas = assinaturas;
+        this.agendaOnline = agendaOnline;
         this.avisos = avisos;
         this.servico = servico;
         this.orcamentos = orcamentos;
@@ -102,6 +108,13 @@ public class OrcamentoControle {
     public OrcamentoPublico aceitar(@PathVariable String token) {
         Orcamento o = servico.aceitar(token);
         avisos.orcamentoRespondido(o, true);
+        // Como na agenda online: contrato pronto para assinar e a área da cliente (onde ela paga o sinal no Pix).
+        if (o.getTrabalhoId() != null) {
+            assinaturas.gerarSePossivel(o.getEstudioId(), o.getTrabalhoId());
+            br.com.jrfotografia.dominio.ContratoAssinatura c = assinaturas.atual(o.getTrabalhoId());
+            avisos.orcamentoAceitoCliente(o, agendaOnline.trabalhoDaClienteOuNulo(o.getTrabalhoId()),
+                    c != null && c.getStatus() == br.com.jrfotografia.dominio.ContratoAssinatura.Status.PENDENTE ? c.getToken() : null);
+        }
         return publicoDe(o);
     }
 
@@ -156,13 +169,19 @@ public class OrcamentoControle {
         Estudio e = estudio(o);
         var p = o.getPacote();
         StatusOrcamento st = o.statusAtual();
+        boolean aceito = st == StatusOrcamento.ACEITO && o.getTrabalhoId() != null;
+        br.com.jrfotografia.dominio.ContratoAssinatura contrato = aceito ? assinaturas.atual(o.getTrabalhoId()) : null;
+        if (contrato != null && contrato.getStatus() == br.com.jrfotografia.dominio.ContratoAssinatura.Status.CANCELADO) contrato = null;
         return new OrcamentoPublico(o.getNumero(), o.getNomeCliente(), e.getNome(), e.getWhatsapp(), e.getCidade(),
                 p != null ? p.getNome() : null, p != null ? p.listaItens() : List.of(),
                 p != null ? p.getPrazoEntregaDias() : null, p != null ? p.getPrecoFotoExtra() : null,
                 o.getTipo(), o.getDataPrevista(), o.getLocalPrevisto(),
                 o.getItens().stream().map(ItemDto::de).toList(), o.subtotal(), o.getDesconto(), o.getValorTotal(),
                 PdfServico.condicoes(o.getFormaPagamento(), o.getValorTotal(), o.getValorSinal(), o.getNumParcelas()),
-                o.getValidade(), o.getObservacoes(), st, st == StatusOrcamento.ACEITO && o.getTrabalhoId() != null);
+                o.getValidade(), o.getObservacoes(), st, st == StatusOrcamento.ACEITO && o.getTrabalhoId() != null,
+                aceito ? agendaOnline.trabalhoDaClienteOuNulo(o.getTrabalhoId()) : null,
+                contrato != null ? contrato.getToken() : null, contrato != null ? contrato.getStatus().name() : null,
+                aceito && e.pixAutomatico());
     }
 
     private static OrcamentoServico.Dados dados(OrcamentoForm f) {

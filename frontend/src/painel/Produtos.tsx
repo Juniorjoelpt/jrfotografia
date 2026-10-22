@@ -102,7 +102,7 @@ export function FormPedido({ trabalhoId, pedido, aoSalvar, aoCancelar }: {
     <form className="painel-caixa grade-form duas anima-entrada" onSubmit={salvar}>
       {!pedido && (
         <label className="campo inteira"><span>Trabalho</span>
-          <select id="pp-trabalho" name="trabalho" required defaultValue={trabalhoId ?? ''}>
+          <select id="pp-trabalho" name="trabalho" required defaultValue={trabalhoId ?? ''} key={trabalhos ? 'lista' : 'carregando'}>
             <option value="" disabled>Escolha o trabalho</option>
             {trabalhos?.filter((t) => t.status !== 'CANCELADO').map((t) => <option key={t.id} value={t.id}>{t.titulo}</option>)}
           </select>

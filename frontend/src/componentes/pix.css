@@ -40,4 +40,8 @@
   .pix-botao { justify-self: stretch; }
   .pix-tempo { margin-left: 22px; }
 }
-.pix-parcela { margin-left: var(--espaco-3); }
+.pix-parcela { margin-left: var(--espaco-2); }
+/* Linha da parcela na área da cliente: valor, selo e o botão do Pix quebram linha no celular */
+.oc-itens dd.ag-parcela-valor { white-space: normal; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; text-align: right; }
+.oc-itens dd.ag-parcela-valor > * { margin-left: 0; }
+.oc-itens dd.ag-parcela-valor .pix-parcela { flex: none; }

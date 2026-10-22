@@ -49,7 +49,9 @@ public class AssinaturaControle {
     public record AssinaturaPublica(Status status, String titulo, String texto, String contratante, String estudioNome,
                                     String estudioWhatsapp, String responsavel, LocalDateTime enviadoEm, LocalDateTime assinadoEm,
                                     String nomeAssinante, String codigo, String hashTexto, boolean perguntaUsoImagem,
-                                    Boolean autorizaImagem) {}
+                                    Boolean autorizaImagem,
+                                    /** Depois de assinar: a área da cliente (pagamentos, Pix, datas). */
+                                    String areaCliente) {}
 
     public record AssinarForm(@NotBlank @Size(max = 120) String nome, @NotBlank @Size(max = 20) String cpf,
                               @NotBlank @Size(max = 600_000) String assinatura, Boolean aceite, Boolean autorizaImagem) {}
@@ -221,7 +223,8 @@ public class AssinaturaControle {
         return new AssinaturaPublica(a.getStatus(), a.getTrabalho().getTitulo(), a.getTexto(), a.getTrabalho().getCliente().getNome(),
                 e.getNome(), e.getWhatsapp(), e.getResponsavel(), a.getCriadoEm(), a.getAssinadoEm(), a.getNomeAssinante(),
                 assinado ? AssinaturaServico.formatarCodigo(a.getCodigo()) : null, a.getHashTexto(),
-                AssinaturaServico.perguntaUsoImagem(a.getTexto()), a.getAutorizaImagem());
+                AssinaturaServico.perguntaUsoImagem(a.getTexto()), a.getAutorizaImagem(),
+                assinado ? a.getTrabalho().getTokenCliente() : null);
     }
 
     private Verificacao verificacao(ContratoAssinatura a, String codigo, Boolean confere) {

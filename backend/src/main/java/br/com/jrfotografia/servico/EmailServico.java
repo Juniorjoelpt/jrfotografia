@@ -96,7 +96,8 @@ public class EmailServico {
         reg.setTipo(tipo);
         reg.setReferencia(referencia);
         reg.setStatus("PENDENTE");
-        Long id = historico.save(reg).getId();
+        // O histórico é gravado na própria transação: funciona mesmo quando quem chama está numa transação só de leitura.
+        Long id = novaTransacao.execute(st -> historico.save(reg).getId());
         Smtp smtp = smtp(e);
         Mensagem m = new Mensagem(e.getId(), destino, assunto, html, anexos == null ? List.of() : anexos, tipo);
         Runnable tarefa = () -> despachar(id, smtp, m);
@@ -106,6 +107,17 @@ public class EmailServico {
                 @Override
                 public void afterCommit() {
                     if (memoria) tarefa.run(); else fila.submit(tarefa);
+                }
+
+                @Override
+                public void afterCompletion(int status) {
+                    // A operação foi desfeita: o e-mail não sai, e o registro não pode travar um reenvio futuro.
+                    if (status != STATUS_COMMITTED) {
+                        novaTransacao.executeWithoutResult(st -> historico.findById(id).ifPresent(r -> {
+                            r.setStatus("CANCELADO");
+                            r.setErro("A operação foi desfeita; nada foi enviado.");
+                        }));
+                    }
                 }
             });
         } else if (memoria) {

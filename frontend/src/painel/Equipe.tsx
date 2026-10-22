@@ -60,7 +60,7 @@ export function FormTarefa({ trabalhoId, tarefa, aoSalvar, aoCancelar }: {
       <label className="campo inteira"><span>Tarefa</span><input id="tf-titulo" name="titulo" required maxLength={160} defaultValue={tarefa?.titulo} placeholder="Editar fotos, montar álbum, entregar pendrive…" /></label>
       {!trabalhoId && (
         <label className="campo"><span>Trabalho (opcional)</span>
-          <select id="tf-trabalho" name="trabalho" defaultValue={tarefa?.trabalhoId ?? ''}>
+          <select id="tf-trabalho" name="trabalho" defaultValue={tarefa?.trabalhoId ?? ''} key={trabalhos ? 'lista' : 'carregando'}>
             <option value="">Nenhum</option>
             {trabalhos?.filter((t) => t.status !== 'CANCELADO' && (t.status !== 'ENTREGUE' || t.id === tarefa?.trabalhoId))
               .map((t) => <option key={t.id} value={t.id}>{t.titulo}</option>)}
@@ -68,7 +68,7 @@ export function FormTarefa({ trabalhoId, tarefa, aoSalvar, aoCancelar }: {
         </label>
       )}
       <label className="campo"><span>Responsável</span>
-        <select id="tf-resp" name="resp" defaultValue={respAtual}>
+        <select id="tf-resp" name="resp" defaultValue={respAtual} key={pessoas ? 'lista' : 'carregando'}>
           <option value="">Sem responsável</option>
           {pessoas?.map((p) => <option key={`${p.tipo}${p.id}`} value={`${p.tipo === 'USUARIO' ? 'U' : 'F'}${p.id}`}>{p.nome}{p.tipo === 'FREELANCER' ? ' (freelancer)' : ''}</option>)}
         </select>

@@ -7,7 +7,7 @@ interface ConfigEmail {
   ativo: boolean; host?: string | null; porta?: number | null; usuario?: string | null; temSenha: boolean; seguranca: 'STARTTLS' | 'SSL' | 'NENHUMA';
   remetente?: string | null; avisos: boolean; lembretes: boolean; emailEstudio?: string | null;
 }
-interface EmailEnviado { id: number; para: string; assunto: string; tipo: string; status: 'PENDENTE' | 'ENVIADO' | 'FALHOU'; erro?: string | null; criadoEm: string }
+interface EmailEnviado { id: number; para: string; assunto: string; tipo: string; status: 'PENDENTE' | 'ENVIADO' | 'FALHOU' | 'CANCELADO'; erro?: string | null; criadoEm: string }
 
 const PROVEDORES = [
   { nome: 'Gmail', host: 'smtp.gmail.com', porta: 587, seguranca: 'STARTTLS',
@@ -142,7 +142,7 @@ export function AjustesEmail() {
             <div key={m.id} className="linha-item">
               <span className="principal">{m.assunto}</span>
               <span className="lado"><span className={`etiqueta${m.status === 'ENVIADO' ? ' sucesso' : m.status === 'FALHOU' ? ' erro' : ''}`}>
-                {m.status === 'ENVIADO' ? 'Enviado' : m.status === 'FALHOU' ? 'Falhou' : 'Na fila'}</span></span>
+                {m.status === 'ENVIADO' ? 'Enviado' : m.status === 'FALHOU' ? 'Falhou' : m.status === 'CANCELADO' ? 'Cancelado' : 'Na fila'}</span></span>
               <span className="legenda">{(NOMES_TIPO[m.tipo] ?? m.tipo).toUpperCase()} · {m.para} · {dataHora(m.criadoEm).toUpperCase()}</span>
               {m.erro && <span className="legenda" style={{ gridColumn: '1 / -1', color: 'var(--erro)' }}>{m.erro}</span>}
             </div>

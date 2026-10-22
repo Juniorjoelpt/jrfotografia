@@ -61,7 +61,9 @@ public final class Fase2Dtos {
                                    BigDecimal precoFotoExtra, String tipo, LocalDateTime dataPrevista, String localPrevisto,
                                    List<ItemDto> itens, BigDecimal subtotal, BigDecimal desconto, BigDecimal valorTotal,
                                    String condicoes, LocalDate validade, String observacoes, StatusOrcamento status,
-                                   boolean contratoDisponivel) {}
+                                   boolean contratoDisponivel,
+                                   /** Depois do aceite: área da cliente (pagamentos e Pix) e o contrato para assinar. */
+                                   String areaCliente, String contratoToken, String contratoStatus, boolean pixAutomatico) {}
 
     // ---------- financeiro
     public record DespesaForm(@NotBlank @Size(max = 120) String descricao, @NotBlank @Size(max = 40) String categoria,

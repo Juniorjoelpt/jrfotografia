@@ -196,7 +196,7 @@ function Cupons() {
           <label className="campo"><span>Válido até (opcional)</span><input id="cu-validade" name="validade" type="date" defaultValue={c?.validade ?? ''} /></label>
           <label className="campo"><span>Limite de usos (opcional)</span><input id="cu-usos" name="usos" type="number" min={1} defaultValue={c?.usosMax ?? ''} /></label>
           <label className="campo inteira"><span>Vale para</span>
-            <select id="cu-campanha" name="campanha" defaultValue={c?.campanhaId ?? ''}>
+            <select id="cu-campanha" name="campanha" defaultValue={c?.campanhaId ?? ''} key={campanhas ? 'lista' : 'carregando'}>
               <option value="">Qualquer agendamento online</option>
               {campanhas?.map((x) => <option key={x.id} value={x.id}>Só a mini-sessão: {x.titulo}</option>)}
             </select>

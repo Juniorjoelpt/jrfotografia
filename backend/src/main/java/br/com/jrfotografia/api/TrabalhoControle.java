@@ -115,7 +115,8 @@ public class TrabalhoControle {
         br.com.jrfotografia.servico.AuditoriaServico.detalhe("Para " + f.status().name().toLowerCase().replace("selecao", "seleção").replace("edicao", "edição"));
         Trabalho t = servico.mudarStatus(UsuarioLogado.estudio(), id, f.status());
         if (f.status() == StatusTrabalho.ENTREGUE) {
-            avisos.fotosEntregues(t, pesquisas.findByTrabalhoId(t.getId()).filter(p -> p.getRespondidaEm() == null).map(p -> p.getToken()).orElse(null));
+            avisos.fotosEntregues(t, pesquisas.findByTrabalhoId(t.getId()).filter(p -> p.getRespondidaEm() == null).map(p -> p.getToken()).orElse(null),
+                    br.com.jrfotografia.servico.RegraDownload.avaliar(t, parcelas.findByTrabalhoIdOrderByVencimentoAscIdAsc(t.getId())));
         }
         return detalheDe(t);
     }

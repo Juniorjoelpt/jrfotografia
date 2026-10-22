@@ -50,6 +50,16 @@ class RegraDownloadTest {
     }
 
     @Test
+    void mensagemUsaONomeDaParcelaQueAClienteVe() {
+        Trabalho t = trabalho(FormaPagamento.PARCELADO);
+        Parcela sinal = parcela(TipoParcela.SINAL, true);
+        Parcela restante = parcela(TipoParcela.PARCELA, false);
+        restante.setDescricao("Restante (no dia do ensaio)");
+        assertThat(RegraDownload.avaliar(t, List.of(sinal, restante)).motivo())
+                .isEqualTo("O download é liberado após o pagamento de “Restante (no dia do ensaio)”.");
+    }
+
+    @Test
     void produtoVendidoDepoisNaoSeguraODownload() {
         Trabalho t = trabalho(FormaPagamento.AVISTA);
         Parcela avista = parcela(TipoParcela.AVISTA, true);

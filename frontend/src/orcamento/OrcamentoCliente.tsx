@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { api, ErroApi, publico } from '../api';
 import { Logo } from '../componentes/Logo';
 import { Ambiente } from '../componentes/Movimento';
@@ -68,7 +68,15 @@ export function OrcamentoCliente() {
           {o.status === 'ACEITO' && (
             <div className="aviso sucesso oc-estado" role="status">
               <strong>{recemAceito ? 'Pronto, data reservada!' : 'Orçamento aceito.'}</strong>
-              <span>{recemAceito ? 'Obrigado pela confiança. ' : ''}O próximo passo é o pagamento {o.condicoes.startsWith('sinal') ? 'do sinal' : 'combinado'}; o fotógrafo vai te chamar no WhatsApp com os dados.</span>
+              <span>{recemAceito ? 'Obrigado pela confiança. ' : ''}{o.areaCliente || o.contratoToken
+                ? `Agora é só ${[o.areaCliente && (o.pixAutomatico ? `pagar ${o.condicoes.startsWith('sinal') ? 'o sinal' : 'o valor combinado'} no Pix` : 'acompanhar os pagamentos na sua área'), o.contratoToken && o.contratoStatus !== 'ASSINADO' && 'assinar o contrato'].filter(Boolean).join(' e ')}. Você também recebe os links por e-mail.`
+                : `O próximo passo é o pagamento ${o.condicoes.startsWith('sinal') ? 'do sinal' : 'combinado'}; o fotógrafo vai te chamar no WhatsApp com os dados.`}</span>
+              {(o.areaCliente || (o.contratoToken && o.contratoStatus !== 'ASSINADO')) && (
+                <div className="acoes-linha" style={{ marginTop: 'var(--espaco-2)' }}>
+                  {o.areaCliente && <Link className="botao principal" to={`/meu/${o.areaCliente}`}>{o.pixAutomatico ? 'Pagar no Pix' : 'Abrir minha área'}</Link>}
+                  {o.contratoToken && o.contratoStatus !== 'ASSINADO' && <Link className="botao" to={`/assinar/${o.contratoToken}`}>Assinar o contrato</Link>}
+                </div>
+              )}
             </div>
           )}
           {o.status === 'RECUSADO' && <div className="aviso oc-estado">Você recusou este orçamento. Se mudar de ideia, é só chamar no WhatsApp.</div>}

@@ -172,7 +172,9 @@ public final class Dtos {
                              StatusTrabalho status, boolean exigeSelecao, Integer fotosNoPacote,
                              BigDecimal precoFotoExtra, boolean selecaoAberta, long selecionadas,
                              boolean downloadLiberado, String motivoDownload, LocalDateTime expiraEm,
-                             List<FotoGaleria> fotos, String pesquisaToken) {}
+                             List<FotoGaleria> fotos, String pesquisaToken,
+                             /** Download esperando pagamento: link da área da cliente, onde ela paga (no Pix, se automático). */
+                             String areaCliente, boolean pixAutomatico) {}
 
     public record FotoGaleria(Long id, Integer largura, Integer altura, boolean selecionada, String comentario, boolean editada) {}
 

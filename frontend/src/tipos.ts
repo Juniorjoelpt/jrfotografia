@@ -72,7 +72,7 @@ export interface Galeria {
   titulo: string; clienteNome: string; dataTrabalho?: string; estudioNome: string; estudioWhatsapp?: string; status: StatusTrabalho;
   exigeSelecao: boolean; fotosNoPacote: number | null; precoFotoExtra: number | null; selecaoAberta: boolean;
   selecionadas: number; downloadLiberado: boolean; motivoDownload?: string; expiraEm?: string; fotos: FotoGaleria[];
-  pesquisaToken?: string | null;
+  pesquisaToken?: string | null; areaCliente?: string | null; pixAutomatico?: boolean;
 }
 
 // ---------- fase 2: agenda, orçamentos, financeiro e relatórios
@@ -95,6 +95,7 @@ export interface OrcamentoPublico {
   dataPrevista?: string; localPrevisto?: string; itens: ItemOrcamento[]; subtotal: number; desconto: number;
   valorTotal: number; condicoes: string; validade: string; observacoes?: string; status: StatusOrcamento;
   contratoDisponivel: boolean;
+  areaCliente?: string | null; contratoToken?: string | null; contratoStatus?: StatusAssinatura | null; pixAutomatico: boolean;
 }
 
 export interface EventoAgenda {
@@ -172,7 +173,7 @@ export interface Assinatura {
 export interface AssinaturaPublica {
   status: StatusAssinatura; titulo: string; texto: string; contratante: string; estudioNome: string; estudioWhatsapp?: string;
   responsavel?: string; enviadoEm: string; assinadoEm?: string; nomeAssinante?: string; codigo?: string; hashTexto: string;
-  perguntaUsoImagem: boolean; autorizaImagem?: boolean | null;
+  perguntaUsoImagem: boolean; autorizaImagem?: boolean | null; areaCliente?: string | null;
 }
 export interface Verificacao {
   valido: boolean; codigo?: string; estudio?: string; contratante?: string; cpf?: string; assinadoEm?: string; enviadoEm?: string;

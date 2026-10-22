@@ -189,6 +189,8 @@ public class GaleriaControle {
                 fotos.stream().map(f -> new FotoGaleria(f.getId(), f.getLargura(), f.getAltura(), f.isSelecionada(), f.getComentario(), f.getArquivoFinal() != null)).toList(),
                 // Depois da entrega, a galeria convida a responder a pesquisa (enquanto não respondida).
                 t.getStatus() == StatusTrabalho.ENTREGUE ? pesquisas.findByTrabalhoId(t.getId())
-                        .filter(p -> p.getRespondidaEm() == null).map(p -> p.getToken()).orElse(null) : null);
+                        .filter(p -> p.getRespondidaEm() == null).map(p -> p.getToken()).orElse(null) : null,
+                t.getStatus() == StatusTrabalho.ENTREGUE && !download.liberado() ? t.getTokenCliente() : null,
+                estudio.pixAutomatico());
     }
 }

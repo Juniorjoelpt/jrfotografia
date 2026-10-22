@@ -81,7 +81,8 @@ export function AssinarContrato() {
           <p className="suave" style={{ margin: 0 }}>Qualquer pessoa confere a autenticidade em <Link to={`/verificar/${a.codigo}`}>{window.location.host}/verificar</Link>.</p>
         </section>
         <footer className="oc-rodape">
-          <a className="botao principal" href={pdf} target="_blank" rel="noreferrer">Baixar contrato assinado</a>
+          {a.areaCliente && <Link className="botao principal" to={`/meu/${a.areaCliente}`}>Abrir minha área</Link>}
+          <a className={`botao${a.areaCliente ? '' : ' principal'}`} href={pdf} target="_blank" rel="noreferrer">Baixar contrato assinado</a>
           {a.estudioWhatsapp && <a className="botao" href={linkWhatsapp(a.estudioWhatsapp, `Olá! Assinei o contrato (${a.titulo}).`)} target="_blank" rel="noreferrer">Avisar no WhatsApp</a>}
         </footer>
       </Casca>
